@@ -14088,6 +14088,15 @@ functions return important math algorithms required to constructs lines/walls in
       this_.canvasElement = $("#" + canvas);
       this_.view = new FloorplannerView(this_.floorplan, this_, canvas);
 
+      this_.labelEditor = document.createElement("input");
+      this_.labelEditor.type = "text";
+      this_.labelEditor.className = "wall-label-editor";
+      this_.labelEditor.setAttribute("aria-label", "Wall length");
+      this_.labelEditor.setAttribute("autocomplete", "off");
+      this_.labelEditor.setAttribute("spellcheck", "false");
+      this_.labelEditor.style.display = "none";
+      this_.labelEditInfo = null;
+
       this_.cmPerPixel = cmPerPixel;
       this_.pixelsPerCm = pixelsPerCm;
 
@@ -14099,6 +14108,21 @@ functions return important math algorithms required to constructs lines/walls in
       this_.setMode(floorplannerModes.MOVE);
 
       var local = this_;
+
+      var editorParent = this_.canvasElement.parent()[0] || document.body;
+      editorParent.appendChild(this_.labelEditor);
+      this_.labelEditor.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          local.commitLabelEditor();
+        } else if (event.key === "Escape") {
+          event.preventDefault();
+          local.hideLabelEditor();
+        }
+      });
+      this_.labelEditor.addEventListener("blur", function () {
+        local.commitLabelEditor();
+      });
 
       this_.canvasElement.bind("touchstart mousedown", function (event) {
         local.mousedown(event);
@@ -14306,20 +14330,64 @@ functions return important math algorithms required to constructs lines/walls in
             return false;
           }
 
-          var currentLabel = Dimensioning.cmToMeasureString(hit.length);
-          var response = window.prompt("Wall length:", currentLabel);
-          if (response === null) {
-            return true;
-          }
-
-          var nextLength = this.parseMeasurementToCm(response);
-          if (!nextLength || isNaN(nextLength) || nextLength <= 0) {
-            return true;
-          }
-
-          this.setWallLength(hit.edge.wall, nextLength);
-          this.view.draw();
+          this.showLabelEditor(hit);
           return true;
+        },
+      },
+      {
+        reference: "showLabelEditor",
+        value: function showLabelEditor(info) {
+          if (!info) {
+            return;
+          }
+
+          this.labelEditInfo = info;
+          this.positionLabelEditor(info);
+          this.labelEditor.value = Dimensioning.cmToMeasureString(info.length);
+          this.labelEditor.style.display = "block";
+          var editor = this.labelEditor;
+          window.setTimeout(function () {
+            editor.focus();
+            editor.select();
+          }, 0);
+        },
+      },
+      {
+        reference: "positionLabelEditor",
+        value: function positionLabelEditor(info) {
+          var offset = this.canvasElement.offset();
+          var width = Math.max(70, Math.ceil(info.width + 20));
+          var height = 26;
+          this.labelEditor.style.width = width + "px";
+          this.labelEditor.style.left =
+            offset.left + info.x - width / 2 + "px";
+          this.labelEditor.style.top =
+            offset.top + info.y - height / 2 + "px";
+        },
+      },
+      {
+        reference: "hideLabelEditor",
+        value: function hideLabelEditor() {
+          this.labelEditor.style.display = "none";
+          this.labelEditInfo = null;
+        },
+      },
+      {
+        reference: "commitLabelEditor",
+        value: function commitLabelEditor() {
+          if (!this.labelEditInfo) {
+            this.hideLabelEditor();
+            return;
+          }
+
+          var raw = this.labelEditor.value;
+          var nextLength = this.parseMeasurementToCm(raw);
+          if (nextLength && !isNaN(nextLength) && nextLength > 0) {
+            this.setWallLength(this.labelEditInfo.edge.wall, nextLength);
+            this.view.draw();
+          }
+
+          this.hideLabelEditor();
         },
       },
       {

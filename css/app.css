@@ -447,6 +447,25 @@ button {
   color: #9fffe8;
 }
 
+.wall-label-editor {
+  position: absolute;
+  z-index: 40;
+  font-family: "Aldrich", sans-serif;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 210, 210, 0.45);
+  background: rgba(8, 14, 20, 0.95);
+  color: #e8f8ff;
+  box-shadow: 0 0 14px rgba(0, 210, 210, 0.2);
+}
+
+.wall-label-editor:focus {
+  outline: none;
+  border-color: rgba(95, 255, 234, 0.9);
+  box-shadow: 0 0 18px rgba(95, 255, 234, 0.35);
+}
+
 .dg {
   font: 11px/1.2 "Aldrich", sans-serif;
   text-shadow: none;
