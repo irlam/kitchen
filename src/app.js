@@ -1,4 +1,5 @@
 import html2canvas from "html2canvas";
+import * as THREE from "three";
 
 var aGlobal = null;
 var anItem = null;
@@ -8,6 +9,7 @@ var gui = null;
 var globalPropFolder = null;
 var itemPropFolder = null;
 var wallPropFolder = null;
+var pending2dItem = null;
 
 var BASE_LAYOUT_JSON =
   '{"floorplan":{"corners":{"f90da5e3-9e0e-eba7-173d-eb0b071e838e":{"x":-212,"y":212},"da026c08-d76a-a944-8e7b-096b752da9ed":{"x":212,"y":212},"4e3d65cb-54c0-0681-28bf-bddcc7bdb571":{"x":212,"y":-212},"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2":{"x":-212,"y":-212}},"walls":[{"corner1":"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2","corner2":"f90da5e3-9e0e-eba7-173d-eb0b071e838e","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"f90da5e3-9e0e-eba7-173d-eb0b071e838e","corner2":"da026c08-d76a-a944-8e7b-096b752da9ed","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"da026c08-d76a-a944-8e7b-096b752da9ed","corner2":"4e3d65cb-54c0-0681-28bf-bddcc7bdb571","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"4e3d65cb-54c0-0681-28bf-bddcc7bdb571","corner2":"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}}],"wallTextures":[],"floorTextures":{},"newFloorTextures":{}},"items":[]}';
@@ -1235,6 +1237,17 @@ $(document).ready(function () {
         format: itemFormat,
       };
 
+      if ($("#showFloorPlan").hasClass("active")) {
+        pending2dItem = {
+          itemType: itemType,
+          modelUrl: modelUrl,
+          metadata: metadata,
+        };
+        KitchenKreation.floorplanner.setMode(KKJS.floorplannerModes.MOVE);
+        updateAutosaveStatus("Click on the plan to place the item");
+        return;
+      }
+
       if ([1, 2, 3].indexOf(metadata.itemType) != -1 && aWall.currentWall) {
         var placeAt = aWall.currentWall.center.clone();
         KitchenKreation.model.scene.addItem(
@@ -1263,6 +1276,89 @@ $(document).ready(function () {
     event.preventDefault();
     $("#add-items-modal").modal({ show: true, backdrop: false });
   });
+
+    function get2dPlacementPoint(event) {
+      var canvas = $("#floorplanner-canvas");
+      if (!canvas.length) {
+        return null;
+      }
+      var offset = canvas.offset();
+      var x = (event.clientX - offset.left) * KitchenKreation.floorplanner.cmPerPixel;
+      var y = (event.clientY - offset.top) * KitchenKreation.floorplanner.cmPerPixel;
+      return {
+        x: x + KitchenKreation.floorplanner.originX * KitchenKreation.floorplanner.cmPerPixel,
+        y: y + KitchenKreation.floorplanner.originY * KitchenKreation.floorplanner.cmPerPixel,
+      };
+    }
+
+    function getClosestWallEdge(point) {
+      var edges = KitchenKreation.model.floorplan.wallEdges();
+      if (!edges.length) {
+        return null;
+      }
+      var best = null;
+      edges.forEach(function (edge) {
+        var distance = edge.distanceTo(point.x, point.y);
+        if (!best || distance < best.distance) {
+          best = { edge: edge, distance: distance };
+        }
+      });
+      if (best && best.distance < 30) {
+        return best.edge;
+      }
+      return null;
+    }
+
+    $("#floorplanner-canvas").on("click", function (event) {
+      if (!pending2dItem) {
+        return;
+      }
+
+      var point = get2dPlacementPoint(event);
+      if (!point) {
+        return;
+      }
+
+      var position = new THREE.Vector3(point.x, 0, point.y);
+      var itemType = pending2dItem.itemType;
+      var modelUrl = pending2dItem.modelUrl;
+      var metadata = pending2dItem.metadata;
+
+      if (itemType === 2 || itemType === 3) {
+        var edge = getClosestWallEdge(point);
+        if (!edge) {
+          updateAutosaveStatus("Click closer to a wall to place this item");
+          return;
+        }
+        KitchenKreation.model.scene.addItem(
+          itemType,
+          modelUrl,
+          metadata,
+          null,
+          null,
+          null,
+          false,
+          {
+            position: position,
+            edge: edge,
+          }
+        );
+      } else {
+        KitchenKreation.model.scene.addItem(
+          itemType,
+          modelUrl,
+          metadata,
+          null,
+          null,
+          null,
+          false,
+          { position: position }
+        );
+      }
+
+      pending2dItem = null;
+      updateAutosaveStatus("Auto-save: ready");
+    });
 
   var tipsPopup = $("#tips-popup");
   function showTips() {
