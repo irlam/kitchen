@@ -1263,13 +1263,13 @@ $(document).ready(function () {
     exportPrintablePlan(KitchenKreation, { autoPrint: true });
   });
 
+  if ($("#add-items-modal").length) {
+    $("#add-items-modal").modal({ show: true, backdrop: false });
+  }
+
   $("#showAddItems").off("click").on("click", function (event) {
     event.preventDefault();
-    document.body.classList.remove("edit-panel-collapsed");
-  });
-
-  $("#closeEditPanel").off("click").on("click", function () {
-    document.body.classList.add("edit-panel-collapsed");
+    $("#add-items-modal").modal("show");
   });
 
   $("#savePdf").click(function () {
