@@ -1279,6 +1279,23 @@ $(document).ready(function () {
     saveProjectToList(KitchenKreation);
   });
 
+  $("#saveProjectAs").click(function () {
+    var current = (getProjectMeta().projectName || "").trim();
+    var name = prompt("Save project as:", current || "");
+    if (!name) {
+      return;
+    }
+    name = name.trim();
+    if (!name) {
+      return;
+    }
+    var meta = getProjectMeta();
+    meta.projectName = name;
+    setProjectMeta(meta);
+    saveProjectMeta();
+    saveProjectToListSilent(KitchenKreation, name, true);
+  });
+
   $("#deleteProject").click(function () {
     var name = $("#projectList").val();
     if (!name) {
@@ -1312,6 +1329,7 @@ $(document).ready(function () {
     }
     metaTimer = setTimeout(function () {
       saveProjectMeta();
+      saveProjectToListSilent(KitchenKreation, getProjectMeta().projectName);
     }, 300);
   });
 });
