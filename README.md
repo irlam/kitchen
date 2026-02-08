@@ -1,17 +1,13 @@
 ﻿# KitchenKreation - 2D/3D Javascript Kitchen Planner
 
-#### To run and develop locally a HTTP server needs to be intialised (make sure hardware acceleration is enabled on your browswer);
+## Local development
 
-Either npm or Python are valid options
+See [docs/LOCAL_DEV.md](docs/LOCAL_DEV.md) for the Vite workflow and the no-build fallback.
 
-###### npm
+## Docs
 
-`npm install http-server -g`
-`http-server . -p 8000`
-
-###### python
-
-`python -m http.server`
+- [docs/ROADMAP.md](docs/ROADMAP.md)
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ### References
 
