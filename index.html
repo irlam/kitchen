@@ -8,6 +8,14 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<link href="css/app.css" rel="stylesheet">
 
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "https://unpkg.com/three@0.124.0/build/three.module.js",
+				"html2canvas": "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.esm.js"
+			}
+		}
+	</script>
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdn.rawgit.com/nnattawat/flip/master/dist/jquery.flip.min.js"></script>
@@ -79,61 +87,85 @@
 			<textarea id="projectNotes" rows="2" placeholder="Add project notes for printing..."></textarea>
 		</div>
 	</div>
-	<div id="tips">
-		<h2>Tips</h2>
-		<h3> For 2D Floorplan: </h3>
-		<ul style="list-style-type:square;">
-			<li>To Draw walls, select the <span class="glyphicon glyphicon-pencil"></span> button and click to at starting of point to draw and reclick at the endpoint. Press ESC to stop drawing walls.</li>
-			<li>To Delete walls, select the <span class="glyphicon glyphicon-trash"></span> button and simply click on the wall, once highlighted in red</li>
-			<li>To Move walls, select the <span class="glyphicon glyphicon-move"></span> button and click and drag from a specific wall to extend it</li>
-		</ul>
-		<h3> For 3D Render: </h3>
-		<ul style="list-style-type:square;">
-			<li>To change wall/floor texture, click on the wall and floor that you would like to change and pick a texture from the dropdown box in the sub-menu</li>
-			<li>Use mouse, scroll wheel and arrow keys to operate the camera. To reset the camera click the '3D Render' button below</li>
-			<li>To add items, click the <span class="glyphicon glyphicon-plus"></span> button and select an item from the catalogue</li>
-		</ul>
-		<h3> To Reset your floorplan, select the "New Layout" button </h3>
-		<div id='2D-Floorplan' class='card'>
-			<div id="floorplanner" class='front'>
-				<div id="floorplanner-controls" class="tool-panel tool-panel-floor">
+	<div id="workspace">
+		<aside id="tool-rail">
+			<div class="rail-section">
+				<div class="rail-title">2D Tools</div>
+				<div id="floorplanner-controls" class="tool-panel">
 					<a href="#" class="btn btn-default btn-lg glyphicon glyphicon-asterisk" id="new2d" title="New Layout"></a>
 					<button id="move" class="btn btn-lg btn-default" title="Move Walls">
 						<span class="glyphicon glyphicon-move"></span>
+						<span class="tool-text">Move</span>
 					</button>
 					<button id="draw" class="btn btn-lg btn-default" title="Draw New Walls">
 						<span class="glyphicon glyphicon-pencil"></span>
+						<span class="tool-text">Draw</span>
 					</button>
 					<button id="delete" class="btn btn-lg btn-default" title="Delete Walls">
 						<span class="glyphicon glyphicon-trash"></span>
+						<span class="tool-text">Delete</span>
 					</button>
 					<button id="screenshot-2D" class="btn btn-lg btn-default" title="Screenshot">
-						<span class="glyphicon glyphicon-camera	"></span>
+						<span class="glyphicon glyphicon-camera"></span>
+						<span class="tool-text">Capture</span>
 					</button>
 				</div>
-				<canvas id="floorplanner-canvas"></canvas>
 			</div>
-
-			<div id="3D-Floorplan" class='back'>
-				<div id="main-controls" class="tool-panel tool-panel-floor">
-					<a href="#" class="btn btn-default btn-lg	glyphicon glyphicon-asterisk" id="new3d" title="New Layout"></a>
+			<div class="rail-section">
+				<div class="rail-title">3D Tools</div>
+				<div id="main-controls" class="tool-panel">
+					<a href="#" class="btn btn-default btn-lg glyphicon glyphicon-asterisk" id="new3d" title="New Layout"></a>
 					<button id="screenshot-3D" class="btn btn-lg btn-default" title="Screenshot">
-						<span class="glyphicon glyphicon-camera	"></span>
+						<span class="glyphicon glyphicon-camera"></span>
+						<span class="tool-text">Capture</span>
 					</button>
 				</div>
 			</div>
-		</div>
-		<div id='switch-viewer' class="tool-panel tool-panel-view">
-			<button id="showFloorPlan" class="btn btn-lg btn-default active" title="Edit 2D floorplan">
-				<span class="glyphicon glyphicon-move"></span> 2D Floorplan
-			</button>
-			<button id="showDesign" class="btn btn-lg btn-default" title="Edit 3D floorplan">
-				<span class="glyphicon glyphicon-move"></span> 3D Render
-			</button>
-			<button id="showAddItems" class="btn btn-lg btn-default" data-toggle="modal" data-target="#add-items-modal" title="Add Items">
-				<span class="glyphicon glyphicon-plus"></span>
-			</button>
-		</div>
+			<div class="rail-section">
+				<div class="rail-title">Workspace</div>
+				<div id='switch-viewer' class="tool-panel">
+					<button id="showFloorPlan" class="btn btn-lg btn-default active" title="Edit 2D floorplan">
+						<span class="glyphicon glyphicon-move"></span>
+						<span class="tool-text">2D Floorplan</span>
+					</button>
+					<button id="showDesign" class="btn btn-lg btn-default" title="Edit 3D floorplan">
+						<span class="glyphicon glyphicon-move"></span>
+						<span class="tool-text">3D Render</span>
+					</button>
+					<button id="showAddItems" class="btn btn-lg btn-default" data-toggle="modal" data-target="#add-items-modal" title="Add Items">
+						<span class="glyphicon glyphicon-plus"></span>
+						<span class="tool-text">Add Items</span>
+					</button>
+				</div>
+			</div>
+		</aside>
+		<section id="planner-stage">
+			<div id="tips">
+				<h2>Tips</h2>
+				<h3> For 2D Floorplan: </h3>
+				<ul style="list-style-type:square;">
+					<li>To Draw walls, select the <span class="glyphicon glyphicon-pencil"></span> button and click to at starting of point to draw and reclick at the endpoint. Press ESC to stop drawing walls.</li>
+					<li>To Delete walls, select the <span class="glyphicon glyphicon-trash"></span> button and simply click on the wall, once highlighted in red</li>
+					<li>To Move walls, select the <span class="glyphicon glyphicon-move"></span> button and click and drag from a specific wall to extend it</li>
+				</ul>
+				<h3> For 3D Render: </h3>
+				<ul style="list-style-type:square;">
+					<li>To change wall/floor texture, click on the wall and floor that you would like to change and pick a texture from the dropdown box in the sub-menu</li>
+					<li>Use mouse, scroll wheel and arrow keys to operate the camera. To reset the camera click the '3D Render' button below</li>
+					<li>To add items, click the <span class="glyphicon glyphicon-plus"></span> button and select an item from the catalogue</li>
+				</ul>
+				<h3> To Reset your floorplan, select the "New Layout" button </h3>
+			</div>
+			<div id='2D-Floorplan' class='card'>
+				<div id="floorplanner" class='front'>
+					<canvas id="floorplanner-canvas"></canvas>
+				</div>
+
+				<div id="3D-Floorplan" class='back'>
+				</div>
+			</div>
+		</section>
+	</div>
 
 		<!-- Add Items -->
 		<div class="modal fade" id="add-items-modal" role="dialog">

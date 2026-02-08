@@ -11,6 +11,8 @@ body {
   height: 100%;
   background: radial-gradient(circle at 20% 20%, #1b2a3a 0%, #0a0f14 45%, #05070a 100%);
   color: #e6f1ff;
+  display: flex;
+  flex-direction: column;
 }
 
 div {
@@ -36,6 +38,47 @@ h1 {
   background: linear-gradient(135deg, rgba(10, 18, 26, 0.98) 0%, rgba(8, 12, 18, 0.98) 100%);
   border-bottom: 1px solid rgba(0, 210, 210, 0.25);
   box-shadow: inset 0 0 0 1px rgba(0, 210, 210, 0.08);
+}
+
+#workspace {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 16px;
+  padding: 16px;
+}
+
+#tool-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.rail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rail-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(173, 214, 234, 0.7);
+  padding-left: 6px;
+}
+
+#planner-stage {
+  position: relative;
+  min-height: 0;
+  border: 1px solid rgba(0, 210, 210, 0.2);
+  border-radius: 16px;
+  background: rgba(6, 10, 14, 0.65);
+  box-shadow: inset 0 0 0 1px rgba(0, 210, 210, 0.08);
+  overflow: hidden;
 }
 
 .project-fields {
@@ -183,14 +226,9 @@ button {
 }
 
 #switch-viewer {
-  position: fixed;
-  left: 16px;
-  top: 250px;
-  width: 180px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  z-index: 1200;
 }
 
 #camera-controls {
@@ -199,25 +237,18 @@ button {
 
 #tips {
   position: relative;
-  left: 0;
-  top: 0px;
   width: 100%;
-  padding-top: 8px;
-  background: linear-gradient(180deg, rgba(6, 10, 14, 0.6) 0%, rgba(6, 10, 14, 0) 100%);
-  padding-left: 220px;
+  padding: 16px 24px 10px;
+  background: linear-gradient(180deg, rgba(6, 10, 14, 0.85) 0%, rgba(6, 10, 14, 0) 100%);
+  border-bottom: 1px solid rgba(0, 210, 210, 0.2);
 }
 
 #floorplanner, #viewer {
   position: absolute;
-  width: calc(100vw - 220px);
-  left: 220px;
+  inset: 0;
 }
 
 #floorplanner-controls {
-  position: fixed;
-  left: 16px;
-  top: 120px;
-  width: 180px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -225,10 +256,6 @@ button {
 }
 
 #main-controls {
-  position: fixed;
-  left: 16px;
-  top: 120px;
-  width: 180px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -247,20 +274,31 @@ button {
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
   letter-spacing: 0.03em;
   text-transform: uppercase;
+  padding: 10px 12px;
 }
 
 .tool-panel .btn .glyphicon {
   font-size: 14px;
 }
 
-.tool-panel-view .btn {
-  text-align: left;
-  justify-content: flex-start;
-  padding-left: 12px;
+.tool-text {
+  font-size: 12px;
+}
+
+#planner-stage .card {
+  position: absolute;
+  inset: 120px 0 0 0;
+}
+
+#floorplanner-canvas,
+#three-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .inventory-content {
@@ -270,7 +308,11 @@ button {
 
 .modal {
   overflow: auto;
-  z-index: 2000;
+  z-index: 5000;
+}
+
+.modal-backdrop {
+  z-index: 4500;
 }
 
 .modal-dialog {
@@ -283,24 +325,17 @@ button {
 }
 
 @media (max-width: 900px) {
-  #tips {
-    padding-left: 0;
+  #workspace {
+    grid-template-columns: 1fr;
   }
 
-  #floorplanner, #viewer {
-    width: 100vw;
-    left: 0;
-  }
-
-  #floorplanner-controls,
-  #main-controls,
-  #switch-viewer {
-    position: relative;
-    left: 0;
-    top: 0;
-    width: auto;
+  #tool-rail {
     flex-direction: row;
     flex-wrap: wrap;
+  }
+
+  #planner-stage .card {
+    inset: 140px 0 0 0;
   }
 }
 
