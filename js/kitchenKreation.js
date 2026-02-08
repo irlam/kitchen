@@ -15529,6 +15529,11 @@ functions return important math algorithms required to constructs lines/walls in
       this_.wall = edge.wall;
       this_.front = edge.front;
 
+      // Defaults to prevent undefined material colors in newer Three.js.
+      this_.baseColor = typeof wallColor !== "undefined" ? wallColor : 0xffffff;
+      this_.fillerColor = this_.baseColor;
+      this_.sideColor = this_.baseColor;
+
       this_.planes = [];
       this_.phantomPlanes = [];
       this_.basePlanes = []; // always visible
