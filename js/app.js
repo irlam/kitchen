@@ -422,6 +422,93 @@ function addKitchenKreationListeners(KitchenKreation) {
   });
 }
 
+var STORAGE_KEY = "kitchenKreation.project.v1";
+
+function buildSerializedProject(KitchenKreation) {
+  var floorplan = KitchenKreation.model.floorplan;
+  var corners = {};
+  floorplan.getCorners().forEach(function (corner) {
+    corners[corner.id] = { x: corner.x, y: corner.y };
+  });
+  var walls = floorplan.getWalls().map(function (wall) {
+    return {
+      corner1: wall.start.id,
+      corner2: wall.end.id,
+      frontTexture: wall.frontTexture,
+      backTexture: wall.backTexture,
+    };
+  });
+  var items = KitchenKreation.model.scene.getItems().map(function (item) {
+    var metadata = item.getMetaData();
+    metadata.resizable = item.resizable;
+    return metadata;
+  });
+
+  var floorplanData = {
+    corners: corners,
+    walls: walls,
+    wallTextures: [],
+    floorTextures: {},
+    newFloorTextures: floorplan.floorTextures || {},
+  };
+  if (floorplan.frame) {
+    floorplanData.frame = {
+      x: floorplan.frame.x,
+      y: floorplan.frame.y,
+      transparency: floorplan.frame.transparency,
+      anchorX: floorplan.frame.anchorX,
+      anchorY: floorplan.frame.anchorY,
+      width: floorplan.frame.width,
+      height: floorplan.frame.height,
+      url: floorplan.frame.url,
+    };
+  }
+
+  return JSON.stringify({ floorplan: floorplanData, items: items });
+}
+
+function loadSavedProject(KitchenKreation) {
+  var saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) {
+    return false;
+  }
+  KitchenKreation.model.loadSerialized(saved);
+  return true;
+}
+
+function setupAutoSave(KitchenKreation) {
+  var saveTimer = null;
+
+  function scheduleSave() {
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+    }
+    saveTimer = setTimeout(function () {
+      localStorage.setItem(
+        STORAGE_KEY,
+        buildSerializedProject(KitchenKreation)
+      );
+    }, 300);
+  }
+
+  KitchenKreation.model.floorplan.addEventListener(
+    KKJS.EVENT_UPDATED,
+    scheduleSave
+  );
+  KitchenKreation.model.scene.addEventListener(
+    KKJS.EVENT_ITEM_LOADED,
+    scheduleSave
+  );
+  KitchenKreation.model.scene.addEventListener(
+    KKJS.EVENT_ITEM_DELETED,
+    scheduleSave
+  );
+  KitchenKreation.three.addEventListener(
+    KKJS.EVENT_ITEM_UNSELECTED,
+    scheduleSave
+  );
+}
+
 function getGlobalPropertiesFolder(gui, global) {
   var f = gui.addFolder("Unit Of Measurement");
   var ficontrol = f
@@ -599,9 +686,12 @@ $(document).ready(function () {
 
   var myhome =
     '{"floorplan":{"corners":{"f90da5e3-9e0e-eba7-173d-eb0b071e838e":{"x":-212,"y":212},"da026c08-d76a-a944-8e7b-096b752da9ed":{"x":212,"y":212},"4e3d65cb-54c0-0681-28bf-bddcc7bdb571":{"x":212,"y":-212},"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2":{"x":-212,"y":-212}},"walls":[{"corner1":"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2","corner2":"f90da5e3-9e0e-eba7-173d-eb0b071e838e","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"f90da5e3-9e0e-eba7-173d-eb0b071e838e","corner2":"da026c08-d76a-a944-8e7b-096b752da9ed","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"da026c08-d76a-a944-8e7b-096b752da9ed","corner2":"4e3d65cb-54c0-0681-28bf-bddcc7bdb571","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"4e3d65cb-54c0-0681-28bf-bddcc7bdb571","corner2":"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}}],"wallTextures":[],"floorTextures":{},"newFloorTextures":{}},"items":[]}';
-  KitchenKreation.model.loadSerialized(myhome);
+  if (!loadSavedProject(KitchenKreation)) {
+    KitchenKreation.model.loadSerialized(myhome);
+  }
 
   addKitchenKreationListeners(KitchenKreation);
+  setupAutoSave(KitchenKreation);
   datGUI(KitchenKreation.three, KitchenKreation.floorplanner);
 
   $("#showAddItems").hide();
