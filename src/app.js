@@ -1198,8 +1198,7 @@ $(document).ready(function () {
   setupAutoSave(KitchenKreation);
   datGUI(KitchenKreation.three, KitchenKreation.floorplanner);
 
-  $("#showAddItems").hide();
-  $("#viewcontrols").hide();
+  $("#showAddItems").show();
   $(".card").flip({
     trigger: "manual",
     axis: "x",
@@ -1208,8 +1207,7 @@ $(document).ready(function () {
     $(".card").flip(false);
     $(this).addClass("active");
     $("#showDesign").removeClass("active");
-    $("#showAddItems").hide();
-    $("#viewcontrols").hide();
+    $("#add-items-modal").modal("hide");
     KitchenKreation.three.pauseTheRendering(true);
     KitchenKreation.three.getController().setSelectedObject(null);
   });
@@ -1219,8 +1217,6 @@ $(document).ready(function () {
     $(".card").flip(true);
     $(this).addClass("active");
     $("#showFloorPlan").removeClass("active");
-    $("#showAddItems").show();
-    $("#viewcontrols").show();
 
     KitchenKreation.three.pauseTheRendering(false);
   });
