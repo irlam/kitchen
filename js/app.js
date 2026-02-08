@@ -375,6 +375,9 @@ var WallProperties = function () {
   };
 };
 
+// FloorProperties was missing; reuse WallProperties behavior for floors.
+var FloorProperties = WallProperties;
+
 function addKitchenKreationListeners(KitchenKreation) {
   var three = KitchenKreation.three;
 

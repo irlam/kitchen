@@ -1,8 +1,15 @@
 import * as THREE from "three";
 
-if (!THREE.Quaternion.prototype.inverse && THREE.Quaternion.prototype.invert) {
+if (THREE.Quaternion.prototype.invert) {
   // Three r124+ renamed inverse() to invert(); keep legacy calls working.
   THREE.Quaternion.prototype.inverse = THREE.Quaternion.prototype.invert;
+}
+
+if (THREE.Matrix4.prototype.getInverse) {
+  // Three r124+ prefers invert(); provide a compatible getInverse().
+  THREE.Matrix4.prototype.getInverse = function (matrix) {
+    return this.copy(matrix).invert();
+  };
 }
 
 var KKJS = (function (exports) {
@@ -16420,9 +16427,8 @@ functions return important math algorithms required to constructs lines/walls in
 
           this.dirLight.shadow.camera.far = this.height + this.tol;
           this.dirLight.shadow.bias = -0.0001;
-          this.dirLight.shadowDarkness = 0.2;
+          // Removed deprecated shadow* properties for newer Three.js.
           this.dirLight.visible = true;
-          this.dirLight.shadowCameraVisible = false;
 
           this.scene.add(this.dirLight);
           this.scene.add(this.dirLight.target);
