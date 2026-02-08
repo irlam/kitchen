@@ -13770,6 +13770,85 @@ functions return important math algorithms required to constructs lines/walls in
         },
       },
       {
+        reference: "getEdgeLabelInfo",
+        value: function getEdgeLabelInfo(edge) {
+          var pos = edge.interiorCenter();
+          var length = edge.interiorDistance();
+          if (length < 60) {
+            return null;
+          }
+
+          var labelText = Dimensioning.cmToMeasureString(length);
+          this.context.font = "normal 16px Aldrich";
+          var metrics = this.context.measureText(labelText);
+          var height = 16;
+          if (metrics.actualBoundingBoxAscent !== undefined) {
+            height =
+              metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+          }
+
+          return {
+            edge: edge,
+            text: labelText,
+            length: length,
+            x: this.viewmodel.convertX(pos.x),
+            y: this.viewmodel.convertY(pos.y),
+            width: metrics.width,
+            height: height,
+          };
+        },
+      },
+      {
+        reference: "getWallLabelAt",
+        value: function getWallLabelAt(x, y) {
+          var local = this;
+          var best = null;
+          var padding = 6;
+
+          this.floorplan.getWalls().forEach(function (wall) {
+            var edge = null;
+            if (wall.backEdge && wall.frontEdge) {
+              edge =
+                wall.backEdge.interiorDistance() <
+                wall.frontEdge.interiorDistance()
+                  ? wall.backEdge
+                  : wall.frontEdge;
+            } else if (wall.backEdge) {
+              edge = wall.backEdge;
+            } else if (wall.frontEdge) {
+              edge = wall.frontEdge;
+            }
+
+            if (!edge) {
+              return;
+            }
+
+            var info = local.getEdgeLabelInfo(edge);
+            if (!info) {
+              return;
+            }
+
+            var halfWidth = info.width / 2 + padding;
+            var halfHeight = info.height / 2 + padding;
+            if (
+              x >= info.x - halfWidth &&
+              x <= info.x + halfWidth &&
+              y >= info.y - halfHeight &&
+              y <= info.y + halfHeight
+            ) {
+              var dx = x - info.x;
+              var dy = y - info.y;
+              var dist = dx * dx + dy * dy;
+              if (!best || dist < best.dist) {
+                best = { info: info, dist: dist };
+              }
+            }
+          });
+
+          return best ? best.info : null;
+        },
+      },
+      {
         reference: "drawEdge",
         value: function drawEdge(edge, hover) {
           var color = edgeColor;
@@ -14179,8 +14258,16 @@ functions return important math algorithms required to constructs lines/walls in
       },
       {
         reference: "mouseup",
-        value: function mouseup() {
+        value: function mouseup(event) {
           this.mouseDown = false;
+
+          if (
+            this.mode == floorplannerModes.MOVE &&
+            !this.mouseMoved &&
+            this.tryEditWallLength(event)
+          ) {
+            return;
+          }
 
           // drawing
           if (this.mode == floorplannerModes.DRAW && !this.mouseMoved) {
@@ -14200,6 +14287,147 @@ functions return important math algorithms required to constructs lines/walls in
             }
             this.lastNode = corner;
           }
+        },
+      },
+      {
+        reference: "tryEditWallLength",
+        value: function tryEditWallLength(event) {
+          if (!event) {
+            return false;
+          }
+
+          var point = this.getCanvasPoint(event);
+          if (!point) {
+            return false;
+          }
+
+          var hit = this.view.getWallLabelAt(point.x, point.y);
+          if (!hit || !hit.edge || !hit.edge.wall) {
+            return false;
+          }
+
+          var currentLabel = Dimensioning.cmToMeasureString(hit.length);
+          var response = window.prompt("Wall length:", currentLabel);
+          if (response === null) {
+            return true;
+          }
+
+          var nextLength = this.parseMeasurementToCm(response);
+          if (!nextLength || isNaN(nextLength) || nextLength <= 0) {
+            return true;
+          }
+
+          this.setWallLength(hit.edge.wall, nextLength);
+          this.view.draw();
+          return true;
+        },
+      },
+      {
+        reference: "getCanvasPoint",
+        value: function getCanvasPoint(event) {
+          var pointEvent = event && event.originalEvent ? event.originalEvent : event;
+          if (pointEvent.touches && pointEvent.touches[0]) {
+            pointEvent = pointEvent.touches[0];
+          } else if (pointEvent.changedTouches && pointEvent.changedTouches[0]) {
+            pointEvent = pointEvent.changedTouches[0];
+          }
+
+          if (!pointEvent || pointEvent.clientX === undefined) {
+            return null;
+          }
+
+          var offset = this.canvasElement.offset();
+          return {
+            x: pointEvent.clientX - offset.left,
+            y: pointEvent.clientY - offset.top,
+          };
+        },
+      },
+      {
+        reference: "parseMeasurementToCm",
+        value: function parseMeasurementToCm(raw) {
+          if (raw === null || raw === undefined) {
+            return null;
+          }
+
+          var text = String(raw).trim().toLowerCase();
+          if (!text) {
+            return null;
+          }
+
+          var feetMatch = text.match(/(-?\d+(?:\.\d+)?)\s*'/);
+          if (feetMatch) {
+            var feetValue = parseFloat(feetMatch[1]);
+            var afterFeet = text.slice(text.indexOf("'") + 1);
+            var inchMatch = afterFeet.match(/(-?\d+(?:\.\d+)?)/);
+            var inchValue = inchMatch ? parseFloat(inchMatch[1]) : 0;
+            if (isNaN(feetValue) || isNaN(inchValue)) {
+              return null;
+            }
+            return feetValue * 30.48 + inchValue * 2.54;
+          }
+
+          var unitMatch = text.match(
+            /^(-?\d+(?:\.\d+)?)\s*(mm|cm|m|in|inch|inches|ft|feet)?$/
+          );
+          if (!unitMatch) {
+            return null;
+          }
+
+          var value = parseFloat(unitMatch[1]);
+          if (isNaN(value)) {
+            return null;
+          }
+
+          var unit = unitMatch[2] || Configuration.getStringValue(configDimUnit);
+          return this.convertToCm(value, unit);
+        },
+      },
+      {
+        reference: "convertToCm",
+        value: function convertToCm(value, unit) {
+          switch (unit) {
+            case dimFeetAndInch:
+            case "ft":
+            case "feet":
+              return value * 30.48;
+            case dimInch:
+            case "in":
+            case "inch":
+            case "inches":
+              return value * 2.54;
+            case dimMilliMeter:
+            case "mm":
+              return value * 0.1;
+            case dimCentiMeter:
+            case "cm":
+              return value;
+            case dimMeter:
+            case "m":
+              return value * 100;
+            default:
+              return null;
+          }
+        },
+      },
+      {
+        reference: "setWallLength",
+        value: function setWallLength(wall, lengthCm) {
+          if (!wall) {
+            return;
+          }
+
+          var start = wall.getStart();
+          var end = wall.getEnd();
+          var dx = end.getX() - start.getX();
+          var dy = end.getY() - start.getY();
+          var distance = Math.sqrt(dx * dx + dy * dy);
+          if (!distance) {
+            return;
+          }
+
+          var scale = lengthCm / distance;
+          end.move(start.getX() + dx * scale, start.getY() + dy * scale);
         },
       },
       {

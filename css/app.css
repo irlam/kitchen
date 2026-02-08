@@ -447,6 +447,61 @@ button {
   color: #9fffe8;
 }
 
+.dg {
+  font: 11px/1.2 "Aldrich", sans-serif;
+  text-shadow: none;
+}
+
+.dg.main {
+  background: rgba(8, 14, 20, 0.95);
+  border: 1px solid rgba(0, 210, 210, 0.25);
+  box-shadow: inset 0 0 0 1px rgba(0, 210, 210, 0.08), 0 12px 30px rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.dg .title {
+  background: linear-gradient(120deg, rgba(12, 18, 26, 0.95), rgba(7, 14, 20, 0.95));
+  color: #c9f3ff;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(0, 210, 210, 0.2);
+}
+
+.dg .cr {
+  border-left: 1px solid rgba(0, 210, 210, 0.08);
+  border-bottom: 1px solid rgba(0, 210, 210, 0.08);
+}
+
+.dg .property-name {
+  color: rgba(210, 238, 255, 0.85);
+}
+
+.dg .c input[type="text"],
+.dg .c input[type="number"],
+.dg .c select {
+  background: rgba(8, 14, 20, 0.9);
+  color: #e8f8ff;
+  border: 1px solid rgba(0, 210, 210, 0.3);
+  border-radius: 6px;
+  padding: 2px 6px;
+  box-shadow: inset 0 0 0 1px rgba(0, 210, 210, 0.1);
+}
+
+.dg .c input[type="checkbox"] {
+  accent-color: #5fffea;
+}
+
+.dg .slider {
+  background: rgba(10, 18, 26, 0.8);
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(0, 210, 210, 0.2);
+}
+
+.dg .slider-fg {
+  background: linear-gradient(120deg, #5fffea 0%, #57d0ff 100%);
+}
+
 .dg select {
-  color: black;
+  color: #e8f8ff;
 }
