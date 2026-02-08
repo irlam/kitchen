@@ -8,6 +8,9 @@ var gui = null;
 var globalPropFolder = null;
 var itemPropFolder = null;
 var wallPropFolder = null;
+
+var BASE_LAYOUT_JSON =
+  '{"floorplan":{"corners":{"f90da5e3-9e0e-eba7-173d-eb0b071e838e":{"x":-212,"y":212},"da026c08-d76a-a944-8e7b-096b752da9ed":{"x":212,"y":212},"4e3d65cb-54c0-0681-28bf-bddcc7bdb571":{"x":212,"y":-212},"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2":{"x":-212,"y":-212}},"walls":[{"corner1":"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2","corner2":"f90da5e3-9e0e-eba7-173d-eb0b071e838e","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"f90da5e3-9e0e-eba7-173d-eb0b071e838e","corner2":"da026c08-d76a-a944-8e7b-096b752da9ed","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"da026c08-d76a-a944-8e7b-096b752da9ed","corner2":"4e3d65cb-54c0-0681-28bf-bddcc7bdb571","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"4e3d65cb-54c0-0681-28bf-bddcc7bdb571","corner2":"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}}],"wallTextures":[],"floorTextures":{},"newFloorTextures":{}},"items":[]}';
 /*
  * Floorplanner controls
  */
@@ -102,9 +105,7 @@ var mainControls = function (KitchenKreation) {
   var KitchenKreation = KitchenKreation;
 
   function newDesign() {
-    KitchenKreation.model.loadSerialized(
-      '{"floorplan":{"corners":{"f90da5e3-9e0e-eba7-173d-eb0b071e838e":{"x":-212,"y":212},"da026c08-d76a-a944-8e7b-096b752da9ed":{"x":212,"y":212},"4e3d65cb-54c0-0681-28bf-bddcc7bdb571":{"x":212,"y":-212},"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2":{"x":-212,"y":-212}},"walls":[{"corner1":"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2","corner2":"f90da5e3-9e0e-eba7-173d-eb0b071e838e","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"f90da5e3-9e0e-eba7-173d-eb0b071e838e","corner2":"da026c08-d76a-a944-8e7b-096b752da9ed","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"da026c08-d76a-a944-8e7b-096b752da9ed","corner2":"4e3d65cb-54c0-0681-28bf-bddcc7bdb571","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"4e3d65cb-54c0-0681-28bf-bddcc7bdb571","corner2":"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}}],"wallTextures":[],"floorTextures":{},"newFloorTextures":{}},"items":[]}'
-    );
+    KitchenKreation.model.loadSerialized(BASE_LAYOUT_JSON);
   }
 
   function init() {
@@ -116,6 +117,7 @@ var mainControls = function (KitchenKreation) {
 };
 
 var META_KEY = "kitchenKreation.projectMeta.v1";
+var PROJECT_LIST_KEY = "kitchenKreation.projectList.v1";
 var HISTORY_LIMIT = 25;
 var projectHistory = [];
 var redoHistory = [];
@@ -164,6 +166,89 @@ function loadProjectMeta() {
   } catch (error) {
     setProjectMeta(null);
   }
+}
+
+function getProjectList() {
+  var raw = localStorage.getItem(PROJECT_LIST_KEY);
+  if (!raw) {
+    return {};
+  }
+  try {
+    return JSON.parse(raw) || {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function saveProjectList(list) {
+  localStorage.setItem(PROJECT_LIST_KEY, JSON.stringify(list));
+}
+
+function refreshProjectListUI(selectedName) {
+  var list = getProjectList();
+  var select = document.getElementById("projectList");
+  if (!select) {
+    return;
+  }
+  select.innerHTML = "<option value=\"\">Current (unsaved)</option>";
+  Object.keys(list)
+    .sort(function (a, b) {
+      return a.localeCompare(b);
+    })
+    .forEach(function (name) {
+      var option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      select.appendChild(option);
+    });
+  if (selectedName && list[selectedName]) {
+    select.value = selectedName;
+  }
+}
+
+function saveProjectToList(KitchenKreation) {
+  var projectName = (getProjectMeta().projectName || "").trim();
+  if (!projectName) {
+    alert("Add a Project name before saving.");
+    return;
+  }
+  var snapshot = buildSerializedProject(KitchenKreation);
+  var list = getProjectList();
+  list[projectName] = {
+    snapshot: snapshot,
+    meta: getProjectMeta(),
+    updatedAt: new Date().toISOString(),
+  };
+  saveProjectList(list);
+  localStorage.setItem(STORAGE_KEY, snapshot);
+  refreshProjectListUI(projectName);
+  updateAutosaveStatus("Saved " + new Date().toLocaleTimeString());
+}
+
+function loadProjectFromList(KitchenKreation, name) {
+  var list = getProjectList();
+  var entry = list[name];
+  if (!entry) {
+    return;
+  }
+  KitchenKreation.model.loadSerialized(entry.snapshot);
+  setProjectMeta(entry.meta || {});
+  localStorage.setItem(STORAGE_KEY, entry.snapshot);
+  saveProjectMeta();
+  projectHistory = [entry.snapshot];
+  redoHistory = [];
+  updateHistoryButtons();
+  updateAutosaveStatus("Loaded " + new Date().toLocaleTimeString());
+}
+
+function deleteProjectFromList(name) {
+  var list = getProjectList();
+  if (!list[name]) {
+    return;
+  }
+  delete list[name];
+  saveProjectList(list);
+  refreshProjectListUI("");
 }
 
 function escapeHtml(value) {
@@ -812,6 +897,25 @@ function loadSavedProject(KitchenKreation) {
   return true;
 }
 
+function clearCurrentProject(KitchenKreation) {
+  KitchenKreation.model.loadSerialized(BASE_LAYOUT_JSON);
+  setProjectMeta({
+    projectName: "",
+    clientName: "",
+    projectLocation: "",
+    designerName: "",
+    projectNotes: "",
+  });
+  saveProjectMeta();
+  var snapshot = buildSerializedProject(KitchenKreation);
+  localStorage.setItem(STORAGE_KEY, snapshot);
+  projectHistory = [snapshot];
+  redoHistory = [];
+  updateHistoryButtons();
+  refreshProjectListUI("");
+  updateAutosaveStatus("Cleared " + new Date().toLocaleTimeString());
+}
+
 function setupAutoSave(KitchenKreation) {
   var saveTimer = null;
 
@@ -1081,11 +1185,10 @@ $(document).ready(function () {
 
   loadProjectMeta();
   updateAutosaveStatus("Auto-save: ready");
+  refreshProjectListUI((getProjectMeta().projectName || "").trim());
 
-  var myhome =
-    '{"floorplan":{"corners":{"f90da5e3-9e0e-eba7-173d-eb0b071e838e":{"x":-212,"y":212},"da026c08-d76a-a944-8e7b-096b752da9ed":{"x":212,"y":212},"4e3d65cb-54c0-0681-28bf-bddcc7bdb571":{"x":212,"y":-212},"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2":{"x":-212,"y":-212}},"walls":[{"corner1":"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2","corner2":"f90da5e3-9e0e-eba7-173d-eb0b071e838e","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"f90da5e3-9e0e-eba7-173d-eb0b071e838e","corner2":"da026c08-d76a-a944-8e7b-096b752da9ed","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"da026c08-d76a-a944-8e7b-096b752da9ed","corner2":"4e3d65cb-54c0-0681-28bf-bddcc7bdb571","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"4e3d65cb-54c0-0681-28bf-bddcc7bdb571","corner2":"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}}],"wallTextures":[],"floorTextures":{},"newFloorTextures":{}},"items":[]}';
   if (!loadSavedProject(KitchenKreation)) {
-    KitchenKreation.model.loadSerialized(myhome);
+    KitchenKreation.model.loadSerialized(BASE_LAYOUT_JSON);
   }
 
   pushHistory(buildSerializedProject(KitchenKreation));
@@ -1170,6 +1273,34 @@ $(document).ready(function () {
 
   $("#redoAction").click(function () {
     redoHistoryAction(KitchenKreation);
+  });
+
+  $("#saveProject").click(function () {
+    saveProjectToList(KitchenKreation);
+  });
+
+  $("#deleteProject").click(function () {
+    var name = $("#projectList").val();
+    if (!name) {
+      return;
+    }
+    if (confirm("Delete saved project '" + name + "'?")) {
+      deleteProjectFromList(name);
+    }
+  });
+
+  $("#clearProject").click(function () {
+    if (confirm("Clear the current project layout and notes?")) {
+      clearCurrentProject(KitchenKreation);
+    }
+  });
+
+  $("#projectList").on("change", function () {
+    var name = $(this).val();
+    if (!name) {
+      return;
+    }
+    loadProjectFromList(KitchenKreation, name);
   });
 
   var metaTimer = null;

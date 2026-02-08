@@ -50,7 +50,22 @@
 		</div>
 		<div class="project-actions">
 			<div id="autosaveStatus">Auto-save: ready</div>
+			<div class="project-select">
+				<label for="projectList">Project List</label>
+				<select id="projectList">
+					<option value="">Current (unsaved)</option>
+				</select>
+			</div>
 			<div class="project-buttons">
+				<button id="saveProject" class="btn btn-default btn-sm" title="Save Project">
+					<span class="glyphicon glyphicon-floppy-disk"></span> Save Project
+				</button>
+				<button id="deleteProject" class="btn btn-default btn-sm" title="Delete Project">
+					<span class="glyphicon glyphicon-trash"></span> Delete
+				</button>
+				<button id="clearProject" class="btn btn-default btn-sm" title="Clear Project">
+					<span class="glyphicon glyphicon-erase"></span> Clear
+				</button>
 				<button id="undoAction" class="btn btn-default btn-sm" title="Undo">
 					<span class="glyphicon glyphicon-chevron-left"></span> Undo
 				</button>
