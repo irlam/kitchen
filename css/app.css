@@ -32,21 +32,35 @@ h1 {
 
 #project-bar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-  padding: 8px 12px 10px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 12px;
   background: linear-gradient(135deg, rgba(10, 18, 26, 0.98) 0%, rgba(8, 12, 18, 0.98) 100%);
   border-bottom: 1px solid rgba(0, 210, 210, 0.25);
   box-shadow: inset 0 0 0 1px rgba(0, 210, 210, 0.08);
+  border-radius: 14px;
 }
 
-#workspace {
+#app-shell {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 200px 1fr;
+  grid-template-columns: 340px 1fr;
+  gap: 16px;
+  padding: 12px 16px 16px;
+}
+
+#side-panel {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
-  padding: 12px;
+  min-height: 0;
+}
+
+#main-panel {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 #tool-rail {
@@ -100,22 +114,21 @@ h1 {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 
 .project-fields {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 10px;
-  flex: 2 1 520px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .project-field {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 140px;
-  flex: 1 1 160px;
+  min-width: 0;
 }
 
 .project-field label {
@@ -144,9 +157,8 @@ h1 {
 .project-actions {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  align-items: flex-end;
-  flex: 1 1 260px;
+  gap: 6px;
+  align-items: stretch;
 }
 
 .project-select {
@@ -154,7 +166,7 @@ h1 {
   flex-direction: column;
   gap: 4px;
   width: 100%;
-  align-items: flex-end;
+  align-items: stretch;
 }
 
 .project-select label {
@@ -166,7 +178,7 @@ h1 {
 
 #projectList {
   width: 100%;
-  max-width: 240px;
+  max-width: none;
   border-radius: 6px;
   border: 1px solid rgba(0, 210, 210, 0.35);
   background: rgba(8, 14, 20, 0.9);
@@ -176,12 +188,13 @@ h1 {
 }
 
 .project-buttons {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 6px;
 }
 
 #autosaveStatus {
+  align-self: flex-start;
   font-size: 10px;
   color: #0a1f21;
   background: linear-gradient(120deg, #9fffe8 0%, #5fffea 50%, #67cfff 100%);
@@ -207,7 +220,7 @@ h1 {
 
 .project-notes textarea {
   resize: vertical;
-  min-height: 40px;
+  min-height: 60px;
 }
 
 h2 {
@@ -261,10 +274,10 @@ button {
 #tips {
   position: relative;
   width: 100%;
-  padding: 12px 18px 8px;
+  padding: 10px 16px 8px;
   background: linear-gradient(180deg, rgba(6, 10, 14, 0.85) 0%, rgba(6, 10, 14, 0) 100%);
   border-bottom: 1px solid rgba(0, 210, 210, 0.2);
-  max-height: 110px;
+  max-height: 90px;
   overflow: auto;
 }
 
@@ -318,7 +331,7 @@ button {
 #planner-stage .card {
   position: relative;
   flex: 1;
-  min-height: 260px;
+  min-height: 420px;
 }
 
 #floorplanner-canvas,
@@ -379,23 +392,31 @@ button {
 }
 
 @media (max-width: 1100px) {
+  #app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .project-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .project-buttons {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .docked-modal .modal-dialog {
     width: 280px;
   }
 }
 
 @media (max-width: 900px) {
-  #workspace {
-    grid-template-columns: 1fr;
-  }
-
   #tool-rail {
     flex-direction: row;
     flex-wrap: wrap;
   }
 
   #planner-stage .card {
-    min-height: 220px;
+    min-height: 260px;
   }
 
   .docked-modal .modal-dialog {
