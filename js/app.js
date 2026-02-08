@@ -115,6 +115,57 @@ var mainControls = function (KitchenKreation) {
   init();
 };
 
+var META_KEY = "kitchenKreation.projectMeta.v1";
+var HISTORY_LIMIT = 25;
+var projectHistory = [];
+var redoHistory = [];
+var historyApplying = false;
+
+function updateAutosaveStatus(text) {
+  var status = document.getElementById("autosaveStatus");
+  if (status) {
+    status.textContent = text;
+  }
+}
+
+function getProjectMeta() {
+  return {
+    projectName: $("#projectName").val() || "",
+    clientName: $("#clientName").val() || "",
+    projectLocation: $("#projectLocation").val() || "",
+    designerName: $("#designerName").val() || "",
+    projectNotes: $("#projectNotes").val() || "",
+  };
+}
+
+function setProjectMeta(meta) {
+  if (!meta) {
+    return;
+  }
+  $("#projectName").val(meta.projectName || "");
+  $("#clientName").val(meta.clientName || "");
+  $("#projectLocation").val(meta.projectLocation || "");
+  $("#designerName").val(meta.designerName || "");
+  $("#projectNotes").val(meta.projectNotes || "");
+}
+
+function saveProjectMeta() {
+  localStorage.setItem(META_KEY, JSON.stringify(getProjectMeta()));
+  updateAutosaveStatus("Saved " + new Date().toLocaleTimeString());
+}
+
+function loadProjectMeta() {
+  var raw = localStorage.getItem(META_KEY);
+  if (!raw) {
+    return;
+  }
+  try {
+    setProjectMeta(JSON.parse(raw));
+  } catch (error) {
+    setProjectMeta(null);
+  }
+}
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -147,30 +198,47 @@ function buildItemsTable(KitchenKreation) {
     return "<p>No items placed.</p>";
   }
 
-  var rows = items
-    .map(function (item) {
-      var meta = item.getMetaData();
-      var name = escapeHtml(meta.item_name || "Item");
-      var type = escapeHtml(getItemTypeLabel(meta.item_type));
-      var width = escapeHtml(formatDimension(item.getWidth()));
-      var height = escapeHtml(formatDimension(item.getHeight()));
-      var depth = escapeHtml(formatDimension(item.getDepth()));
+  var grouped = {};
+  items.forEach(function (item) {
+    var meta = item.getMetaData();
+    var name = meta.item_name || "Item";
+    var type = getItemTypeLabel(meta.item_type);
+    var key = name + "|" + type;
+    if (!grouped[key]) {
+      grouped[key] = {
+        name: name,
+        type: type,
+        count: 0,
+        width: item.getWidth(),
+        height: item.getHeight(),
+        depth: item.getDepth(),
+      };
+    }
+    grouped[key].count += 1;
+  });
+
+  var rows = Object.keys(grouped)
+    .map(function (key) {
+      var entry = grouped[key];
       return (
         "<tr>" +
         "<td>" +
-        name +
+        escapeHtml(entry.name) +
         "</td>" +
         "<td>" +
-        type +
+        escapeHtml(entry.type) +
         "</td>" +
         "<td>" +
-        width +
+        entry.count +
         "</td>" +
         "<td>" +
-        height +
+        escapeHtml(formatDimension(entry.width)) +
         "</td>" +
         "<td>" +
-        depth +
+        escapeHtml(formatDimension(entry.height)) +
+        "</td>" +
+        "<td>" +
+        escapeHtml(formatDimension(entry.depth)) +
         "</td>" +
         "</tr>"
       );
@@ -179,10 +247,82 @@ function buildItemsTable(KitchenKreation) {
 
   return (
     "<table>" +
-    "<thead><tr><th>Item</th><th>Type</th><th>W</th><th>H</th><th>D</th></tr></thead>" +
+    "<thead><tr><th>Item</th><th>Type</th><th>Qty</th><th>W</th><th>H</th><th>D</th></tr></thead>" +
     "<tbody>" +
     rows +
     "</tbody></table>"
+  );
+}
+
+function computeRoomArea(room) {
+  var points = room.interiorCorners || [];
+  if (points.length < 3) {
+    return 0;
+  }
+  var sum = 0;
+  for (var i = 0; i < points.length; i++) {
+    var p1 = points[i];
+    var p2 = points[(i + 1) % points.length];
+    sum += p1.x * p2.y - p2.x * p1.y;
+  }
+  return Math.abs(sum) / 2;
+}
+
+function buildSummaryTable(KitchenKreation) {
+  var floorplan = KitchenKreation.model.floorplan;
+  var rooms = floorplan.getRooms();
+  var walls = floorplan.getWalls();
+  var items = KitchenKreation.model.scene.getItems();
+
+  var totalAreaCm2 = rooms.reduce(function (total, room) {
+    return total + computeRoomArea(room);
+  }, 0);
+  var totalWallLengthCm = walls.reduce(function (total, wall) {
+    var dx = wall.start.x - wall.end.x;
+    var dy = wall.start.y - wall.end.y;
+    return total + Math.hypot(dx, dy);
+  }, 0);
+
+  var totalAreaSqm = (totalAreaCm2 / 10000).toFixed(2);
+  var wallLength = KKJS.Dimensioning.cmToMeasureString(totalWallLengthCm);
+
+  return (
+    "<table>" +
+    "<tbody>" +
+    "<tr><th>Rooms</th><td>" +
+    rooms.length +
+    "</td><th>Walls</th><td>" +
+    walls.length +
+    "</td></tr>" +
+    "<tr><th>Items</th><td>" +
+    items.length +
+    "</td><th>Total Wall Length</th><td>" +
+    escapeHtml(wallLength) +
+    "</td></tr>" +
+    "<tr><th>Total Area</th><td colspan='3'>" +
+    totalAreaSqm +
+    " m²</td></tr>" +
+    "</tbody>" +
+    "</table>"
+  );
+}
+
+function buildMetaTable(meta) {
+  return (
+    "<table>" +
+    "<tbody>" +
+    "<tr><th>Project</th><td>" +
+    escapeHtml(meta.projectName || "") +
+    "</td><th>Client</th><td>" +
+    escapeHtml(meta.clientName || "") +
+    "</td></tr>" +
+    "<tr><th>Location</th><td>" +
+    escapeHtml(meta.projectLocation || "") +
+    "</td><th>Designer</th><td>" +
+    escapeHtml(meta.designerName || "") +
+    "</td></tr>" +
+    "</tbody>" +
+    "</table>"
   );
 }
 
@@ -196,14 +336,15 @@ function openPrintWindow(payload) {
   var html =
     "<!DOCTYPE html>" +
     "<html><head><meta charset='utf-8'>" +
+    "<link href='https://fonts.googleapis.com/css?family=Aldrich' rel='stylesheet'>" +
     "<title>Kitchen Kreation Plan</title>" +
     "<style>" +
     "@page { size: A4; margin: 12mm; }" +
-    "body { font-family: Arial, sans-serif; color: #111; }" +
-    "h1 { margin: 0 0 6px; }" +
+    "body { font-family: 'Aldrich', 'Trebuchet MS', sans-serif; color: #111; }" +
+    "h1 { margin: 0 0 6px; font-size: 22px; }" +
     "h2 { margin: 18px 0 8px; font-size: 16px; }" +
     ".meta { font-size: 12px; color: #555; }" +
-    ".image { width: 100%; border: 1px solid #ddd; }" +
+    ".image { width: 100%; border: 1px solid #ddd; border-radius: 6px; }" +
     "table { width: 100%; border-collapse: collapse; font-size: 12px; }" +
     "th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }" +
     ".notes { min-height: 80px; border: 1px dashed #bbb; padding: 8px; }" +
@@ -214,6 +355,10 @@ function openPrintWindow(payload) {
     " | Units: " +
     escapeHtml(payload.units) +
     "</div>" +
+    "<h2>Project Details</h2>" +
+    payload.metaTable +
+    "<h2>Summary</h2>" +
+    payload.summaryTable +
     "<h2>2D Floorplan</h2>" +
     "<img class='image' src='" +
     payload.floorplanImage +
@@ -225,7 +370,9 @@ function openPrintWindow(payload) {
     "<h2>Items</h2>" +
     payload.itemsTable +
     "<h2>Notes</h2>" +
-    "<div class='notes'></div>" +
+    "<div class='notes'>" +
+    escapeHtml(payload.projectNotes || "") +
+    "</div>" +
     "</body></html>";
 
   printWindow.document.open();
@@ -234,7 +381,9 @@ function openPrintWindow(payload) {
 
   printWindow.onload = function () {
     printWindow.focus();
-    printWindow.print();
+    if (payload.autoPrint) {
+      printWindow.print();
+    }
   };
 }
 
@@ -246,7 +395,8 @@ function captureElement(elementId) {
   });
 }
 
-function exportPrintablePlan(KitchenKreation) {
+function exportPrintablePlan(KitchenKreation, options) {
+  options = options || {};
   var wasDesignActive = $("#showDesign").hasClass("active");
   var wasPlanActive = $("#showFloorPlan").hasClass("active");
 
@@ -286,12 +436,17 @@ function exportPrintablePlan(KitchenKreation) {
         $("#showDesign").trigger("click");
       }
 
+      var projectMeta = getProjectMeta();
       openPrintWindow({
         floorplanImage: images.floorplanImage,
         renderImage: images.renderImage,
         itemsTable: buildItemsTable(KitchenKreation),
+        summaryTable: buildSummaryTable(KitchenKreation),
+        metaTable: buildMetaTable(projectMeta),
         timestamp: new Date().toLocaleString(),
         units: KKJS.Configuration.getStringValue(KKJS.configDimUnit) || "m",
+        projectNotes: projectMeta.projectNotes,
+        autoPrint: options.autoPrint !== false,
       });
     });
 }
@@ -665,10 +820,10 @@ function setupAutoSave(KitchenKreation) {
       clearTimeout(saveTimer);
     }
     saveTimer = setTimeout(function () {
-      localStorage.setItem(
-        STORAGE_KEY,
-        buildSerializedProject(KitchenKreation)
-      );
+      var snapshot = buildSerializedProject(KitchenKreation);
+      localStorage.setItem(STORAGE_KEY, snapshot);
+      pushHistory(snapshot);
+      updateAutosaveStatus("Saved " + new Date().toLocaleTimeString());
     }, 300);
   }
 
@@ -688,6 +843,65 @@ function setupAutoSave(KitchenKreation) {
     KKJS.EVENT_ITEM_UNSELECTED,
     scheduleSave
   );
+}
+
+function pushHistory(snapshot) {
+  if (historyApplying) {
+    return;
+  }
+  if (!snapshot) {
+    return;
+  }
+  if (projectHistory.length && projectHistory[projectHistory.length - 1] === snapshot) {
+    return;
+  }
+  projectHistory.push(snapshot);
+  if (projectHistory.length > HISTORY_LIMIT) {
+    projectHistory.shift();
+  }
+  redoHistory = [];
+  updateHistoryButtons();
+}
+
+function applyHistorySnapshot(KitchenKreation, snapshot) {
+  if (!snapshot) {
+    return;
+  }
+  historyApplying = true;
+  KitchenKreation.model.loadSerialized(snapshot);
+  historyApplying = false;
+  updateAutosaveStatus("Restored " + new Date().toLocaleTimeString());
+}
+
+function undoHistory(KitchenKreation) {
+  if (projectHistory.length < 2) {
+    return;
+  }
+  var current = projectHistory.pop();
+  redoHistory.push(current);
+  applyHistorySnapshot(KitchenKreation, projectHistory[projectHistory.length - 1]);
+  updateHistoryButtons();
+}
+
+function redoHistoryAction(KitchenKreation) {
+  if (!redoHistory.length) {
+    return;
+  }
+  var next = redoHistory.pop();
+  projectHistory.push(next);
+  applyHistorySnapshot(KitchenKreation, next);
+  updateHistoryButtons();
+}
+
+function updateHistoryButtons() {
+  var undoButton = document.getElementById("undoAction");
+  var redoButton = document.getElementById("redoAction");
+  if (undoButton) {
+    undoButton.disabled = projectHistory.length < 2;
+  }
+  if (redoButton) {
+    redoButton.disabled = redoHistory.length === 0;
+  }
 }
 
 function getGlobalPropertiesFolder(gui, global) {
@@ -865,11 +1079,17 @@ $(document).ready(function () {
   var viewerFloorplanner = new ViewerFloorplanner(KitchenKreation);
   mainControls(KitchenKreation);
 
+  loadProjectMeta();
+  updateAutosaveStatus("Auto-save: ready");
+
   var myhome =
     '{"floorplan":{"corners":{"f90da5e3-9e0e-eba7-173d-eb0b071e838e":{"x":-212,"y":212},"da026c08-d76a-a944-8e7b-096b752da9ed":{"x":212,"y":212},"4e3d65cb-54c0-0681-28bf-bddcc7bdb571":{"x":212,"y":-212},"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2":{"x":-212,"y":-212}},"walls":[{"corner1":"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2","corner2":"f90da5e3-9e0e-eba7-173d-eb0b071e838e","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"f90da5e3-9e0e-eba7-173d-eb0b071e838e","corner2":"da026c08-d76a-a944-8e7b-096b752da9ed","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"da026c08-d76a-a944-8e7b-096b752da9ed","corner2":"4e3d65cb-54c0-0681-28bf-bddcc7bdb571","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}},{"corner1":"4e3d65cb-54c0-0681-28bf-bddcc7bdb571","corner2":"71d4f128-ae80-3d58-9bd2-711c6ce6cdf2","frontTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0},"backTexture":{"url":"rooms/textures/walls/wallmap.png","stretch":true,"scale":0}}],"wallTextures":[],"floorTextures":{},"newFloorTextures":{}},"items":[]}';
   if (!loadSavedProject(KitchenKreation)) {
     KitchenKreation.model.loadSerialized(myhome);
   }
+
+  pushHistory(buildSerializedProject(KitchenKreation));
+  updateHistoryButtons();
 
   addKitchenKreationListeners(KitchenKreation);
   setupAutoSave(KitchenKreation);
@@ -937,6 +1157,30 @@ $(document).ready(function () {
     });
 
   $("#printPlan").click(function () {
-    exportPrintablePlan(KitchenKreation);
+    exportPrintablePlan(KitchenKreation, { autoPrint: true });
+  });
+
+  $("#savePdf").click(function () {
+    exportPrintablePlan(KitchenKreation, { autoPrint: true });
+  });
+
+  $("#undoAction").click(function () {
+    undoHistory(KitchenKreation);
+  });
+
+  $("#redoAction").click(function () {
+    redoHistoryAction(KitchenKreation);
+  });
+
+  var metaTimer = null;
+  $(
+    "#projectName, #clientName, #projectLocation, #designerName, #projectNotes"
+  ).on("input", function () {
+    if (metaTimer) {
+      clearTimeout(metaTimer);
+    }
+    metaTimer = setTimeout(function () {
+      saveProjectMeta();
+    }, 300);
   });
 });

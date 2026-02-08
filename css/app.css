@@ -9,6 +9,7 @@ body {
   padding: 0;
   overflow: hidden;
   height: 100%;
+  background: #f7f7f5;
 }
 
 div {
@@ -21,6 +22,88 @@ h1 {
   color: white;
   margin: 0px;
   padding: 5px 5px 5px 10px;
+}
+
+#project-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  padding: 10px 16px 12px;
+  background: linear-gradient(135deg, #ffffff 0%, #f2f4f1 100%);
+  border-bottom: 1px solid #e1e3df;
+}
+
+.project-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  flex: 2 1 520px;
+}
+
+.project-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+  flex: 1 1 160px;
+}
+
+.project-field label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #4a4f4f;
+}
+
+.project-field input,
+.project-notes textarea {
+  border: 1px solid #cfd4cf;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  background: #ffffff;
+}
+
+.project-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+  flex: 1 1 260px;
+}
+
+.project-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+#autosaveStatus {
+  font-size: 11px;
+  color: #2f4f4f;
+  background: #eef3ef;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid #d5ded6;
+}
+
+.project-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.project-notes label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #4a4f4f;
+}
+
+.project-notes textarea {
+  resize: vertical;
+  min-height: 46px;
 }
 
 h2 {
@@ -64,6 +147,7 @@ button {
   left: 0;
   top: 0px;
   width: 100%;
+  padding-top: 8px;
 }
 
 #floorplanner, #viewer {

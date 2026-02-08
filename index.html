@@ -29,6 +29,47 @@
 
 <body>
 	<h1> Kitchen Kreation </h1>
+	<div id="project-bar">
+		<div class="project-fields">
+			<div class="project-field">
+				<label for="projectName">Project</label>
+				<input id="projectName" type="text" placeholder="Kitchen Remodel A">
+			</div>
+			<div class="project-field">
+				<label for="clientName">Client</label>
+				<input id="clientName" type="text" placeholder="Client name">
+			</div>
+			<div class="project-field">
+				<label for="projectLocation">Location</label>
+				<input id="projectLocation" type="text" placeholder="City, Site">
+			</div>
+			<div class="project-field">
+				<label for="designerName">Designer</label>
+				<input id="designerName" type="text" placeholder="Designer name">
+			</div>
+		</div>
+		<div class="project-actions">
+			<div id="autosaveStatus">Auto-save: ready</div>
+			<div class="project-buttons">
+				<button id="undoAction" class="btn btn-default btn-sm" title="Undo">
+					<span class="glyphicon glyphicon-chevron-left"></span> Undo
+				</button>
+				<button id="redoAction" class="btn btn-default btn-sm" title="Redo">
+					Redo <span class="glyphicon glyphicon-chevron-right"></span>
+				</button>
+				<button id="savePdf" class="btn btn-default btn-sm" title="Save as PDF">
+					<span class="glyphicon glyphicon-floppy-disk"></span> Save PDF
+				</button>
+				<button id="printPlan" class="btn btn-default btn-sm" title="Print Plan">
+					<span class="glyphicon glyphicon-print"></span> Print
+				</button>
+			</div>
+		</div>
+		<div class="project-notes">
+			<label for="projectNotes">Notes</label>
+			<textarea id="projectNotes" rows="2" placeholder="Add project notes for printing..."></textarea>
+		</div>
+	</div>
 	<div id="tips">
 		<h2>Tips</h2>
 		<h3> For 2D Floorplan: </h3>
@@ -82,9 +123,6 @@
 			</button>
 			<button id="showAddItems" class="btn btn-lg btn-default" data-toggle="modal" data-target="#add-items-modal" title="Add Items">
 				<span class="glyphicon glyphicon-plus"></span>
-			</button>
-			<button id="printPlan" class="btn btn-lg btn-default" title="Print Plan">
-				<span class="glyphicon glyphicon-print"></span>
 			</button>
 		</div>
 
