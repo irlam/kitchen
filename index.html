@@ -3,19 +3,32 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Kitchen Kreation</title>
+	<link rel="icon" href="data:,">
 	<link href="https://fonts.googleapis.com/css?family=Aldrich" rel="stylesheet">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<link href="css/app.css" rel="stylesheet">
+
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "https://unpkg.com/three@0.124.0/build/three.module.js",
+				"html2canvas": "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.esm.js"
+			}
+		}
+	</script>
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdn.rawgit.com/nnattawat/flip/master/dist/jquery.flip.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.3/dat.gui.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-	<script src="js/kitchenKreation.js"></script>
 	<script src="js/items.js"></script>
-	<script src="js/app.js"></script>
-	<script src="js/three.js"></script>
+	<script type="module">
+		// Module bootstrap for static hosting with import maps.
+		import KKJS from "./js/kitchenKreation.js";
+		window.KKJS = KKJS;
+		import "./js/app.js";
+	</script>
 
 </head>
 

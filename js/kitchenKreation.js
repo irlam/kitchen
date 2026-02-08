@@ -1,5 +1,10 @@
 import * as THREE from "three";
 
+if (!THREE.Quaternion.prototype.inverse && THREE.Quaternion.prototype.invert) {
+  // Three r124+ renamed inverse() to invert(); keep legacy calls working.
+  THREE.Quaternion.prototype.inverse = THREE.Quaternion.prototype.invert;
+}
+
 var KKJS = (function (exports) {
   "use strict";
   var classCallCheck = function (instance, Constructor) {
@@ -16939,7 +16944,8 @@ functions return important math algorithms required to constructs lines/walls in
           local.renderer = local.getARenderer();
           local.domElement.appendChild(local.renderer.domElement);
 
-          local.skybox = new Skybox(local.scene, local.renderer);
+          // Disabled: skybox shaders are incompatible in this build.
+          local.skybox = null;
 
           local.controls = new OrbitControls(local.camera, local.domElement);
           local.controls.enableDamping = true;
@@ -17370,3 +17376,7 @@ functions return important math algorithms required to constructs lines/walls in
 
   return exports;
 })({});
+
+window.KKJS = KKJS;
+export { KKJS };
+export default KKJS;
