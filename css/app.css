@@ -183,15 +183,14 @@ button {
 }
 
 #switch-viewer {
-  position: absolute;
-}
-
-#switch-viewer {
-  margin: 0 auto;
-  width: 100%;
-  text-align: center;
-  bottom: 10px;
-  z-index: 100;
+  position: fixed;
+  left: 16px;
+  top: 250px;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1200;
 }
 
 #camera-controls {
@@ -205,31 +204,104 @@ button {
   width: 100%;
   padding-top: 8px;
   background: linear-gradient(180deg, rgba(6, 10, 14, 0.6) 0%, rgba(6, 10, 14, 0) 100%);
+  padding-left: 220px;
 }
 
 #floorplanner, #viewer {
   position: absolute;
-  width: 100vw;
+  width: calc(100vw - 220px);
+  left: 220px;
 }
 
 #floorplanner-controls {
-  position: relative;
-  top: 10px;
-  left: 0;
-  padding: 0 30px;
-  width: 100%;
+  position: fixed;
+  left: 16px;
+  top: 120px;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
 }
 
 #main-controls {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  padding: 0;
+  position: fixed;
+  left: 16px;
+  top: 120px;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+
+.tool-panel {
+  background: rgba(8, 14, 20, 0.94);
+  border: 1px solid rgba(0, 210, 210, 0.25);
+  border-radius: 12px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+  padding: 12px;
+}
+
+.tool-panel .btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tool-panel .btn .glyphicon {
+  font-size: 14px;
+}
+
+.tool-panel-view .btn {
+  text-align: left;
+  justify-content: flex-start;
+  padding-left: 12px;
 }
 
 .inventory-content {
-  max-height: 500px;
+  max-height: 60vh;
   overflow-y: scroll;
+}
+
+.modal {
+  overflow: auto;
+  z-index: 2000;
+}
+
+.modal-dialog {
+  margin: 60px auto;
+}
+
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 900px) {
+  #tips {
+    padding-left: 0;
+  }
+
+  #floorplanner, #viewer {
+    width: 100vw;
+    left: 0;
+  }
+
+  #floorplanner-controls,
+  #main-controls,
+  #switch-viewer {
+    position: relative;
+    left: 0;
+    top: 0;
+    width: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
 }
 
 .panel,
