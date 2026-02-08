@@ -1264,6 +1264,25 @@ $(document).ready(function () {
     $("#add-items-modal").modal({ show: true, backdrop: false });
   });
 
+  var tipsPopup = $("#tips-popup");
+  function showTips() {
+    tipsPopup.addClass("is-visible").attr("aria-hidden", "false");
+  }
+  function hideTips() {
+    tipsPopup.removeClass("is-visible").attr("aria-hidden", "true");
+  }
+  $("#showTips").off("click").on("click", function (event) {
+    event.preventDefault();
+    if (tipsPopup.hasClass("is-visible")) {
+      hideTips();
+    } else {
+      showTips();
+    }
+  });
+  $(".tips-close").off("click").on("click", function () {
+    hideTips();
+  });
+
   $("#savePdf").click(function () {
     exportPrintablePlan(KitchenKreation, { autoPrint: true });
   });

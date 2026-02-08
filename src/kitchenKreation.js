@@ -13750,12 +13750,14 @@ functions return important math algorithms required to constructs lines/walls in
             // dont draw labels on walls this short
             return;
           }
-          this.context.font = "normal 16px Aldrich";
-          this.context.fillStyle = "#000000";
+          this.context.font = "bold 18px Aldrich";
+          this.context.fillStyle = "#f2fbff";
           this.context.textBaseline = "middle";
           this.context.textAlign = "center";
-          this.context.strokeStyle = "#ffffff";
-          this.context.lineWidth = 4;
+          this.context.strokeStyle = "rgba(0, 0, 0, 0.85)";
+          this.context.lineWidth = 6;
+          this.context.shadowColor = "rgba(0, 0, 0, 0.55)";
+          this.context.shadowBlur = 4;
 
           this.context.strokeText(
             Dimensioning.cmToMeasureString(length),
@@ -13767,6 +13769,8 @@ functions return important math algorithms required to constructs lines/walls in
             this.viewmodel.convertX(pos.x),
             this.viewmodel.convertY(pos.y)
           );
+          this.context.shadowColor = "transparent";
+          this.context.shadowBlur = 0;
         },
       },
       {

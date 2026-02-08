@@ -55,6 +55,7 @@ h1 {
   flex-direction: column;
   gap: 12px;
   min-height: 0;
+  position: relative;
 }
 
 #main-panel {
@@ -271,14 +272,57 @@ button {
   float: left;
 }
 
-#tips {
-  position: relative;
-  width: 100%;
-  padding: 10px 16px 8px;
-  background: linear-gradient(180deg, rgba(6, 10, 14, 0.85) 0%, rgba(6, 10, 14, 0) 100%);
-  border-bottom: 1px solid rgba(0, 210, 210, 0.2);
-  max-height: 90px;
+.tips-popup {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 140px;
+  padding: 0 8px;
+  display: none;
+  z-index: 30;
+}
+
+.tips-popup.is-visible {
+  display: block;
+}
+
+.tips-panel {
+  background: rgba(8, 14, 20, 0.96);
+  border: 1px solid rgba(0, 210, 210, 0.25);
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+  padding: 12px 14px 14px;
+  max-height: 70vh;
   overflow: auto;
+}
+
+.tips-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tips-header h2 {
+  padding: 0;
+  font-size: 16px;
+}
+
+.tips-close {
+  background: transparent;
+  border: 1px solid rgba(0, 210, 210, 0.35);
+  color: #9fffe8;
+  border-radius: 999px;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tips-close:hover,
+.tips-close:focus {
+  background: rgba(12, 30, 36, 0.95);
+  color: #ffffff;
 }
 
 #floorplanner, #viewer {
