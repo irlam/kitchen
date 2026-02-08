@@ -1263,6 +1263,15 @@ $(document).ready(function () {
     exportPrintablePlan(KitchenKreation, { autoPrint: true });
   });
 
+  $("#showAddItems").off("click").on("click", function (event) {
+    event.preventDefault();
+    document.body.classList.remove("edit-panel-collapsed");
+  });
+
+  $("#closeEditPanel").off("click").on("click", function () {
+    document.body.classList.add("edit-panel-collapsed");
+  });
+
   $("#savePdf").click(function () {
     exportPrintablePlan(KitchenKreation, { autoPrint: true });
   });
