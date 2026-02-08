@@ -115,6 +115,187 @@ var mainControls = function (KitchenKreation) {
   init();
 };
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function getItemTypeLabel(itemType) {
+  if (itemType === 1) {
+    return "Floor";
+  }
+  if (itemType === 2) {
+    return "Wall";
+  }
+  if (itemType === 3) {
+    return "In Wall";
+  }
+  return "Unknown";
+}
+
+function formatDimension(value) {
+  return KKJS.Dimensioning.cmToMeasureString(value);
+}
+
+function buildItemsTable(KitchenKreation) {
+  var items = KitchenKreation.model.scene.getItems();
+  if (!items.length) {
+    return "<p>No items placed.</p>";
+  }
+
+  var rows = items
+    .map(function (item) {
+      var meta = item.getMetaData();
+      var name = escapeHtml(meta.item_name || "Item");
+      var type = escapeHtml(getItemTypeLabel(meta.item_type));
+      var width = escapeHtml(formatDimension(item.getWidth()));
+      var height = escapeHtml(formatDimension(item.getHeight()));
+      var depth = escapeHtml(formatDimension(item.getDepth()));
+      return (
+        "<tr>" +
+        "<td>" +
+        name +
+        "</td>" +
+        "<td>" +
+        type +
+        "</td>" +
+        "<td>" +
+        width +
+        "</td>" +
+        "<td>" +
+        height +
+        "</td>" +
+        "<td>" +
+        depth +
+        "</td>" +
+        "</tr>"
+      );
+    })
+    .join("");
+
+  return (
+    "<table>" +
+    "<thead><tr><th>Item</th><th>Type</th><th>W</th><th>H</th><th>D</th></tr></thead>" +
+    "<tbody>" +
+    rows +
+    "</tbody></table>"
+  );
+}
+
+function openPrintWindow(payload) {
+  var printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    alert("Please allow popups to print the plan.");
+    return;
+  }
+
+  var html =
+    "<!DOCTYPE html>" +
+    "<html><head><meta charset='utf-8'>" +
+    "<title>Kitchen Kreation Plan</title>" +
+    "<style>" +
+    "@page { size: A4; margin: 12mm; }" +
+    "body { font-family: Arial, sans-serif; color: #111; }" +
+    "h1 { margin: 0 0 6px; }" +
+    "h2 { margin: 18px 0 8px; font-size: 16px; }" +
+    ".meta { font-size: 12px; color: #555; }" +
+    ".image { width: 100%; border: 1px solid #ddd; }" +
+    "table { width: 100%; border-collapse: collapse; font-size: 12px; }" +
+    "th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }" +
+    ".notes { min-height: 80px; border: 1px dashed #bbb; padding: 8px; }" +
+    "</style></head><body>" +
+    "<h1>Kitchen Kreation Plan</h1>" +
+    "<div class='meta'>" +
+    escapeHtml(payload.timestamp) +
+    " | Units: " +
+    escapeHtml(payload.units) +
+    "</div>" +
+    "<h2>2D Floorplan</h2>" +
+    "<img class='image' src='" +
+    payload.floorplanImage +
+    "' alt='2D Floorplan'>" +
+    "<h2>3D Render</h2>" +
+    "<img class='image' src='" +
+    payload.renderImage +
+    "' alt='3D Render'>" +
+    "<h2>Items</h2>" +
+    payload.itemsTable +
+    "<h2>Notes</h2>" +
+    "<div class='notes'></div>" +
+    "</body></html>";
+
+  printWindow.document.open();
+  printWindow.document.write(html);
+  printWindow.document.close();
+
+  printWindow.onload = function () {
+    printWindow.focus();
+    printWindow.print();
+  };
+}
+
+function captureElement(elementId) {
+  return html2canvas(document.getElementById(elementId), {
+    backgroundColor: "#ffffff",
+  }).then(function (canvas) {
+    return canvas.toDataURL("image/png");
+  });
+}
+
+function exportPrintablePlan(KitchenKreation) {
+  var wasDesignActive = $("#showDesign").hasClass("active");
+  var wasPlanActive = $("#showFloorPlan").hasClass("active");
+
+  function show2D() {
+    if (!wasPlanActive) {
+      $("#showFloorPlan").trigger("click");
+    }
+    return new Promise(function (resolve) {
+      setTimeout(resolve, 300);
+    });
+  }
+
+  function show3D() {
+    if (!wasDesignActive) {
+      $("#showDesign").trigger("click");
+    }
+    return new Promise(function (resolve) {
+      setTimeout(resolve, 300);
+    });
+  }
+
+  show2D()
+    .then(function () {
+      return captureElement("floorplanner-canvas");
+    })
+    .then(function (floorplanImage) {
+      return show3D().then(function () {
+        return captureElement("3D-Floorplan").then(function (renderImage) {
+          return { floorplanImage: floorplanImage, renderImage: renderImage };
+        });
+      });
+    })
+    .then(function (images) {
+      if (wasPlanActive) {
+        $("#showFloorPlan").trigger("click");
+      } else if (wasDesignActive) {
+        $("#showDesign").trigger("click");
+      }
+
+      openPrintWindow({
+        floorplanImage: images.floorplanImage,
+        renderImage: images.renderImage,
+        itemsTable: buildItemsTable(KitchenKreation),
+        timestamp: new Date().toLocaleString(),
+        units: KKJS.Configuration.getStringValue(KKJS.configDimUnit) || "m",
+      });
+    });
+}
+
 var GlobalProperties = function () {
   this.name = "Global";
   //a - feet and inches, b = inches, c - cms, d - millimeters, e - meters
@@ -754,4 +935,8 @@ $(document).ready(function () {
         KitchenKreation.model.scene.addItem(itemType, modelUrl, metadata);
       }
     });
+
+  $("#printPlan").click(function () {
+    exportPrintablePlan(KitchenKreation);
+  });
 });
