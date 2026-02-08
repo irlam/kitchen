@@ -1,0 +1,5 @@
+Milestone 3: Add persistence.
+- Add /api PHP endpoints with PDO.
+- Create /sql/schema.sql and migration notes.
+- Add a “Save” / “Load” UI with project name, autosave toggle, share link.
+- Store serialized JSON and generated thumbnail (optional).
