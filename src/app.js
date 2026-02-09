@@ -1121,6 +1121,15 @@ function getWallAndFloorPropertiesFolder(gui, aWall, aFloor) {
   var f = gui.addFolder("Wall and Floor");
   var wcontrol = f
     .add(aWall, "wallmaterialname", {
+      "*** NEW MODERN ***": 31,
+      "Navy Subway Tiles": 32,
+      "Modern Concrete": 31,
+      "Vertical Wood Slats": 33,
+      "White Hex Tiles": 34,
+      Terrazzo: 35,
+      "Calacatta Marble": 36,
+      "Charcoal Slate": 37,
+      "----------------": 0,
       Grey: 0,
       Bricks: 1,
       Beige_mosaic: 2,
@@ -1132,17 +1141,19 @@ function getWallAndFloorPropertiesFolder(gui, aWall, aFloor) {
       Lightblue_reflective_Wall: 8,
       candy_apple: 10,
       dark_blue: 13,
-      "Modern Concrete": 31,
-      "Navy Subway Tiles": 32,
-      "Vertical Wood Slats": 33,
-      "White Hex Tiles": 34,
-      Terrazzo: 35,
-      "Calacatta Marble": 36,
-      "Charcoal Slate": 37,
     })
     .name("Wall");
   var fcontrol = f
     .add(aFloor, "floormaterialname", {
+      "*** NEW MODERN ***": 31,
+      "Navy Subway Tiles": 32,
+      "Industrial Concrete": 31,
+      "Vertical Wood Slats": 33,
+      "White Hex Tiles": 34,
+      Terrazzo: 35,
+      "Calacatta Marble": 36,
+      "Herringbone Walnut": 38,
+      "----------------": 14,
       "Grey Porcelain Tiles": 14,
       "White Porcelain Tiles": 15,
       "Black & White Seamless Tiles": 16,
@@ -1162,14 +1173,6 @@ function getWallAndFloorPropertiesFolder(gui, aWall, aFloor) {
       "Checkered Tiles": 30,
       "Candy Apple": 11,
       "Dark Blue": 12,
-      "Industrial Concrete": 31,
-      "Navy Subway Tiles": 32,
-      "Vertical Wood Slats": 33,
-      "White Hex Tiles": 34,
-      Terrazzo: 35,
-      "Calacatta Marble": 36,
-      Slate: 37,
-      "Herringbone Walnut": 38,
     })
     .name("Floor");
 
