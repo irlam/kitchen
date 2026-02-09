@@ -314,7 +314,7 @@ $(document).ready(function () {
     var cleanName = item.name.replace(/_/g, " ");
 
     var html =
-      "<div class=\"col-sm-4 col-md-3\">" +
+      "<div class=\"catalog-item-card\">" +
       "<a class=\"thumbnail add-item\"" +
       " model-name=\"" + item.name + "\" " +
       " model-url=\"" + item.model + "\" " +

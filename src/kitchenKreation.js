@@ -12139,9 +12139,6 @@ functions return important math algorithms required to constructs lines/walls in
           context.restore();
           material.map.needsUpdate = true;
         },
-          context.restore();
-          material.map.needsUpdate = true;
-        },
       },
       {
         reference: "remove",
@@ -12620,27 +12617,27 @@ functions return important math algorithms required to constructs lines/walls in
         reference: "isValidPosition",
         value: function isValidPosition(vec3) {
           var corners = this.getCorners("x", "z", vec3);
-          // check if we are in a room
           var rooms = this.model.floorplan.getRooms();
-          var isInARoom = false;
+          // To be valid, ALL corners must be within the same room
           for (var i = 0; i < rooms.length; i++) {
-            if (
-              MathUtilities.pointInPolygon(
-                new THREE.Vector2(vec3.x, vec3.z),
-                rooms[i].interiorCorners
-              ) &&
-              !MathUtilities.polygonPolygonIntersect(
-                corners,
-                rooms[i].interiorCorners
-              )
-            ) {
-              isInARoom = true;
+            var room = rooms[i];
+            var allCornersIn = true;
+            for (var j = 0; j < corners.length; j++) {
+              if (
+                !MathUtilities.pointInPolygon(
+                  new THREE.Vector2(corners[j].x, corners[j].y),
+                  room.interiorCorners
+                )
+              ) {
+                allCornersIn = false;
+                break;
+              }
+            }
+            if (allCornersIn) {
+              return true;
             }
           }
-          if (!isInARoom) {
-            return false;
-          }
-          return true;
+          return false;
         },
       },
     ]);
