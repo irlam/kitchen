@@ -273,6 +273,21 @@ $(document).ready(function () {
       image: "models/thumbnails_new/washerDryerStacked.png",
       format: "gltf",
     },
+    // Modern Additions
+    {
+      name: "Modern Velvet Chair",
+      model: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/SheenChair/glTF-Binary/SheenChair.glb",
+      type: "1",
+      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/SheenChair/screenshot/screenshot.png",
+      format: "gltf",
+    },
+    {
+      name: "Decorative Avocado",
+      model: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF-Binary/Avocado.glb",
+      type: "1",
+      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/screenshot/screenshot.png",
+      format: "gltf",
+    },
   ];
   var modelTypesNum = ["1", "2", "3"];
   var modelTypesIds = ["floor-items", "wall-items", "in-wall-items"];

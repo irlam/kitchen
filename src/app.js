@@ -752,6 +752,16 @@ var WallProperties = function () {
     ["rooms/textures/floor/light_fine_wood.jpg", false, 300], //28 fine wood
     ["rooms/textures/floor/hardwood.png", false, 300], //29 hardwood
     ["rooms/textures/floor/checkered-tiles-square.jpg", false, 150], //30 checkered tiles
+    
+    // Modern Wall & Floor additions
+    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Concrete033.jpg", false, 150], //31 Modern Concrete
+    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Tiles101.jpg", false, 50],   //32 Navy SubTile
+    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Wood067.jpg", false, 150],  //33 Vertical Slats
+    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Tiles107.jpg", false, 50],   //34 White Hex
+    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Terrazzo018.jpg", false, 150], //35 Terrazzo
+    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Marble006.jpg", false, 200],   //36 Calacatta Marble
+    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Tiles011.jpg", false, 200],    //37 Slate
+    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Wood066.jpg", false, 150],     //38 Herringbone Walnut
   ];
 
   this.floormaterialname = 0;
@@ -1122,6 +1132,13 @@ function getWallAndFloorPropertiesFolder(gui, aWall, aFloor) {
       Lightblue_reflective_Wall: 8,
       candy_apple: 10,
       dark_blue: 13,
+      "Modern Concrete": 31,
+      "Navy Subway Tiles": 32,
+      "Vertical Wood Slats": 33,
+      "White Hex Tiles": 34,
+      Terrazzo: 35,
+      "Calacatta Marble": 36,
+      "Charcoal Slate": 37,
     })
     .name("Wall");
   var fcontrol = f
@@ -1145,6 +1162,14 @@ function getWallAndFloorPropertiesFolder(gui, aWall, aFloor) {
       "Checkered Tiles": 30,
       "Candy Apple": 11,
       "Dark Blue": 12,
+      "Industrial Concrete": 31,
+      "Navy Subway Tiles": 32,
+      "Vertical Wood Slats": 33,
+      "White Hex Tiles": 34,
+      Terrazzo: 35,
+      "Calacatta Marble": 36,
+      Slate: 37,
+      "Herringbone Walnut": 38,
     })
     .name("Floor");
 
