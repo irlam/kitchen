@@ -1173,6 +1173,8 @@ function getWallAndFloorPropertiesFolder(gui, aWall, aFloor) {
     })
     .name("Floor");
 
+  f.add(aWall, "forAllWalls").name("Apply to all walls");
+
   function wchanged() {
     aWall.wchanged();
   }
