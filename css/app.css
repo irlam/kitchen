@@ -736,10 +736,10 @@ button {
     top: 20px;
     right: 20px;
     z-index: 10000;
-    width: 340px;
-    min-height: 200px;
-    background: rgba(8, 14, 20, 0.9);
-    backdrop-filter: blur(12px) saturate(150%);
+    width: 360px;
+    min-height: 300px;
+    background: rgba(8, 14, 20, 0.95);
+    backdrop-filter: blur(15px) saturate(160%);
     -webkit-backdrop-filter: blur(12px) saturate(150%);
     border: 1px solid rgba(0, 210, 210, 0.3);
     border-radius: 16px;
@@ -795,7 +795,6 @@ button {
 .dg.main {
     background: transparent !important;
     border: none !important;
-    border-radius: 0 !important;
     width: 100% !important;
     box-shadow: none !important;
 }
@@ -803,66 +802,55 @@ button {
 .dg .c input[type="text"], 
 .dg .c input[type="number"], 
 .dg .c select {
-    background: rgba(0, 0, 0, 0.4) !important;
+    background: rgba(0, 0, 0, 0.5) !important;
     border: 1px solid rgba(0, 210, 210, 0.3) !important;
-    padding: 6px 10px !important;
-    font-size: 14px !important;
-    line-height: normal !important;
+    padding: 6px 12px !important;
+    font-size: 13px !important;
     height: 32px !important;
     color: #fff !important;
     border-radius: 6px !important;
+    box-sizing: border-box !important;
 }
 
 .dg .cr {
-    height: 48px !important;
-    line-height: 48px !important;
+    height: auto !important;
+    min-height: 48px !important;
+    line-height: normal !important;
     border-left: 3px solid transparent;
+    display: block !important;
+    clear: both !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    position: relative !important;
 }
 
 .dg .cr:hover {
     background: rgba(255, 255, 255, 0.05) !important;
 }
 
-.dg .cr.number {
-    border-left-color: #5fffea;
-}
-
-.dg .cr.boolean {
-    border-left-color: #ff57b7;
-}
-
-.dg .cr.function {
-    border-left-color: #72ff57;
-}
+.dg .cr.number { border-left-color: #5fffea; }
+.dg .cr.boolean { border-left-color: #ff57b7; }
+.dg .cr.function { border-left-color: #72ff57; }
 
 .dg .property-name {
     font-size: 13px !important;
-    width: 60% !important;
-    padding-left: 12px !important;
-    display: flex !important;
-    align-items: center !important;
+    width: 50% !important;
+    padding: 14px 12px !important;
     color: #e0faff !important;
     white-space: nowrap !important;
-}
-
-.dg .c {
-    width: 40% !important;
-    padding-right: 12px !important;
-    display: flex !important;
-    align-items: center !important;
+    float: left !important;
+    box-sizing: border-box !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .dg li {
     background: transparent !important;
     border-bottom: 1px solid rgba(0, 210, 210, 0.1) !important;
-    padding: 10px 0 !important;
-    height: 48px !important;
-    display: flex !important;
-    align-items: center !important;
-}
-
-.dg .cr {
-    height: 100% !important;
+    height: auto !important;
+    display: block !important;
+    clear: both !important;
     width: 100% !important;
 }
 
@@ -872,10 +860,12 @@ button {
     font-size: 14px !important;
     font-weight: 700 !important;
     padding: 12px 15px !important;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    height: 44px !important;
-    line-height: 20px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    height: auto !important;
+    line-height: normal !important;
+    cursor: pointer !important;
+    border-bottom: 1px solid rgba(0, 210, 210, 0.3) !important;
 }
 
 .dg .slider {
@@ -947,21 +937,22 @@ button {
 
 /* Checkbox Modernization */
 .dg .c input[type="checkbox"] {
-    width: 18px !important;
-    height: 18px !important;
+    width: 20px !important;
+    height: 20px !important;
     appearance: none;
     -webkit-appearance: none;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(0, 210, 210, 0.4);
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     position: relative;
-    margin-top: 8px !important;
+    margin: 0 !important;
 }
 
 .dg .c input[type="checkbox"]:checked {
     background: #5fffea;
-    box-shadow: 0 0 10px rgba(95, 255, 234, 0.6);
+    box-shadow: 0 0 10px rgba(95, 255, 234, 0.4);
+    border-color: #5fffea;
 }
 
 .dg .c input[type="checkbox"]:checked::after {
@@ -970,6 +961,18 @@ button {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #000;
-    font-size: 12px;
+    color: #080e14;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.dg .c {
+    width: 50% !important;
+    float: left !important;
+    padding: 10px 12px 0 0 !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    min-height: 48px !important;
 }

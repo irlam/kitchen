@@ -1259,9 +1259,10 @@ function datGUI(three, floorplanner) {
     globalPropFolder = getGlobalPropertiesFolder(gui, aGlobal);
   wallPropFolder = getWallAndFloorPropertiesFolder(gui, aWall, aFloor);
   itemPropFolder = getItemPropertiesFolder(gui, anItem);
-}
 
-$(document).ready(function () {
+    globalPropFolder.open();
+    wallPropFolder.open();
+    itemPropFolder.open();
   dat.GUI.prototype.removeFolder = function (name) {
     var folder = this.__folders[name];
     if (!folder) {
