@@ -1223,7 +1223,7 @@ $(document).ready(function () {
     KitchenKreation.three.pauseTheRendering(false);
   });
 
-  $("#add-items").on("mousedown touchstart", ".add-item", function (e) {
+  $("#add-items").on("click touchstart", ".add-item", function (e) {
       var modelUrl = $(this).attr("model-url");
       var itemType = parseInt($(this).attr("model-type"));
       var itemFormat = $(this).attr("model-format");
@@ -1246,7 +1246,11 @@ $(document).ready(function () {
         return;
       }
 
-      if ([1, 2, 3].indexOf(metadata.itemType) != -1 && aWall.currentWall) {
+      if (
+        [1, 2, 3].indexOf(metadata.itemType) !== -1 &&
+        aWall &&
+        aWall.currentWall
+      ) {
         var placeAt = aWall.currentWall.center.clone();
         KitchenKreation.model.scene.addItem(
           itemType,
