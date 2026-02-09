@@ -1192,8 +1192,65 @@ function getWallAndFloorPropertiesFolder(gui, aWall, aFloor) {
 }
 
 function datGUI(three, floorplanner) {
-  gui = new dat.GUI();
-  aGlobal = new GlobalProperties();
+    // Create custom container for dat.GUI to allow dragging and modern styling
+    var guiContainer = document.createElement("div");
+    guiContainer.id = "gui-container";
+    guiContainer.innerHTML = 
+      '<div class="gui-header">' +
+        '<div class="dot"></div>' +
+        '<div class="title">Design Controls</div>' +
+      '</div>' +
+      '<div id="gui-content"></div>';
+    document.body.appendChild(guiContainer);
+
+    // Make the container draggable
+    var isDragging = false;
+    var currentX;
+    var currentY;
+    var initialX;
+    var initialY;
+    var xOffset = 0;
+    var yOffset = 0;
+
+    var header = guiContainer.querySelector(".gui-header");
+
+    header.addEventListener("mousedown", dragStart);
+    document.addEventListener("mousemove", drag);
+    document.addEventListener("mouseup", dragEnd);
+
+    function dragStart(e) {
+      initialX = e.clientX - xOffset;
+      initialY = e.clientY - yOffset;
+      if (e.target === header || e.target.parentNode === header) {
+        isDragging = true;
+      }
+    }
+
+    function drag(e) {
+      if (isDragging) {
+        e.preventDefault();
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+        xOffset = currentX;
+        yOffset = currentY;
+        setTranslate(currentX, currentY, guiContainer);
+      }
+    }
+
+    function setTranslate(xPos, yPos, el) {
+      el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+    }
+
+    function dragEnd(e) {
+      initialX = currentX;
+      initialY = currentY;
+      isDragging = false;
+    }
+
+    // Initialize dat.GUI within the content div
+    gui = new dat.GUI({ autoPlace: false });
+    document.getElementById("gui-content").appendChild(gui.domElement);
+
   aWall = new WallProperties();
   aFloor = aWall; // Use same object for synchronization
   anItem = new ItemProperties(gui);

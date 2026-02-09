@@ -707,3 +707,210 @@ button {
     font-size: 14px;
     margin-top: 5px;
 }
+
+/* --- Modern Floating Controls Overhaul --- */
+
+/* Floating Container */
+#gui-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    width: 340px;
+    background: rgba(8, 14, 20, 0.85);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid rgba(0, 210, 210, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+    user-select: none;
+}
+
+#gui-container:hover {
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 210, 210, 0.15);
+}
+
+/* Header/Drag Handle */
+.gui-header {
+    background: linear-gradient(90deg, rgba(10, 18, 26, 0.95), rgba(15, 30, 45, 0.95));
+    padding: 12px 16px;
+    cursor: move;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 210, 210, 0.2);
+}
+
+.gui-header .title {
+    font-family: 'Aldrich', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #5fffea;
+    flex: 1;
+}
+
+.gui-header .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #5fffea;
+    margin-right: 10px;
+    box-shadow: 0 0 8px rgba(95, 255, 234, 0.5);
+}
+
+/* Internal dat.GUI Modernization */
+.dg.main {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+    box-shadow: none !important;
+}
+
+.dg .c input[type="text"], 
+.dg .c input[type="number"], 
+.dg .c select {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(0, 210, 210, 0.2) !important;
+    padding: 5px 8px !important;
+    font-size: 12px !important;
+    line-height: normal !important;
+    height: 28px !important;
+    color: #fff !important;
+}
+
+.dg .cr {
+    height: 36px !important;
+    line-height: 36px !important;
+    border-left: 2px solid transparent;
+}
+
+.dg .cr:hover {
+    background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.dg .cr.number {
+    border-left-color: #5fffea;
+}
+
+.dg .cr.boolean {
+    border-left-color: #ff57b7;
+}
+
+.dg .cr.function {
+    border-left-color: #72ff57;
+}
+
+.dg .property-name {
+    font-size: 11px !important;
+    width: 45% !important;
+}
+
+.dg .c {
+    width: 55% !important;
+}
+
+.dg .title {
+    background: rgba(255, 255, 255, 0.05) !important;
+    font-size: 11px !important;
+    padding: 10px 10px 10px 15px !important;
+    font-weight: bold !important;
+}
+
+.dg .slider {
+    background: rgba(255, 255, 255, 0.1) !important;
+    height: 6px !important;
+    margin-top: 15px !important;
+}
+
+.dg .slider-fg {
+    background: #5fffea !important;
+}
+
+/* Buttons in GUI */
+.dg .cr.function .property-name {
+    width: 100% !important;
+    text-align: center;
+    background: rgba(95, 255, 234, 0.1);
+    border-radius: 4px;
+    margin: 4px;
+    height: 28px;
+    line-height: 28px;
+}
+
+/* --- Scrollbar for dat.GUI inside container --- */
+#gui-content {
+    max-height: 80vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#gui-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+#gui-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#gui-content::-webkit-scrollbar-thumb {
+    background: rgba(95, 255, 234, 0.2);
+    border-radius: 10px;
+}
+
+#gui-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(95, 255, 234, 0.5);
+}
+
+/* Fix for dat.GUI closing/opening button which we don't need now */
+.dg .close-button {
+    display: none !important;
+}
+
+/* --- Enhanced Slider Styling --- */
+.dg .slider {
+    border-radius: 10px !important;
+    overflow: hidden;
+}
+
+.dg .slider-fg {
+    background: linear-gradient(90deg, #5fffea, #31ad9c) !important;
+    box-shadow: 0 0 10px rgba(95, 255, 234, 0.4) !important;
+}
+
+.dg .cr.number input[type="text"] {
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-radius: 6px !important;
+    text-align: center;
+}
+
+/* Checkbox Modernization */
+.dg .c input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 210, 210, 0.4);
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    margin-top: 8px !important;
+}
+
+.dg .c input[type="checkbox"]:checked {
+    background: #5fffea;
+    box-shadow: 0 0 10px rgba(95, 255, 234, 0.6);
+}
+
+.dg .c input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #000;
+    font-size: 12px;
+}
