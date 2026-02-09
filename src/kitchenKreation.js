@@ -10075,6 +10075,7 @@ functions return important math algorithms required to constructs lines/walls in
       {
         reference: "setTexture",
         value: function setTexture(textureUrl, textureStretch, textureScale) {
+          console.log("InnerWall.setTexture called:", textureUrl, textureStretch, textureScale);
           var texture = {
             url: textureUrl,
             stretch: textureStretch,
@@ -10087,6 +10088,7 @@ functions return important math algorithms required to constructs lines/walls in
           }
 
           //this.redrawCallbacks.fire();
+          console.log("Dispatching EVENT_REDRAW for InnerWall");
           this.dispatchEvent({ type: EVENT_REDRAW, item: this });
         },
       },
@@ -13047,6 +13049,7 @@ functions return important math algorithms required to constructs lines/walls in
         reference: "add",
         value: function add(mesh) {
           this.scene.add(mesh);
+          this.needsUpdate = true;
         },
 
         /** Removes a non-item, basically a mesh, from the scene.
@@ -13058,6 +13061,7 @@ functions return important math algorithms required to constructs lines/walls in
         value: function remove(mesh) {
           this.scene.remove(mesh);
           MathUtilities.removeValue(this.items, mesh);
+          this.needsUpdate = true;
         },
 
         /** Gets the scene.
@@ -15898,6 +15902,7 @@ functions return important math algorithms required to constructs lines/walls in
       {
         reference: "redraw",
         value: function redraw() {
+          console.log("Edge.redraw called for edge:", this);
           this.removeFromScene();
           this.updateTexture();
           this.updatePlanes();
@@ -16003,7 +16008,12 @@ functions return important math algorithms required to constructs lines/walls in
           var stretch = textureData.stretch;
           var url = textureData.url;
           var scale = textureData.scale;
-          this.texture = new THREE.TextureLoader().load(url, callback);
+          
+          console.log("Edge.updateTexture loading:", url, "stretch:", stretch, "scale:", scale);
+          
+          this.texture = new THREE.TextureLoader().load(url, callback, undefined, function(err) {
+              console.error("Failed to load texture:", url, err);
+          });
 
           if (!stretch) {
             var height = this.wall.height;
@@ -16154,7 +16164,15 @@ functions return important math algorithms required to constructs lines/walls in
             shape.holes.push(new THREE.Path(holePoints));
           });
 
-          var geometry = new THREE.ShapeGeometry(shape);
+          var geometry = new THREE.ShapeBufferGeometry(shape);
+          if (geometry.toGeometry) {
+              geometry = geometry.toGeometry();
+          } else if (THREE.Geometry) {
+              var tempGeom = new THREE.Geometry();
+              tempGeom.fromBufferGeometry(geometry);
+              geometry = tempGeom;
+          }
+
           geometry.vertices.forEach(function (v) {
             v.applyMatrix4(invTransform);
           });

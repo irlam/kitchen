@@ -763,19 +763,28 @@ var WallProperties = function () {
   this.currentFloor = null;
 
   this.wchanged = function () {
+    console.log("wchanged called. wallmaterialname:", this.wallmaterialname);
     if (this.currentWall) {
-      this.currentWall.setTexture(
-        this.textures[this.wallmaterialname][0],
-        this.textures[this.wallmaterialname][1],
-        this.textures[this.wallmaterialname][2]
-      );
+      console.log("Applying texture to wall:", this.currentWall);
+      var texture = this.textures[this.wallmaterialname];
+      if (texture) {
+        console.log("Texture settings:", texture);
+        this.currentWall.setTexture(texture[0], texture[1], texture[2]);
+      } else {
+        console.error("No texture found for index:", this.wallmaterialname);
+      }
+    } else {
+      console.warn("wchanged called but no currentWall is set");
     }
+    
     if (this.currentFloor && this.forAllWalls) {
-      this.currentFloor.setRoomWallsTexture(
-        this.textures[this.wallmaterialname][0],
-        this.textures[this.wallmaterialname][1],
-        this.textures[this.wallmaterialname][2]
-      );
+        var texture = this.textures[this.wallmaterialname];
+        console.log("Applying texture to all walls of floor:", texture);
+        this.currentFloor.setRoomWallsTexture(
+            texture[0],
+            texture[1],
+            texture[2]
+        );
     }
   };
 
@@ -805,6 +814,7 @@ function addKitchenKreationListeners(KitchenKreation) {
   var three = KitchenKreation.three;
 
   function wallClicked(wall) {
+    console.log("Wall clicked in 3D:", wall);
     aWall.setWall(wall);
     aWall.setFloor(null);
     itemPropFolder.close();
@@ -812,6 +822,7 @@ function addKitchenKreationListeners(KitchenKreation) {
   }
 
   function floorClicked(floor) {
+    console.log("Floor clicked in 3D:", floor);
     aFloor.setFloor(floor);
     aFloor.setWall(null);
     itemPropFolder.close();
@@ -1154,7 +1165,7 @@ function datGUI(three, floorplanner) {
   gui = new dat.GUI();
   aGlobal = new GlobalProperties();
   aWall = new WallProperties();
-  aFloor = new FloorProperties();
+  aFloor = aWall; // Use same object for synchronization
   anItem = new ItemProperties(gui);
 
   globalPropFolder = getGlobalPropertiesFolder(gui, aGlobal);
