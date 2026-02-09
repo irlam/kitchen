@@ -1226,12 +1226,18 @@ $(document).ready(function () {
   $("#add-items").on("click touchstart", ".add-item", function (e) {
       e.preventDefault();
       e.stopPropagation();
-      $("#add-items-modal").modal("hide");
+      
       var modelUrl = $(this).attr("model-url");
       var itemType = parseInt($(this).attr("model-type"));
       var itemFormat = $(this).attr("model-format");
+      var itemName = $(this).attr("model-name");
+      
+      console.log("Adding item:", itemName, "Type:", itemType, "URL:", modelUrl);
+      
+      $("#add-items-modal").modal("hide");
+
       var metadata = {
-        itemName: $(this).attr("model-name"),
+        itemName: itemName,
         resizable: true,
         modelUrl: modelUrl,
         itemType: itemType,
@@ -1239,6 +1245,7 @@ $(document).ready(function () {
       };
 
       if ($("#showFloorPlan").hasClass("active")) {
+        console.log("Setting pending 2D item");
         pending2dItem = {
           itemType: itemType,
           modelUrl: modelUrl,
@@ -1250,11 +1257,17 @@ $(document).ready(function () {
       }
 
       if (
-        [1, 2, 3].indexOf(metadata.itemType) !== -1 &&
+        (metadata.itemType === 2 || metadata.itemType === 3) &&
         aWall &&
         aWall.currentWall
       ) {
-        var placeAt = aWall.currentWall.center.clone();
+        console.log("Placing item on selected wall");
+        var wallWrapper = aWall.currentWall;
+        var edge = wallWrapper.edge;
+        var start = edge.interiorStart();
+        var end = edge.interiorEnd();
+        var placeAt = new THREE.Vector3((start.x + end.x) / 2.0, 0, (start.y + end.y) / 2.0);
+
         KitchenKreation.model.scene.addItem(
           itemType,
           modelUrl,
@@ -1265,10 +1278,11 @@ $(document).ready(function () {
           false,
           {
             position: placeAt,
-            edge: aWall.currentWall,
+            edge: edge,
           }
         );
       } else {
+        console.log("Adding item to scene (no wall/floor selected or general placement)");
         KitchenKreation.model.scene.addItem(itemType, modelUrl, metadata);
       }
     });
@@ -1279,7 +1293,8 @@ $(document).ready(function () {
 
   $("#showAddItems").off("click").on("click", function (event) {
     event.preventDefault();
-    $("#add-items-modal").modal({ show: true, backdrop: false });
+    console.log("Opening Add Items modal");
+    $("#add-items-modal").modal("show");
   });
 
     function get2dPlacementPoint(event) {

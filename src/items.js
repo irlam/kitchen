@@ -276,13 +276,24 @@ $(document).ready(function () {
   ];
   var modelTypesNum = ["1", "2", "3"];
   var modelTypesIds = ["floor-items", "wall-items", "in-wall-items"];
-  var itemsDiv = $("#items-wrapper");
+  
+  // Clear existing items before populating
+  modelTypesIds.forEach(function(id) {
+    $("#" + id + "-wrapper").empty();
+  });
+
+  console.log("Populating catalog with " + items.length + " items");
 
   for (var i = 0; i < items.length; i++) {
     var item = items[i];
-    itemsDiv = $(
+    var itemsDiv = $(
       "#" + modelTypesIds[modelTypesNum.indexOf(item.type)] + "-wrapper"
     );
+
+    if (itemsDiv.length === 0) {
+      console.warn("Could not find wrapper for item type: " + item.type);
+      continue;
+    }
 
     var modelformat = item.format ? ' model-format="' + item.format + '"' : "";
     var html =
