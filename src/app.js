@@ -632,7 +632,7 @@ var ItemProperties = function (gui) {
           var ccontrol = this.materialsfolder
             .addColor(this.materials, "mat_" + i)
             .name(matname)
-            .onChange(() => {
+            .onChange(function () {
               scope.dimensionsChanged();
             });
         }
@@ -644,7 +644,7 @@ var ItemProperties = function (gui) {
       var ccontrol = this.materialsfolder
         .addColor(this.materials, "mat_0")
         .name(matname)
-        .onChange(() => {
+        .onChange(function () {
           scope.dimensionsChanged();
         });
       return;

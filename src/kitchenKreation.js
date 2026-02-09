@@ -12647,11 +12647,10 @@ functions return important math algorithms required to constructs lines/walls in
             }
           }
           if (!isInARoom) {
-            //We do not want to check if the object is in room or not
-          if (!isInARoom) {
-            // Floor items must stay within room boundaries
             return false;
           }
+          return true;
+        },
       },
     ]);
     return FloorItem;
