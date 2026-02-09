@@ -1223,9 +1223,7 @@ $(document).ready(function () {
     KitchenKreation.three.pauseTheRendering(false);
   });
 
-  $("#add-items")
-    .find(".add-item")
-    .mousedown(function (e) {
+  $("#add-items").on("mousedown touchstart", ".add-item", function (e) {
       var modelUrl = $(this).attr("model-url");
       var itemType = parseInt($(this).attr("model-type"));
       var itemFormat = $(this).attr("model-format");
