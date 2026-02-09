@@ -685,9 +685,9 @@ var ItemProperties = function (gui) {
         this.currentItem.setMaterialColor(this.materials["mat_" + i], i);
       }
 
-      this.guiControllers.forEach((control) => {
-        control.updateDisplay();
-      }); // Iterate over gui controllers to update the values
+      for (var i = 0; i < this.guiControllers.length; i++) {
+        this.guiControllers[i].updateDisplay();
+      } // Iterate over gui controllers to update the values
     }
   };
 
@@ -855,13 +855,13 @@ function addKitchenKreationListeners(KitchenKreation) {
   three.addEventListener(KKJS.EVENT_ITEM_UNSELECTED, function (o) {
     itemUnselected();
   });
-  three.addEventListener(KKJS.EVENT_WALL_CLICKED, (o) => {
+  three.addEventListener(KKJS.EVENT_WALL_CLICKED, function (o) {
     wallClicked(o.item);
   });
-  three.addEventListener(KKJS.EVENT_FLOOR_CLICKED, (o) => {
+  three.addEventListener(KKJS.EVENT_FLOOR_CLICKED, function (o) {
     floorClicked(o.item);
   });
-  three.addEventListener(KKJS.EVENT_FPS_EXIT, () => {
+  three.addEventListener(KKJS.EVENT_FPS_EXIT, function () {
     $("#showDesign").trigger("click");
   });
 }
@@ -1251,11 +1251,12 @@ function datGUI(three, floorplanner) {
     gui = new dat.GUI({ autoPlace: false });
     document.getElementById("gui-content").appendChild(gui.domElement);
 
-  aWall = new WallProperties();
-  aFloor = aWall; // Use same object for synchronization
-  anItem = new ItemProperties(gui);
+    aGlobal = new GlobalProperties();
+    aWall = new WallProperties();
+    aFloor = aWall; // Use same object for synchronization
+    anItem = new ItemProperties(gui);
 
-  globalPropFolder = getGlobalPropertiesFolder(gui, aGlobal);
+    globalPropFolder = getGlobalPropertiesFolder(gui, aGlobal);
   wallPropFolder = getWallAndFloorPropertiesFolder(gui, aWall, aFloor);
   itemPropFolder = getItemPropertiesFolder(gui, anItem);
 }
