@@ -12093,60 +12093,60 @@ functions return important math algorithms required to constructs lines/walls in
 
           canvas.width = w;
           canvas.height = h;
-          canvas.style.letterSpacing = "-22.5px";
+          canvas.style.letterSpacing = "-2.5px";
 
-          context.font = "bold 45pt Aldrich";
-          context.fillStyle = "#DADADA33";
+          context.save();
+          context.font = "bold 28pt Aldrich";
+          context.fillStyle = "rgba(0, 0, 0, 0.2)";
           context.fillRect(0, 0, w, h);
           context.textAlign = "center";
           context.textBaseline = "middle";
 
-          context.lineWidth = 3;
-          context.setLineDash([1, 2]);
-          context.strokeStyle = "#000000";
+          context.lineWidth = 4;
+          context.setLineDash([2, 5]);
+          context.strokeStyle = "rgba(0, 0, 0, 0.4)";
 
           context.beginPath();
           context.moveTo(0, h * 0.5);
           context.lineTo(w, h * 0.5);
-          context.closePath();
           context.stroke();
 
           context.beginPath();
           context.moveTo(w * 0.125, 0);
           context.lineTo(w * 0.125, h);
-          context.closePath();
           context.stroke();
 
-          context.lineWidth = 1;
+          // Background box for horizontal text
+          context.lineWidth = 2;
           context.setLineDash([0]);
-          context.strokeStyle = "#0000FF";
+          context.strokeStyle = "#FFFFFF";
           context.strokeText(
             wPrefix + Dimensioning.cmToMeasureString(w / 3),
             w * 0.5,
-            h * 0.5
+            h * 0.45
           );
 
           context.fillStyle = "#FF0000";
           context.fillText(
             wPrefix + Dimensioning.cmToMeasureString(w / 3),
             w * 0.5,
-            h * 0.5
+            h * 0.45
           );
 
           context.translate(w * 0.125, 0);
           context.rotate(Math.PI * 0.5);
-          context.strokeStyle = "#0000FF";
+          context.strokeStyle = "#FFFFFF";
           context.strokeText(
             hPrefix + Dimensioning.cmToMeasureString(h / 3),
             h * 0.5,
-            0
+            h * 0.1
           );
 
           context.fillStyle = "#FF0000";
           context.fillText(
             hPrefix + Dimensioning.cmToMeasureString(h / 3),
             h * 0.5,
-            0
+            h * 0.1
           );
           context.restore();
           material.map.needsUpdate = true;
@@ -12648,12 +12648,10 @@ functions return important math algorithms required to constructs lines/walls in
           }
           if (!isInARoom) {
             //We do not want to check if the object is in room or not
-            //It is upto the user to place it anywhere he/she wants however
-            //			return false;
-            return true;
+          if (!isInARoom) {
+            // Floor items must stay within room boundaries
+            return false;
           }
-          return true;
-        },
       },
     ]);
     return FloorItem;

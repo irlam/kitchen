@@ -517,6 +517,26 @@ button {
 
 .panel-title a {
   color: #9fffe8;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.panel-title a:hover {
+  color: #ffffff;
+  padding-left: 5px;
+  text-decoration: none;
+}
+
+.panel-heading {
+  transition: background 0.3s ease;
+}
+
+.panel-heading:hover {
+  background: rgba(0, 210, 210, 0.15) !important;
 }
 
 .wall-label-editor {
@@ -744,7 +764,7 @@ button {
 
 .gui-header .title {
     font-family: 'Aldrich', sans-serif;
-    font-size: 11px;
+    font-size: 14px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: #5fffea;
@@ -752,12 +772,12 @@ button {
 }
 
 .gui-header .dot {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     background: #5fffea;
-    margin-right: 10px;
-    box-shadow: 0 0 8px rgba(95, 255, 234, 0.5);
+    margin-right: 12px;
+    box-shadow: 0 0 10px rgba(95, 255, 234, 0.5);
 }
 
 /* Internal dat.GUI Modernization */
@@ -772,23 +792,24 @@ button {
 .dg .c input[type="text"], 
 .dg .c input[type="number"], 
 .dg .c select {
-    background: rgba(0, 0, 0, 0.3) !important;
-    border: 1px solid rgba(0, 210, 210, 0.2) !important;
-    padding: 5px 8px !important;
-    font-size: 12px !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid rgba(0, 210, 210, 0.3) !important;
+    padding: 6px 10px !important;
+    font-size: 14px !important;
     line-height: normal !important;
-    height: 28px !important;
+    height: 32px !important;
     color: #fff !important;
+    border-radius: 6px !important;
 }
 
 .dg .cr {
-    height: 36px !important;
-    line-height: 36px !important;
-    border-left: 2px solid transparent;
+    height: 48px !important;
+    line-height: 48px !important;
+    border-left: 3px solid transparent;
 }
 
 .dg .cr:hover {
-    background: rgba(255, 255, 255, 0.03) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
 }
 
 .dg .cr.number {
@@ -804,7 +825,7 @@ button {
 }
 
 .dg .property-name {
-    font-size: 11px !important;
+    font-size: 14px !important;
     width: 45% !important;
 }
 
@@ -813,16 +834,18 @@ button {
 }
 
 .dg .title {
-    background: rgba(255, 255, 255, 0.05) !important;
-    font-size: 11px !important;
-    padding: 10px 10px 10px 15px !important;
+    background: rgba(0, 210, 210, 0.15) !important;
+    font-size: 13px !important;
+    padding: 12px 12px 12px 18px !important;
     font-weight: bold !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .dg .slider {
     background: rgba(255, 255, 255, 0.1) !important;
-    height: 6px !important;
-    margin-top: 15px !important;
+    height: 8px !important;
+    margin-top: 20px !important;
 }
 
 .dg .slider-fg {
