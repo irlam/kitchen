@@ -1224,6 +1224,9 @@ $(document).ready(function () {
   });
 
   $("#add-items").on("click touchstart", ".add-item", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      $("#add-items-modal").modal("hide");
       var modelUrl = $(this).attr("model-url");
       var itemType = parseInt($(this).attr("model-type"));
       var itemFormat = $(this).attr("model-format");
