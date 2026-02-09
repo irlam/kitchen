@@ -12088,66 +12088,57 @@ functions return important math algorithms required to constructs lines/walls in
           wPrefix = wPrefix ? wPrefix : "w:";
           hPrefix = hPrefix ? hPrefix : "h:";
 
-          w *= 3;
-          h *= 3;
+          var scale = 4;
+          w *= scale;
+          h *= scale;
 
           canvas.width = w;
           canvas.height = h;
-          canvas.style.letterSpacing = "-2.5px";
 
           context.save();
-          context.font = "bold 28pt Aldrich";
-          context.fillStyle = "rgba(0, 0, 0, 0.2)";
-          context.fillRect(0, 0, w, h);
+          context.clearRect(0, 0, w, h);
           context.textAlign = "center";
           context.textBaseline = "middle";
+          context.font = "bold 35pt Aldrich";
 
-          context.lineWidth = 4;
-          context.setLineDash([2, 5]);
-          context.strokeStyle = "rgba(0, 0, 0, 0.4)";
+          var wText = wPrefix + Dimensioning.cmToMeasureString(w / scale);
+          var hText = hPrefix + Dimensioning.cmToMeasureString(h / scale);
 
+          // Background Pill Width
+          var tw = context.measureText(wText).width;
+          context.fillStyle = "rgba(12, 22, 33, 0.9)";
           context.beginPath();
-          context.moveTo(0, h * 0.5);
-          context.lineTo(w, h * 0.5);
+          var px = (w - (tw + 80)) / 2;
+          var py = h * 0.45 - 50;
+          context.rect(px, py, tw + 80, 100);
+          context.fill();
+          context.strokeStyle = "#5fffea";
+          context.lineWidth = 6;
           context.stroke();
 
+          context.fillStyle = "#FFFFFF";
+          context.fillText(wText, w * 0.5, h * 0.45);
+
+          // Background Pill Height
+          context.save();
+          context.translate(w * 0.15, h * 0.5);
+          context.rotate(-Math.PI * 0.5);
+          var th = context.measureText(hText).width;
+          context.fillStyle = "rgba(12, 22, 33, 0.9)";
           context.beginPath();
-          context.moveTo(w * 0.125, 0);
-          context.lineTo(w * 0.125, h);
+          context.rect(-(th + 80) / 2, -50, th + 80, 100);
+          context.fill();
+          context.strokeStyle = "#5fffea";
+          context.lineWidth = 6;
           context.stroke();
 
-          // Background box for horizontal text
-          context.lineWidth = 2;
-          context.setLineDash([0]);
-          context.strokeStyle = "#FFFFFF";
-          context.strokeText(
-            wPrefix + Dimensioning.cmToMeasureString(w / 3),
-            w * 0.5,
-            h * 0.45
-          );
+          context.fillStyle = "#FFFFFF";
+          context.fillText(hText, 0, 0);
+          context.restore();
 
-          context.fillStyle = "#FF0000";
-          context.fillText(
-            wPrefix + Dimensioning.cmToMeasureString(w / 3),
-            w * 0.5,
-            h * 0.45
-          );
-
-          context.translate(w * 0.125, 0);
-          context.rotate(Math.PI * 0.5);
-          context.strokeStyle = "#FFFFFF";
-          context.strokeText(
-            hPrefix + Dimensioning.cmToMeasureString(h / 3),
-            h * 0.5,
-            h * 0.1
-          );
-
-          context.fillStyle = "#FF0000";
-          context.fillText(
-            hPrefix + Dimensioning.cmToMeasureString(h / 3),
-            h * 0.5,
-            h * 0.1
-          );
+          context.restore();
+          material.map.needsUpdate = true;
+        },
           context.restore();
           material.map.needsUpdate = true;
         },

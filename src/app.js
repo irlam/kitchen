@@ -1248,7 +1248,7 @@ function datGUI(three, floorplanner) {
     }
 
     // Initialize dat.GUI within the content div
-    gui = new dat.GUI({ autoPlace: false, width: 380 });
+    gui = new dat.GUI({ autoPlace: false, width: 400 });
     document.getElementById("gui-content").appendChild(gui.domElement);
 
     aGlobal = new GlobalProperties();

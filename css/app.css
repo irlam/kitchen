@@ -617,19 +617,44 @@ button {
   color: #e8f8ff;
 }
 
+
 /* --- High Resolution Item Catalog Overhaul --- */
 .inventory-content {
-    background: #080e14;
-    padding: 20px;
+    background: #080e14 !important;
+    padding: 20px !important;
     border-radius: 4px;
+    height: 100%;
+}
+
+/* Force Grid layout for item wrappers to prevent squashing */
+#floor-items-wrapper,
+#wall-items-wrapper,
+#in-wall-items-wrapper {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+    gap: 20px !important;
+    padding: 10px !important;
+    width: 100% !important;
+}
+
+/* Remove Bootstrap chars that break Grid */
+.inventory-content .row::before, 
+.inventory-content .row::after {
+    display: none !important;
+}
+
+.inventory-content [class*="col-"] {
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    float: none !important;
 }
 
 .inventory-content .thumbnail.add-item {
-    background: linear-gradient(135deg, #0b141d 0%, #080c12 100%);
-    border: 1px solid rgba(0, 210, 210, 0.25);
+    background: linear-gradient(135deg, #0b141d 0%, #080c12 100%) !important;
+    border: 1px solid rgba(0, 210, 210, 0.25) !important;
     border-radius: 12px;
     padding: 12px;
-    margin-bottom: 20px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     position: relative;
@@ -637,307 +662,179 @@ button {
     text-align: center;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     text-decoration: none !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    min-height: 200px;
 }
 
 .inventory-content .thumbnail.add-item:hover {
-    border-color: #5fffea;
+    border-color: #5fffea !important;
     transform: translateY(-4px);
     box-shadow: 0 12px 25px rgba(0, 210, 210, 0.25);
-    background: linear-gradient(135deg, #0f1c29 0%, #0a1118 100%);
+    background: linear-gradient(135deg, #0f1c29 0%, #0a1118 100%) !important;
 }
 
-.inventory-content .thumbnail.add-item img {
+.inventory-content .thumbnail.add-item .thumb-container {
     width: 100%;
-    height: auto;
-    max-height: 140px;
-    object-fit: contain;
-    margin-bottom: 12px;
-    filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.5));
-    transition: transform 0.5s ease;
-    image-rendering: auto; /* Default high-quality scaling */
-}
-
-/* Force better rendering for blocky images */
-.inventory-content .thumbnail.add-item img {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-}
-
-.inventory-content .thumbnail.add-item:hover img {
-    transform: scale(1.08);
-}
-
-.inventory-content .thumbnail.add-item .caption {
-    padding: 4px 0 0;
-}
-
-.inventory-content .thumbnail.add-item h3 {
-    color: #e6f6ff;
-    font-family: 'Aldrich', sans-serif;
-    font-size: 13px;
-    font-weight: 300;
-    margin: 0;
-    padding: 0;
-    letter-spacing: 0.04em;
-    text-transform: capitalize;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Modern scrollbar for inventory */
-.inventory-content::-webkit-scrollbar {
-    width: 6px;
-}
-
-.inventory-content::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-}
-
-.inventory-content::-webkit-scrollbar-thumb {
-    background: rgba(0, 210, 210, 0.3);
-    border-radius: 10px;
-}
-
-.inventory-content::-webkit-scrollbar-thumb:hover {
-    background: rgba(95, 255, 234, 0.6);
-}
-
-/* Category Headers in Modal */
-.modal-body h2 {
-    font-family: 'Aldrich', sans-serif;
-    font-size: 18px;
-    color: #9fffe8;
-    border-left: 3px solid #5fffea;
-    padding-left: 15px;
-    margin: 20px 0 15px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-}
-
-.thumb-container {
     height: 140px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+.inventory-content .thumbnail.add-item img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.5));
+    transition: transform 0.5s ease;
 }
 
 .inventory-content .thumbnail.add-item h3 {
-    font-size: 14px;
-    margin-top: 5px;
+    color: #e6f6ff !important;
+    font-family: 'Aldrich', sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    margin: 5px 0 0 !important;
+    letter-spacing: 0.04em;
+    text-transform: capitalize;
 }
 
 /* --- Modern Floating Controls Overhaul --- */
-
-/* Floating Container */
 #gui-container {
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 10000;
-    width: 360px;
-    min-height: 300px;
-    background: rgba(8, 14, 20, 0.95);
-    backdrop-filter: blur(15px) saturate(160%);
-    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    width: 400px;
+    max-height: 85vh;
+    background: rgba(15, 25, 35, 0.7);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(0, 210, 210, 0.3);
     border-radius: 16px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    z-index: 10001;
     overflow: hidden;
-    transition: box-shadow 0.3s ease;
-    user-select: none;
     display: flex;
     flex-direction: column;
 }
 
-#gui-content {
-    flex: 1;
-    max-height: 70vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 5px 0;
-}
-
-#gui-container:hover {
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 210, 210, 0.15);
-}
-
-/* Header/Drag Handle */
 .gui-header {
-    background: linear-gradient(90deg, rgba(10, 18, 26, 0.95), rgba(15, 30, 45, 0.95));
-    padding: 12px 16px;
+    background: linear-gradient(90deg, rgba(0, 210, 210, 0.15), transparent);
+    padding: 12px 20px;
     cursor: move;
+    border-bottom: 1px solid rgba(0, 210, 210, 0.2);
     display: flex;
     align-items: center;
-    border-bottom: 1px solid rgba(0, 210, 210, 0.2);
-}
-
-.gui-header .title {
-    font-family: 'Aldrich', sans-serif;
-    font-size: 14px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: #5fffea;
-    flex: 1;
+    gap: 12px;
 }
 
 .gui-header .dot {
     width: 10px;
     height: 10px;
-    border-radius: 50%;
     background: #5fffea;
-    margin-right: 12px;
-    box-shadow: 0 0 10px rgba(95, 255, 234, 0.5);
+    border-radius: 50%;
+    box-shadow: 0 0 10px #5fffea;
 }
 
-/* Internal dat.GUI Modernization */
-.dg.main {
-    background: transparent !important;
-    border: none !important;
-    width: 100% !important;
-    box-shadow: none !important;
+.gui-header .title {
+    font-family: 'Aldrich', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #5fffea;
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
 
-.dg .c input[type="text"], 
-.dg .c input[type="number"], 
-.dg .c select {
-    background: rgba(0, 0, 0, 0.5) !important;
-    border: 1px solid rgba(0, 210, 210, 0.3) !important;
-    padding: 6px 12px !important;
-    font-size: 13px !important;
-    height: 32px !important;
-    color: #fff !important;
-    border-radius: 6px !important;
-    box-sizing: border-box !important;
-}
-
-.dg .cr {
-    height: auto !important;
-    min-height: 48px !important;
-    line-height: normal !important;
-    border-left: 3px solid transparent;
-    display: flex !important; align-items: center !important;
-    clear: both !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-    position: relative !important;
-}
-
-.dg .cr:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
-}
-
-.dg .cr.number { border-left-color: #5fffea; }
-.dg .cr.boolean { border-left-color: #ff57b7; }
-.dg .cr.function { border-left-color: #72ff57; }
-
-.dg .property-name {
-    font-size: 13px !important;
-    flex: 0 0 45% !important;
-    padding: 14px 12px !important;
-    color: #e0faff !important;
-    white-space: nowrap !important;
-    box-sizing: border-box !important;
-}
-    float: left !important;
-    box-sizing: border-box !important;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.dg li {
-    background: transparent !important;
-    border-bottom: 1px solid rgba(0, 210, 210, 0.1) !important;
-    height: auto !important;
-    display: block !important;
-    clear: both !important;
-    width: 100% !important;
-}
-
-.dg .folder .title {
-    background: rgba(0, 210, 210, 0.2) !important;
-    color: #ffffff !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    padding: 12px 15px !important;
-    text-transform: uppercase !important;
-    letter-spacing: 1px !important;
-    height: auto !important;
-    line-height: normal !important;
-    cursor: pointer !important;
-    border-bottom: 1px solid rgba(0, 210, 210, 0.3) !important;
-}
-
-.dg .slider {
-    background: rgba(255, 255, 255, 0.1) !important;
-    height: 8px !important;
-    margin-top: 20px !important;
-}
-
-.dg .slider-fg {
-    background: #5fffea !important;
-}
-
-/* Buttons in GUI */
-.dg .cr.function .property-name {
-    width: 100% !important;
-    text-align: center;
-    background: rgba(95, 255, 234, 0.1);
-    border-radius: 4px;
-    margin: 4px;
-    height: 28px;
-    line-height: 28px;
-}
-
-/* --- Scrollbar for dat.GUI inside container --- */
 #gui-content {
-    max-height: 80vh;
+    flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
 }
 
-#gui-content::-webkit-scrollbar {
-    width: 4px;
+/* dat.GUI Modern Overrides */
+.dg.main {
+    width: 100% !important;
+    color: #e0faff !important;
 }
 
-#gui-content::-webkit-scrollbar-track {
-    background: transparent;
+.dg .cr {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    height: auto !important;
+    min-height: 48px !important;
+    background: transparent !important;
+    border-bottom: 1px solid rgba(0, 210, 210, 0.1) !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
-#gui-content::-webkit-scrollbar-thumb {
-    background: rgba(95, 255, 234, 0.2);
-    border-radius: 10px;
+.dg .property-name {
+    flex: 1 !important;
+    width: auto !important;
+    padding: 0 15px !important;
+    font-size: 13px !important;
+    color: #e0faff !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
 }
 
-#gui-content::-webkit-scrollbar-thumb:hover {
-    background: rgba(95, 255, 234, 0.5);
+.dg .c {
+    flex: 0 0 160px !important;
+    width: 160px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    padding-right: 15px !important;
 }
 
-/* Fix for dat.GUI closing/opening button which we don't need now */
-.dg .close-button {
-    display: none !important;
+/* Input Fields */
+.dg input[type="text"], 
+.dg input[type="number"],
+.dg select {
+    background: rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(0, 210, 210, 0.3) !important;
+    border-radius: 6px !important;
+    color: #fff !important;
+    padding: 4px 8px !important;
+    height: 28px !important;
+    font-size: 12px !important;
+    width: 100% !important;
 }
 
-/* --- Enhanced Slider Styling --- */
+/* Sliders */
 .dg .slider {
-    border-radius: 10px !important;
-    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1) !important;
+    height: 8px !important;
+    border-radius: 4px !important;
+    margin: 0 10px !important;
+    flex: 1 !important;
 }
 
 .dg .slider-fg {
     background: linear-gradient(90deg, #5fffea, #31ad9c) !important;
-    box-shadow: 0 0 10px rgba(95, 255, 234, 0.4) !important;
 }
 
-.dg .cr.number input[type="text"] {
-    background: rgba(0, 0, 0, 0.5) !important;
-    border-radius: 6px !important;
-    text-align: center;
+/* Folders */
+.dg .folder .title {
+    background: rgba(0, 210, 210, 0.1) !important;
+    color: #fff !important;
+    padding: 12px 15px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    border-bottom: 1px solid rgba(0, 210, 210, 0.2) !important;
 }
 
-/* Checkbox Modernization */
+.dg li {
+    background: transparent !important;
+    height: auto !important;
+}
+
+/* Modern Checkbox */
 .dg .c input[type="checkbox"] {
     width: 20px !important;
     height: 20px !important;
@@ -953,28 +850,79 @@ button {
 
 .dg .c input[type="checkbox"]:checked {
     background: #5fffea;
-    box-shadow: 0 0 10px rgba(95, 255, 234, 0.4);
-    border-color: #5fffea;
 }
 
 .dg .c input[type="checkbox"]:checked::after {
     content: '✓';
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     color: #080e14;
-    font-size: 14px;
     font-weight: bold;
 }
 
-.dg .c {
-    width: 50% !important;
-    float: left !important;
-    padding: 10px 12px 0 0 !important;
-    box-sizing: border-box !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    min-height: 48px !important;
+.dg .close-button {
+    display: none !important;
 }
+
+
+/* Shine effect for catalog thumbnails */
+.inventory-content .thumbnail.add-item::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255, 255, 255, 0.05),
+        transparent
+    );
+    transform: rotate(45deg);
+    transition: 0.5s;
+    pointer-events: none;
+}
+
+.inventory-content .thumbnail.add-item:hover::after {
+    top: 50%;
+    left: 50%;
+}
+
+/* Ensure the modal content is dark and modern */
+.docked-modal .modal-content {
+    background: #0d151d !important;
+    border: 1px solid rgba(0, 210, 210, 0.3) !important;
+    color: #e6f1ff !important;
+    border-radius: 16px !important;
+}
+
+.docked-modal .modal-header {
+    border-bottom: 1px solid rgba(0, 210, 210, 0.2) !important;
+}
+
+.docked-modal .modal-title {
+    color: #5fffea !important;
+    font-family: 'Aldrich', sans-serif !important;
+    letter-spacing: 1px;
+}
+
+.docked-modal .panel-default {
+    background: transparent !important;
+    border: none !important;
+}
+
+.docked-modal .panel-heading {
+    background: rgba(0, 210, 210, 0.1) !important;
+    border: 1px solid rgba(0, 210, 210, 0.2) !important;
+    border-radius: 8px !important;
+    margin-bottom: 10px !important;
+}
+
+.docked-modal .panel-title a {
+    color: #9fffe8 !important;
+    font-weight: bold !important;
+    text-decoration: none !important;
+}
+
