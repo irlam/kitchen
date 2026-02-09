@@ -477,7 +477,7 @@ button {
   }
 
   .docked-modal .modal-dialog {
-    width: 280px;
+    width: 380px;
   }
 }
 
@@ -817,7 +817,7 @@ button {
     min-height: 48px !important;
     line-height: normal !important;
     border-left: 3px solid transparent;
-    display: block !important;
+    display: flex !important; align-items: center !important;
     clear: both !important;
     padding: 0 !important;
     margin: 0 !important;
@@ -835,10 +835,12 @@ button {
 
 .dg .property-name {
     font-size: 13px !important;
-    width: 50% !important;
+    flex: 0 0 45% !important;
     padding: 14px 12px !important;
     color: #e0faff !important;
     white-space: nowrap !important;
+    box-sizing: border-box !important;
+}
     float: left !important;
     box-sizing: border-box !important;
     overflow: hidden;

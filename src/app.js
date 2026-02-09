@@ -752,7 +752,7 @@ var WallProperties = function () {
     ["rooms/textures/floor/light_fine_wood.jpg", false, 300], //28 fine wood
     ["rooms/textures/floor/hardwood.png", false, 300], //29 hardwood
     ["rooms/textures/floor/checkered-tiles-square.jpg", false, 150], //30 checkered tiles
-    
+
     // Modern Wall & Floor additions
     ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Concrete033.jpg", false, 150], //31 Modern Concrete
     ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Tiles101.jpg", false, 50],   //32 Navy SubTile
@@ -786,7 +786,7 @@ var WallProperties = function () {
     } else {
       console.warn("wchanged called but no currentWall is set");
     }
-    
+
     if (this.currentFloor && this.forAllWalls) {
         var texture = this.textures[this.wallmaterialname];
         console.log("Applying texture to all walls of floor:", texture);
@@ -1195,7 +1195,7 @@ function datGUI(three, floorplanner) {
     // Create custom container for dat.GUI to allow dragging and modern styling
     var guiContainer = document.createElement("div");
     guiContainer.id = "gui-container";
-    guiContainer.innerHTML = 
+    guiContainer.innerHTML =
       '<div class="gui-header">' +
         '<div class="dot"></div>' +
         '<div class="title">Design Controls</div>' +
@@ -1248,7 +1248,7 @@ function datGUI(three, floorplanner) {
     }
 
     // Initialize dat.GUI within the content div
-    gui = new dat.GUI({ autoPlace: false });
+    gui = new dat.GUI({ autoPlace: false, width: 380 });
     document.getElementById("gui-content").appendChild(gui.domElement);
 
     aGlobal = new GlobalProperties();
@@ -1262,8 +1262,11 @@ function datGUI(three, floorplanner) {
 
     globalPropFolder.open();
     wallPropFolder.open();
-    itemPropFolder.open();
-  dat.GUI.prototype.removeFolder = function (name) {
+      itemPropFolder.open();
+  }
+
+  $(document).ready(function () {
+    dat.GUI.prototype.removeFolder = function (name) {
     var folder = this.__folders[name];
     if (!folder) {
       return;
@@ -1326,14 +1329,14 @@ function datGUI(three, floorplanner) {
   $("#add-items").on("click touchstart", ".add-item", function (e) {
       e.preventDefault();
       e.stopPropagation();
-      
+
       var modelUrl = $(this).attr("model-url");
       var itemType = parseInt($(this).attr("model-type"));
       var itemFormat = $(this).attr("model-format");
       var itemName = $(this).attr("model-name");
-      
+
       console.log("Adding item:", itemName, "Type:", itemType, "URL:", modelUrl);
-      
+
       $("#add-items-modal").modal("hide");
 
       var metadata = {
@@ -1569,3 +1572,4 @@ function datGUI(three, floorplanner) {
     }, 300);
   });
 });
+// Forced refresh comment
