@@ -17592,7 +17592,7 @@ functions return important math algorithms required to constructs lines/walls in
   var KitchenKreationJS = function KitchenKreationJS(options) {
     classCallCheck(this, KitchenKreationJS);
 
-    Configuration.setValue(configDimUnit, dimMeter);
+    Configuration.setValue(configDimUnit, dimMilliMeter);
 
     this.options = options;
     this.model = new Model(options.textureDir);

@@ -545,8 +545,8 @@ var GlobalProperties = function () {
     a: false,
     b: false,
     c: false,
-    d: false,
-    e: true,
+    d: true,
+    e: false,
   };
   this.unitslabel = {
     a: KKJS.dimFeetAndInch,
