@@ -310,25 +310,23 @@ $(document).ready(function () {
       continue;
     }
 
-    var modelformat = item.format ? ' model-format="' + item.format + '"' : "";
+    var modelformat = item.format ? " model-format=\"" + item.format + "\" " : "";
+    var cleanName = item.name.replace(/_/g, " ");
+
     var html =
-      '<div class="col-sm-4">' +
-      '<a class="thumbnail add-item"' +
-      ' model-name="' +
-      item.name +
-      '"' +
-      ' model-url="' +
-      item.model +
-      '"' +
-      ' model-type="' +
-      item.type +
-      '"' +
+      "<div class=\"col-sm-4 col-md-3\">" +
+      "<a class=\"thumbnail add-item\"" +
+      " model-name=\"" + item.name + "\" " +
+      " model-url=\"" + item.model + "\" " +
+      " model-type=\"" + item.type + "\" " +
       modelformat +
       ">" +
-      '<img src="' +
-      item.image +
-      '" alt="Add Item"   data-dismiss="modal" 	> ' +
-      item.name +
+      "<div class=\"thumb-container\">" +
+      "<img src=\"" + item.image + "\" alt=\"" + item.name + "\" data-dismiss=\"modal\">" +
+      "</div>" +
+      "<div class=\"caption\">" +
+      "<h3>" + cleanName + "</h3>" +
+      "</div>" +
       "</a></div>";
 
     itemsDiv.append(html);

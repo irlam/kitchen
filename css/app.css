@@ -596,3 +596,114 @@ button {
 .dg select {
   color: #e8f8ff;
 }
+
+/* --- High Resolution Item Catalog Overhaul --- */
+.inventory-content {
+    background: #080e14;
+    padding: 20px;
+    border-radius: 4px;
+}
+
+.inventory-content .thumbnail.add-item {
+    background: linear-gradient(135deg, #0b141d 0%, #080c12 100%);
+    border: 1px solid rgba(0, 210, 210, 0.25);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    text-decoration: none !important;
+}
+
+.inventory-content .thumbnail.add-item:hover {
+    border-color: #5fffea;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(0, 210, 210, 0.25);
+    background: linear-gradient(135deg, #0f1c29 0%, #0a1118 100%);
+}
+
+.inventory-content .thumbnail.add-item img {
+    width: 100%;
+    height: auto;
+    max-height: 140px;
+    object-fit: contain;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.5));
+    transition: transform 0.5s ease;
+    image-rendering: auto; /* Default high-quality scaling */
+}
+
+/* Force better rendering for blocky images */
+.inventory-content .thumbnail.add-item img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+.inventory-content .thumbnail.add-item:hover img {
+    transform: scale(1.08);
+}
+
+.inventory-content .thumbnail.add-item .caption {
+    padding: 4px 0 0;
+}
+
+.inventory-content .thumbnail.add-item h3 {
+    color: #e6f6ff;
+    font-family: 'Aldrich', sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    margin: 0;
+    padding: 0;
+    letter-spacing: 0.04em;
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Modern scrollbar for inventory */
+.inventory-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.inventory-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.inventory-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 210, 210, 0.3);
+    border-radius: 10px;
+}
+
+.inventory-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(95, 255, 234, 0.6);
+}
+
+/* Category Headers in Modal */
+.modal-body h2 {
+    font-family: 'Aldrich', sans-serif;
+    font-size: 18px;
+    color: #9fffe8;
+    border-left: 3px solid #5fffea;
+    padding-left: 15px;
+    margin: 20px 0 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.thumb-container {
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.inventory-content .thumbnail.add-item h3 {
+    font-size: 14px;
+    margin-top: 5px;
+}
