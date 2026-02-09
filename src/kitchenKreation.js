@@ -16011,7 +16011,10 @@ functions return important math algorithms required to constructs lines/walls in
           
           console.log("Edge.updateTexture loading:", url, "stretch:", stretch, "scale:", scale);
           
-          this.texture = new THREE.TextureLoader().load(url, callback, undefined, function(err) {
+          this.texture = new THREE.TextureLoader().load(url, function(tex) {
+              tex.mapping = THREE.UVMapping;
+              if (callback) callback(tex);
+          }, undefined, function(err) {
               console.error("Failed to load texture:", url, err);
           });
 

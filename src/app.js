@@ -759,7 +759,7 @@ var WallProperties = function () {
     ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Wood067.jpg", false, 150],  //33 Vertical Slats
     ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Tiles107.jpg", false, 50],   //34 White Hex
     ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Terrazzo018.jpg", false, 150], //35 Terrazzo
-    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Marble006.jpg", false, 200],   //36 Calacatta Marble
+    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-101010/Marble006.jpg", false, 200],   //36 Calacatta Marble
     ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Tiles011.jpg", false, 200],    //37 Slate
     ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Wood066.jpg", false, 150],     //38 Herringbone Walnut
   ];
