@@ -9623,22 +9623,15 @@ functions return important math algorithms required to constructs lines/walls in
       {
         reference: "pointInPolygon",
         value: function pointInPolygon(point, corners, start) {
-          start = start || new THREE.Vector2(0, 0);
-          var startX = start.x || 0;
-          var startY = start.y || 0;
-
-          //ensure that point(startX, startY) is outside the polygon consists of corners
-          var tMinX = 0,
-            tMinY = 0;
-          var tI = 0;
-
-          if (startX === undefined || startY === undefined) {
+          if (start === undefined) {
+            var tMinX = 0,
+              tMinY = 0;
+            var tI = 0;
             for (tI = 0; tI < corners.length; tI++) {
               tMinX = Math.min(tMinX, corners[tI].x);
-              tMinY = Math.min(tMinX, corners[tI].y);
+              tMinY = Math.min(tMinY, corners[tI].y);
             }
-            startX = tMinX - 10;
-            startY = tMinY - 10;
+            start = new THREE.Vector2(tMinX - 10, tMinY - 10);
           }
 
           var tIntersects = 0;
@@ -12483,6 +12476,19 @@ functions return important math algorithms required to constructs lines/walls in
         },
       },
       {
+        reference: "showError",
+        value: function showError(vec3) {
+          if (!this.error) {
+            this.error = true;
+            this.errorGlow = this.createGlow(this.errorColor, 0.5, true);
+            this.scene.add(this.errorGlow);
+          }
+          if (vec3) {
+            this.errorGlow.position.copy(vec3);
+          }
+        },
+      },
+      {
         reference: "objectHalfSize",
         value: function objectHalfSize() {
           var objectBox = new THREE.Box3();
@@ -12602,6 +12608,7 @@ functions return important math algorithms required to constructs lines/walls in
             this.showError(vec3);
             return;
           } else {
+            this.hideError();
             vec3.y = this.position.y; // keep it on the floor!
             //			this.position.copy(vec3);
             get(
@@ -15074,19 +15081,15 @@ functions return important math algorithms required to constructs lines/walls in
           recursive,
           linePrecision
         ) {
-          var vector = this.mouseToVec3(vec2);
           onlyVisible = onlyVisible || false;
           filterByNormals = filterByNormals || false;
           recursive = recursive || false;
           linePrecision = linePrecision || 20;
 
-          var direction = vector.sub(this.camera.position).normalize();
-          var raycaster = new THREE.Raycaster(this.camera.position, direction);
-          raycaster.linePrecision = linePrecision;
-
-          raycaster = new THREE.Raycaster();
+          var raycaster = new THREE.Raycaster();
+          raycaster.params.Line.threshold = linePrecision;
           raycaster.setFromCamera(
-            this.normalizeVector2(this.alternateMouse),
+            this.normalizeVector2(vec2 || this.alternateMouse),
             this.camera
           );
 
