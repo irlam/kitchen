@@ -14592,6 +14592,226 @@ functions return important math algorithms required to constructs lines/walls in
     PANNING: 5,
   };
 
+  /**
+   * GapManager handles showing distances between items and walls.
+   */
+  var GapManager = (function () {
+    function GapManager(scene, model) {
+      this.scene = scene;
+      this.model = model;
+      this.gapObjects = [];
+    }
+
+    GapManager.prototype.clear = function () {
+      var scope = this;
+      this.gapObjects.forEach(function (obj) {
+        scope.scene.remove(obj.line);
+        scope.scene.remove(obj.plane);
+        if (obj.plane.material.map) obj.plane.material.map.dispose();
+        obj.plane.material.dispose();
+        obj.line.material.dispose();
+      });
+      this.gapObjects = [];
+    };
+
+    GapManager.prototype.update = function (selectedItem) {
+      this.clear();
+      if (!selectedItem || !selectedItem.visible) return;
+
+      var scope = this;
+      var threshold = 150; // cm
+      var allItems = this.model.scene.getItems();
+      var box = new THREE.Box3().setFromObject(selectedItem);
+      var center = new THREE.Vector3();
+      box.getCenter(center);
+
+      // 1. Check against other items
+      allItems.forEach(function (item) {
+        if (item === selectedItem || !item.visible) return;
+        var otherBox = new THREE.Box3().setFromObject(item);
+        var otherCenter = new THREE.Vector3();
+        otherBox.getCenter(otherCenter);
+
+        // X-axis gap
+        var overlapZ =
+          Math.min(box.max.z, otherBox.max.z) -
+          Math.max(box.min.z, otherBox.min.z);
+        if (overlapZ > 2) {
+          if (otherBox.min.x > box.max.x) {
+            var gapX = otherBox.min.x - box.max.x;
+            if (gapX < threshold) {
+              scope.addGap(
+                box.max.x,
+                center.y,
+                center.z,
+                otherBox.min.x,
+                center.y,
+                center.z
+              );
+            }
+          } else if (box.min.x > otherBox.max.x) {
+            var gapX = box.min.x - otherBox.max.x;
+            if (gapX < threshold) {
+              scope.addGap(
+                otherBox.max.x,
+                center.y,
+                center.z,
+                box.min.x,
+                center.y,
+                center.z
+              );
+            }
+          }
+        }
+
+        // Z-axis gap
+        var overlapX =
+          Math.min(box.max.x, otherBox.max.x) -
+          Math.max(box.min.x, otherBox.min.x);
+        if (overlapX > 2) {
+          if (otherBox.min.z > box.max.z) {
+            var gapZ = otherBox.min.z - box.max.z;
+            if (gapZ < threshold) {
+              scope.addGap(
+                center.x,
+                center.y,
+                box.max.z,
+                center.x,
+                center.y,
+                otherBox.min.z
+              );
+            }
+          } else if (box.min.z > otherBox.max.z) {
+            var gapZ = box.min.z - otherBox.max.z;
+            if (gapZ < threshold) {
+              scope.addGap(
+                center.x,
+                center.y,
+                otherBox.max.z,
+                center.x,
+                center.y,
+                box.min.z
+              );
+            }
+          }
+        }
+      });
+
+      // 2. Check against walls
+      var rooms = this.model.floorplan.getRooms();
+      rooms.forEach(function (room) {
+        room.interiorCorners.forEach(function (v1, i) {
+          var v2 = room.interiorCorners[(i + 1) % room.interiorCorners.length];
+          var wallStart = new THREE.Vector2(v1.x, v1.y);
+          var wallEnd = new THREE.Vector2(v2.x, v2.y);
+
+          var dirs = [
+            { x: 1, z: 0, face: box.max.x },
+            { x: -1, z: 0, face: box.min.x },
+            { x: 0, z: 1, face: box.max.z },
+            { x: 0, z: -1, face: box.min.z },
+          ];
+
+          dirs.forEach(function (d) {
+            var p =
+              d.x !== 0
+                ? new THREE.Vector2(d.face, center.z)
+                : new THREE.Vector2(center.x, d.face);
+            var proj = MathUtilities.closestPointOnLine(p, wallStart, wallEnd);
+            var dist = p.distanceTo(proj);
+
+            var inDirection = false;
+            if (d.x > 0) inDirection = proj.x > p.x;
+            else if (d.x < 0) inDirection = proj.x < p.x;
+            else if (d.z > 0) inDirection = proj.y > p.y;
+            else if (d.z < 0) inDirection = proj.y < p.y;
+
+            if (dist > 0.1 && dist < threshold && inDirection) {
+              var axisMatch =
+                d.x !== 0 ? Math.abs(proj.y - p.y) : Math.abs(proj.x - p.x);
+              if (axisMatch < 1.0) {
+                scope.addGap(p.x, center.y, p.y, proj.x, center.y, proj.y);
+              }
+            }
+          });
+        });
+      });
+    };
+
+    GapManager.prototype.addGap = function (x1, y1, z1, x2, y2, z2) {
+      var start = new THREE.Vector3(x1, y1, z1);
+      var end = new THREE.Vector3(x2, y2, z2);
+      var distCM = start.distanceTo(end);
+
+      var geometry = new THREE.Geometry();
+      geometry.vertices.push(start, end);
+      var line = new THREE.Line(
+        geometry,
+        new THREE.LineDashedMaterial({
+          color: 0x00d2d2,
+          dashSize: 2,
+          gapSize: 1,
+          transparent: true,
+          opacity: 0.6,
+        })
+      );
+      line.computeLineDistances();
+      this.scene.add(line);
+
+      var label = this.createLabel(distCM);
+      label.position.set((x1 + x2) / 2, y1 + 10, (z1 + z2) / 2);
+      this.scene.add(label);
+
+      this.gapObjects.push({ line: line, plane: label });
+    };
+
+    GapManager.prototype.createLabel = function (cm) {
+      var canvas = document.createElement("canvas");
+      canvas.width = 128;
+      canvas.height = 64;
+      var context = canvas.getContext("2d");
+      var mm = Math.round(cm * 10);
+
+      context.fillStyle = "rgba(10, 20, 30, 0.9)";
+      context.beginPath();
+      if (context.roundRect) {
+        context.roundRect(0, 0, 128, 64, 10);
+      } else {
+        context.rect(0, 0, 128, 64);
+      }
+      context.fill();
+
+      context.strokeStyle = "#5fffea";
+      context.lineWidth = 2;
+      context.stroke();
+
+      context.font = "bold 32px Aldrich";
+      context.fillStyle = "#FFFFFF";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(mm + "mm", 64, 32);
+
+      var texture = new THREE.CanvasTexture(canvas);
+      var material = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+        side: THREE.DoubleSide,
+        depthTest: false,
+      });
+      var plane = new THREE.Mesh(new THREE.PlaneGeometry(24, 12), material);
+      plane.renderOrder = 1000;
+      return plane;
+    };
+
+    GapManager.prototype.faceCamera = function (camera) {
+      this.gapObjects.forEach(function (obj) {
+        obj.plane.quaternion.copy(camera.quaternion);
+      });
+    };
+
+    return GapManager;
+  })();
+
   // Controller is the class that maintains the items, floors, walls selection in the 3d scene
   var Controller = (function (_EventDispatcher) {
     inherits(Controller, _EventDispatcher);
@@ -14613,6 +14833,8 @@ functions return important math algorithms required to constructs lines/walls in
 
       this_.enabled = true;
       this_.scene = model.scene;
+
+      this_.gapManager = new GapManager(this_.scene.getScene(), this_.model);
 
       this_.plane = null;
       this_.mouse = new THREE.Vector2(0, 0);
@@ -14874,6 +15096,7 @@ functions return important math algorithms required to constructs lines/walls in
               case states.ROTATING:
               case states.ROTATING_FREE:
                 this.clickDragged();
+                this.gapManager.update(this.selectedObject);
                 this.hud.update();
                 this.needsUpdate = true;
                 break;
@@ -15147,6 +15370,7 @@ functions return important math algorithms required to constructs lines/walls in
             // three.itemUnselectedCallbacks.fire();
             this.three.itemIsUnselected();
           }
+          this.gapManager.update(this.selectedObject);
           this.needsUpdate = true;
         },
       },
@@ -17686,6 +17910,9 @@ functions return important math algorithms required to constructs lines/walls in
           }
 
           if (this.shouldRender() || forced) {
+            if (this.controller && this.controller.gapManager) {
+              this.controller.gapManager.faceCamera(this.camera);
+            }
             local.renderer.render(local.scene.getScene(), local.camera);
           }
           local.lastRender = Date.now();
