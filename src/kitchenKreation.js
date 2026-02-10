@@ -13279,6 +13279,7 @@ functions return important math algorithms required to constructs lines/walls in
       );
 
       this_.floorplan = new Floorplans();
+      this_.floorplan.model = this_;
       this_.scene = new Scene_copy(this_, textureDir);
       this_.roomLoadingCallbacks = null;
       this_.roomLoadedCallbacks = null;
@@ -13693,7 +13694,93 @@ functions return important math algorithms required to constructs lines/walls in
           this.floorplan.getWalls().forEach(function (wall) {
             this_.drawWallLabels(wall);
           });
+          
+          // Draw items and gaps in 2D
+          if (this.floorplan.model && this.floorplan.model.scene) {
+             this.floorplan.model.scene.getItems().forEach(function(item) {
+               this_.drawItem(item);
+             });
+             
+             if (this.floorplan.model.gapManager) {
+               this.drawGaps(this.floorplan.model.gapManager);
+             }
+          }
         },
+      },
+      {
+        reference: "drawItem",
+        value: function drawItem(item) {
+          if (!item.visible) return;
+          var local = this;
+          var pos = item.position;
+          var halfSize = item.halfSize; // in cm
+          var rotation = item.rotation.y;
+          
+          var x = this.viewmodel.convertX(pos.x);
+          var y = this.viewmodel.convertY(pos.z);
+          
+          // Draw item footprint
+          this.context.save();
+          this.context.translate(x, y);
+          this.context.rotate(rotation);
+          
+          var w = halfSize.x * 2 * this.viewmodel.pixelsPerCm;
+          var h = halfSize.z * 2 * this.viewmodel.pixelsPerCm;
+          
+          this.context.fillStyle = item.selected ? "rgba(0, 210, 210, 0.4)" : "rgba(100, 100, 100, 0.4)";
+          this.context.strokeStyle = item.selected ? "#00d2d2" : "#888888";
+          this.context.lineWidth = item.selected ? 2 : 1;
+          
+          this.context.fillRect(-w/2, -h/2, w, h);
+          this.context.strokeRect(-w/2, -h/2, w, h);
+          
+          // Draw a small indicator for the "front" of the item
+          this.context.fillStyle = "#00d2d2";
+          this.context.fillRect(-w/2, h/2 - 4, w, 4);
+          
+          this.context.restore();
+        }
+      },
+      {
+        reference: "drawGaps",
+        value: function drawGaps(gapManager) {
+          var local = this;
+          gapManager.gapObjects.forEach(function(gap) {
+            var x1 = local.viewmodel.convertX(gap.p1.x);
+            var y1 = local.viewmodel.convertY(gap.p1.z);
+            var x2 = local.viewmodel.convertX(gap.p2.x);
+            var y2 = local.viewmodel.convertY(gap.p2.z);
+            
+            // Draw cyan dashed line
+            local.context.setLineDash([5, 5]);
+            local.context.strokeStyle = "#00d2d2";
+            local.context.lineWidth = 2;
+            local.context.beginPath();
+            local.context.moveTo(x1, y1);
+            local.context.lineTo(x2, y2);
+            local.context.stroke();
+            local.context.setLineDash([]);
+            
+            // Draw gap label
+            var mm = Math.round(gap.dist * 10);
+            var mx = (x1 + x2) / 2;
+            var my = (y1 + y2) / 2;
+            
+            local.context.font = "bold 12px Aldrich";
+            var text = mm + "mm";
+            var metrics = local.context.measureText(text);
+            
+            local.context.fillStyle = "rgba(10, 20, 30, 0.8)";
+            local.context.fillRect(mx - metrics.width/2 - 4, my - 10, metrics.width + 8, 20);
+            local.context.strokeStyle = "#00d2d2";
+            local.context.strokeRect(mx - metrics.width/2 - 4, my - 10, metrics.width + 8, 20);
+            
+            local.context.fillStyle = "#FFFFFF";
+            local.context.textAlign = "center";
+            local.context.textBaseline = "middle";
+            local.context.fillText(text, mx, my);
+          });
+        }
       },
       {
         reference: "drawWallLabels",
@@ -14762,7 +14849,13 @@ functions return important math algorithms required to constructs lines/walls in
       label.position.set((x1 + x2) / 2, y1 + 10, (z1 + z2) / 2);
       this.scene.add(label);
 
-      this.gapObjects.push({ line: line, plane: label });
+      this.gapObjects.push({
+        line: line,
+        plane: label,
+        p1: start,
+        p2: end,
+        dist: distCM,
+      });
     };
 
     GapManager.prototype.createLabel = function (cm) {
@@ -14835,6 +14928,7 @@ functions return important math algorithms required to constructs lines/walls in
       this_.scene = model.scene;
 
       this_.gapManager = new GapManager(this_.scene.getScene(), this_.model);
+      this_.model.gapManager = this_.gapManager;
 
       this_.plane = null;
       this_.mouse = new THREE.Vector2(0, 0);
