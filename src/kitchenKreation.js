@@ -15115,6 +15115,7 @@ functions return important math algorithms required to constructs lines/walls in
 
           // filter by normals, if true
           if (filterByNormals) {
+            var direction = raycaster.ray.direction;
             intersections = MathUtilities.removeIf(intersections, function (
               intersection
             ) {
