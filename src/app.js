@@ -1245,8 +1245,12 @@ function datGUI(three, floorplanner) {
     var header = guiContainer.querySelector(".gui-header");
 
     header.addEventListener("mousedown", dragStart);
+    header.addEventListener("touchstart", dragStart);
     document.addEventListener("mousemove", drag);
+    // Non-passive listener required to call preventDefault() during drag to prevent scrolling
+    document.addEventListener("touchmove", drag, { passive: false });
     document.addEventListener("mouseup", dragEnd);
+    document.addEventListener("touchend", dragEnd);
     
     // Add click listener for collapsing
     header.addEventListener("click", function(e) {
@@ -1255,10 +1259,24 @@ function datGUI(three, floorplanner) {
       }
     });
 
+    // Helper function to extract coordinates from mouse or touch events
+    function getClientCoordinates(e) {
+      if (e.clientX !== undefined && e.clientY !== undefined) {
+        return { x: e.clientX, y: e.clientY };
+      }
+      if (e.touches && e.touches.length > 0) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+      return null;
+    }
+
     function dragStart(e) {
       dragMoved = false; // Reset on start
-      initialX = e.clientX - xOffset;
-      initialY = e.clientY - yOffset;
+      var coords = getClientCoordinates(e);
+      if (!coords) return;
+      
+      initialX = coords.x - xOffset;
+      initialY = coords.y - yOffset;
       if (e.target === header || e.target.parentNode === header) {
         isDragging = true;
       }
@@ -1266,10 +1284,13 @@ function datGUI(three, floorplanner) {
 
     function drag(e) {
       if (isDragging) {
+        var coords = getClientCoordinates(e);
+        if (!coords) return;
+        
         e.preventDefault();
         dragMoved = true; // Mark as moved
-        currentX = e.clientX - initialX;
-        currentY = e.clientY - initialY;
+        currentX = coords.x - initialX;
+        currentY = coords.y - initialY;
         xOffset = currentX;
         yOffset = currentY;
         setTranslate(currentX, currentY, guiContainer);
