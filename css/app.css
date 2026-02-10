@@ -719,16 +719,27 @@ button {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#gui-container.collapsed {
+    max-height: 48px;
+}
+
+#gui-container.collapsed #gui-content {
+    visibility: hidden;
+    opacity: 0;
 }
 
 .gui-header {
     background: linear-gradient(90deg, rgba(0, 210, 210, 0.15), transparent);
     padding: 12px 20px;
-    cursor: move;
+    cursor: pointer;
     border-bottom: 1px solid rgba(0, 210, 210, 0.2);
     display: flex;
     align-items: center;
     gap: 12px;
+    user-select: none;
 }
 
 .gui-header .dot {
@@ -746,12 +757,30 @@ button {
     color: #5fffea;
     letter-spacing: 2px;
     text-transform: uppercase;
+    flex: 1;
+}
+
+/* Add an arrow indicator for collapse status */
+.gui-header::after {
+    content: '▾';
+    color: #5fffea;
+    font-size: 18px;
+    transition: transform 0.3s ease;
+}
+
+#gui-container.collapsed .gui-header::after {
+    transform: rotate(-90deg);
 }
 
 #gui-content {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
+    transition: opacity 0.2s ease;
+}
+
+.gui-header:hover {
+    background: linear-gradient(90deg, rgba(0, 210, 210, 0.25), rgba(0, 210, 210, 0.05));
 }
 
 /* dat.GUI Modern Overrides */
@@ -778,14 +807,17 @@ button {
     padding: 0 15px !important;
     font-size: 13px !important;
     color: #e0faff !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    line-height: 1.2 !important;
+    display: flex !important;
+    align-items: center !important;
 }
 
 .dg .c {
-    flex: 0 0 145px !important;
-    width: 145px !important;
+    flex: 0 0 120px !important;
+    width: 120px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: flex-end !important;

@@ -1205,6 +1205,7 @@ function datGUI(three, floorplanner) {
 
     // Make the container draggable
     var isDragging = false;
+    var dragMoved = false; // Add flag to track if we dragged
     var currentX;
     var currentY;
     var initialX;
@@ -1217,8 +1218,16 @@ function datGUI(three, floorplanner) {
     header.addEventListener("mousedown", dragStart);
     document.addEventListener("mousemove", drag);
     document.addEventListener("mouseup", dragEnd);
+    
+    // Add click listener for collapsing
+    header.addEventListener("click", function(e) {
+      if (!dragMoved) {
+        guiContainer.classList.toggle("collapsed");
+      }
+    });
 
     function dragStart(e) {
+      dragMoved = false; // Reset on start
       initialX = e.clientX - xOffset;
       initialY = e.clientY - yOffset;
       if (e.target === header || e.target.parentNode === header) {
@@ -1229,6 +1238,7 @@ function datGUI(three, floorplanner) {
     function drag(e) {
       if (isDragging) {
         e.preventDefault();
+        dragMoved = true; // Mark as moved
         currentX = e.clientX - initialX;
         currentY = e.clientY - initialY;
         xOffset = currentX;
