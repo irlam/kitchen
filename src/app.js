@@ -1245,8 +1245,11 @@ function datGUI(three, floorplanner) {
     var header = guiContainer.querySelector(".gui-header");
 
     header.addEventListener("mousedown", dragStart);
+    header.addEventListener("touchstart", dragStart);
     document.addEventListener("mousemove", drag);
+    document.addEventListener("touchmove", drag, { passive: false });
     document.addEventListener("mouseup", dragEnd);
+    document.addEventListener("touchend", dragEnd);
     
     // Add click listener for collapsing
     header.addEventListener("click", function(e) {
@@ -1257,8 +1260,10 @@ function datGUI(three, floorplanner) {
 
     function dragStart(e) {
       dragMoved = false; // Reset on start
-      initialX = e.clientX - xOffset;
-      initialY = e.clientY - yOffset;
+      var clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      var clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      initialX = clientX - xOffset;
+      initialY = clientY - yOffset;
       if (e.target === header || e.target.parentNode === header) {
         isDragging = true;
       }
@@ -1268,8 +1273,10 @@ function datGUI(three, floorplanner) {
       if (isDragging) {
         e.preventDefault();
         dragMoved = true; // Mark as moved
-        currentX = e.clientX - initialX;
-        currentY = e.clientY - initialY;
+        var clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        var clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        currentX = clientX - initialX;
+        currentY = clientY - initialY;
         xOffset = currentX;
         yOffset = currentY;
         setTranslate(currentX, currentY, guiContainer);
