@@ -1247,6 +1247,7 @@ function datGUI(three, floorplanner) {
     header.addEventListener("mousedown", dragStart);
     header.addEventListener("touchstart", dragStart);
     document.addEventListener("mousemove", drag);
+    // Non-passive listener required to call preventDefault() during drag to prevent scrolling
     document.addEventListener("touchmove", drag, { passive: false });
     document.addEventListener("mouseup", dragEnd);
     document.addEventListener("touchend", dragEnd);
