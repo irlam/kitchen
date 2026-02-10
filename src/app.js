@@ -1258,12 +1258,24 @@ function datGUI(three, floorplanner) {
       }
     });
 
+    // Helper function to extract coordinates from mouse or touch events
+    function getClientCoordinates(e) {
+      if (e.clientX !== undefined && e.clientY !== undefined) {
+        return { x: e.clientX, y: e.clientY };
+      }
+      if (e.touches && e.touches.length > 0) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+      return null;
+    }
+
     function dragStart(e) {
       dragMoved = false; // Reset on start
-      var clientX = e.clientX || (e.touches && e.touches.length > 0 ? e.touches[0].clientX : 0);
-      var clientY = e.clientY || (e.touches && e.touches.length > 0 ? e.touches[0].clientY : 0);
-      initialX = clientX - xOffset;
-      initialY = clientY - yOffset;
+      var coords = getClientCoordinates(e);
+      if (!coords) return;
+      
+      initialX = coords.x - xOffset;
+      initialY = coords.y - yOffset;
       if (e.target === header || e.target.parentNode === header) {
         isDragging = true;
       }
@@ -1271,12 +1283,13 @@ function datGUI(three, floorplanner) {
 
     function drag(e) {
       if (isDragging) {
+        var coords = getClientCoordinates(e);
+        if (!coords) return;
+        
         e.preventDefault();
         dragMoved = true; // Mark as moved
-        var clientX = e.clientX || (e.touches && e.touches.length > 0 ? e.touches[0].clientX : 0);
-        var clientY = e.clientY || (e.touches && e.touches.length > 0 ? e.touches[0].clientY : 0);
-        currentX = clientX - initialX;
-        currentY = clientY - initialY;
+        currentX = coords.x - initialX;
+        currentY = coords.y - initialY;
         xOffset = currentX;
         yOffset = currentY;
         setTranslate(currentX, currentY, guiContainer);
