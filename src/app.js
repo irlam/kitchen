@@ -602,9 +602,22 @@ var ItemProperties = function (gui) {
 
   this.setItem = function (item) {
     this.currentItem = item;
+    
+    // Preferably add Materials as a sub-folder of 'Current Item'
+    var parent = itemPropFolder ? itemPropFolder : this.gui;
+
     if (this.materialsfolder) {
-      this.gui.removeFolder(this.materialsfolder.name);
+      try {
+        // We use the parent that actually contains the folder. 
+        // In dat.GUI, removeFolder must be called on the parent instance.
+        parent.removeFolder(this.materialsfolder.name);
+      } catch (e) {
+        // Fallback to root gui if parent remove fails
+        try { this.gui.removeFolder("Materials"); } catch(e2) {}
+      }
+      this.materialsfolder = null;
     }
+
     if (item) {
       var scope = this;
       var material = item.material;
@@ -620,33 +633,49 @@ var ItemProperties = function (gui) {
         this.guiControllers[i].updateDisplay();
       }
 
-      this.materialsfolder = this.gui.addFolder("Materials");
+      this.materialsfolder = parent.addFolder("Materials");
       this.materials = {};
-      if (material.length) {
-        this.totalmaterials = material.length;
-        for (var i = 0; i < material.length; i++) {
-          this.materials["mat_" + i] = "#" + material[i].color.getHexString();
-          var matname = material[i].name
-            ? material[i].name
-            : "Material " + (i + 1);
-          var ccontrol = this.materialsfolder
-            .addColor(this.materials, "mat_" + i)
-            .name(matname)
-            .onChange(function () {
-              scope.dimensionsChanged();
-            });
-        }
-        return;
-      }
-      this.totalmaterials = 1;
-      var matname = material.name ? material.name : "Material 1";
-      this.materials["mat_0"] = "#" + material.color.getHexString();
-      var ccontrol = this.materialsfolder
-        .addColor(this.materials, "mat_0")
-        .name(matname)
-        .onChange(function () {
+      
+      var materialArray = material.length ? material : [material];
+      this.totalmaterials = materialArray.length;
+
+      // Add a Master color picker if there are multiple materials
+      if (this.totalmaterials > 1) {
+        this.materials["master"] = "#" + materialArray[0].color.getHexString();
+        this.materialsfolder.addColor(this.materials, "master").name("🎨 All Materials").onChange(function(val) {
+          for (var i = 0; i < scope.totalmaterials; i++) {
+            scope.materials["mat_" + i] = val;
+          }
+          // Update all other color controllers in this folder
+          scope.materialsfolder.__controllers.forEach(function(c) {
+             if (c.property !== "master") c.updateDisplay();
+          });
           scope.dimensionsChanged();
         });
+      }
+
+      for (var i = 0; i < materialArray.length; i++) {
+        var mat = materialArray[i];
+        this.materials["mat_" + i] = "#" + mat.color.getHexString();
+        var matname = mat.name ? mat.name : "Material " + (i + 1);
+        
+        // Improve "Top" visibility
+        var isTop = matname.toLowerCase().includes("top") || 
+                    matname.toLowerCase().includes("counter") || 
+                    matname.toLowerCase().includes("surface") ||
+                    matname.toLowerCase().includes("marble");
+        
+        var displayName = isTop ? "💎 " + matname + " (Top)" : "• " + matname;
+
+        this.materialsfolder
+          .addColor(this.materials, "mat_" + i)
+          .name(displayName)
+          .onChange(function () {
+            scope.dimensionsChanged();
+          });
+      }
+      
+      this.materialsfolder.open();
       return;
     }
     this.name = "None";
