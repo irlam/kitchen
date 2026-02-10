@@ -1260,8 +1260,8 @@ function datGUI(three, floorplanner) {
 
     function dragStart(e) {
       dragMoved = false; // Reset on start
-      var clientX = e.clientX || (e.touches && e.touches[0].clientX);
-      var clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      var clientX = e.clientX || (e.touches && e.touches.length > 0 ? e.touches[0].clientX : 0);
+      var clientY = e.clientY || (e.touches && e.touches.length > 0 ? e.touches[0].clientY : 0);
       initialX = clientX - xOffset;
       initialY = clientY - yOffset;
       if (e.target === header || e.target.parentNode === header) {
@@ -1273,8 +1273,8 @@ function datGUI(three, floorplanner) {
       if (isDragging) {
         e.preventDefault();
         dragMoved = true; // Mark as moved
-        var clientX = e.clientX || (e.touches && e.touches[0].clientX);
-        var clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        var clientX = e.clientX || (e.touches && e.touches.length > 0 ? e.touches[0].clientX : 0);
+        var clientY = e.clientY || (e.touches && e.touches.length > 0 ? e.touches[0].clientY : 0);
         currentX = clientX - initialX;
         currentY = clientY - initialY;
         xOffset = currentX;
