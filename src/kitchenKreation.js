@@ -9622,43 +9622,44 @@ functions return important math algorithms required to constructs lines/walls in
       },
       {
         reference: "pointInPolygon",
-        value: function pointInPolygon(point, corners, start) {
-          if (start === undefined) {
-            var tMinX = 0,
-              tMinY = 0;
-            var tI = 0;
-            for (tI = 0; tI < corners.length; tI++) {
-              tMinX = Math.min(tMinX, corners[tI].x);
-              tMinY = Math.min(tMinY, corners[tI].y);
-            }
-            start = new THREE.Vector2(tMinX - 10, tMinY - 10);
+        value: function pointInPolygon(p1, p2, p3, p4) {
+          var x, y, corners, start;
+          if (Array.isArray(p2)) {
+            // (point, corners, start)
+            x = p1.x;
+            y = p1.y !== undefined ? p1.y : (p1.z !== undefined ? p1.z : 0);
+            corners = p2;
+            start = p3;
+          } else if (Array.isArray(p3)) {
+            // (x, y, corners, start)
+            x = p1;
+            y = p2;
+            corners = p3;
+            start = p4;
+          } else {
+            // (point, corners)
+            x = p1.x;
+            y = p1.y !== undefined ? p1.y : (p1.z !== undefined ? p1.z : 0);
+            corners = p2;
+            start = p3;
           }
 
-          var tIntersects = 0;
-          for (tI = 0; tI < corners.length; tI++) {
-            var tFirstCorner = corners[tI],
-              tSecondCorner;
-            if (tI == corners.length - 1) {
-              tSecondCorner = corners[0];
-            } else {
-              tSecondCorner = corners[tI + 1];
-            }
+          if (!corners || corners.length === 0) {
+            return false;
+          }
 
+          var inside = false;
+          for (var i = 0, j = corners.length - 1; i < corners.length; j = i++) {
+            var ci = corners[i];
+            var cj = corners[j];
             if (
-              MathUtilities.lineLineIntersect(
-                start,
-                point,
-                tFirstCorner.x,
-                tFirstCorner.y,
-                tSecondCorner.x,
-                tSecondCorner.y
-              )
+              ((ci.y > y) !== (cj.y > y)) &&
+              (x < (cj.x - ci.x) * (y - ci.y) / (cj.y - ci.y) + ci.x)
             ) {
-              tIntersects++;
+              inside = !inside;
             }
           }
-          // odd intersections means the point is in the polygon
-          return tIntersects % 2 == 1;
+          return inside;
         },
 
         /** Checks if all corners of insideCorners are inside the polygon described by outsideCorners */
@@ -9670,14 +9671,10 @@ functions return important math algorithms required to constructs lines/walls in
           outsideCorners,
           start
         ) {
-          start.x = start.x || 0;
-          start.y = start.y || 0;
-
           for (var tI = 0; tI < insideCorners.length; tI++) {
             if (
               !MathUtilities.pointInPolygon(
-                insideCorners[tI].x,
-                insideCorners[tI].y,
+                insideCorners[tI],
                 outsideCorners,
                 start
               )
@@ -9697,15 +9694,22 @@ functions return important math algorithms required to constructs lines/walls in
           outsideCorners,
           start
         ) {
-          start.x = start.x || 0;
-          start.y = start.y || 0;
-
           for (var tI = 0; tI < insideCorners.length; tI++) {
             if (
               MathUtilities.pointInPolygon(
-                insideCorners[tI].x,
-                insideCorners[tI].y,
+                insideCorners[tI],
                 outsideCorners,
+                start
+              )
+            ) {
+              return false;
+            }
+          }
+          for (var tI = 0; tI < outsideCorners.length; tI++) {
+            if (
+              MathUtilities.pointInPolygon(
+                outsideCorners[tI],
+                insideCorners,
                 start
               )
             ) {
