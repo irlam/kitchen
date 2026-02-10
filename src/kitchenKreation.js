@@ -16198,6 +16198,7 @@ functions return important math algorithms required to constructs lines/walls in
           var direction = position.sub(focus).normalize();
 
           // update visible
+          var dot = normal.dot(direction);
           local.visible = dot >= 0;
           local.labelsMesh.visible = local.visible;
           // show or hide planes
