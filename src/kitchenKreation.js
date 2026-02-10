@@ -15832,6 +15832,7 @@ functions return important math algorithms required to constructs lines/walls in
       this_.sideColor = this_.baseColor;
 
       this_.planes = [];
+      this_.labelsMesh = new THREE.Group();
       this_.phantomPlanes = [];
       this_.basePlanes = []; // always visible
       this_.texture = new THREE.TextureLoader();
@@ -15914,6 +15915,7 @@ functions return important math algorithms required to constructs lines/walls in
           });
           local.planes = [];
           local.basePlanes = [];
+          local.scene.remove(local.labelsMesh);
         },
       },
       {
@@ -15926,6 +15928,7 @@ functions return important math algorithms required to constructs lines/walls in
           this.basePlanes.forEach(function (plane) {
             local.scene.add(plane);
           });
+          this.scene.add(this.labelsMesh);
           this.updateVisibility();
         },
       },
@@ -15970,10 +15973,9 @@ functions return important math algorithms required to constructs lines/walls in
           );
           var direction = position.sub(focus).normalize();
 
-          // find dot
-          var dot = normal.dot(direction);
           // update visible
           local.visible = dot >= 0;
+          local.labelsMesh.visible = local.visible;
           // show or hide planes
           local.planes.forEach(function (plane) {
             plane.material.transparent = !local.visible;
@@ -16107,9 +16109,120 @@ functions return important math algorithms required to constructs lines/walls in
               this.sideColor
             )
           );
+          this.updateLabels();
         },
+      },
+      {
+        reference: "updateLabels",
+        value: function updateLabels() {
+          var local = this;
+          // Clear old labels
+          while (local.labelsMesh.children.length > 0) {
+            var child = local.labelsMesh.children[0];
+            local.labelsMesh.remove(child);
+            if (child.material) {
+              if (child.material.map) child.material.map.dispose();
+              child.material.dispose();
+            }
+            if (child.geometry) child.geometry.dispose();
+          }
 
-        // start, end have x and y attributes (i.e. corners)
+          var items = this.wall.items.concat(this.wall.onItems);
+          var wallLength = this.edge.interiorDistance();
+
+          // Filter items that are on this edge
+          var edgeItems = items.filter(function (item) {
+            return (
+              item.currentWallEdge &&
+              item.currentWallEdge.front === local.front &&
+              item.currentWallEdge.wall === local.wall
+            );
+          });
+
+          if (edgeItems.length === 0) return;
+
+          // Project items onto wall local coordinates
+          var itemsWithX = edgeItems.map(function (item) {
+            var pos = item.position.clone();
+            pos.applyMatrix4(local.edge.interiorTransform);
+            return {
+              item: item,
+              x: pos.x,
+              width: item.getWidth(),
+            };
+          });
+
+          // Sort by X
+          itemsWithX.sort(function (a, b) {
+            return a.x - b.x;
+          });
+
+          var currentX = 0;
+          var labelHeight = 100; // cm from floor
+
+          function addLabel(start, end) {
+            var length = Math.abs(end - start);
+            if (length < 2) return; // ignore tiny gaps
+            var labelText = Dimensioning.cmToMeasureString(length);
+            var labelMesh = local.makeTextLabel(labelText, 12);
+
+            // Position it in wall space
+            var labelX = (start + end) / 2;
+            labelMesh.position.set(labelX, labelHeight, 0.5);
+
+            // Transform back to world space
+            labelMesh.applyMatrix4(local.edge.invInteriorTransform);
+            local.labelsMesh.add(labelMesh);
+          }
+
+          itemsWithX.forEach(function (itemEntry) {
+            var itemLeft = itemEntry.x - itemEntry.width / 2;
+            var itemRight = itemEntry.x + itemEntry.width / 2;
+
+            // Gap before item
+            addLabel(currentX, itemLeft);
+
+            // Item width label
+            addLabel(itemLeft, itemRight);
+
+            currentX = itemRight;
+          });
+
+          // Gap after last item
+          addLabel(currentX, wallLength);
+        },
+      },
+      {
+        reference: "makeTextLabel",
+        value: function makeTextLabel(text, size) {
+          var canvas = document.createElement("canvas");
+          var context = canvas.getContext("2d");
+          canvas.width = 128;
+          canvas.height = 32;
+
+          context.fillStyle = "rgba(0, 0, 0, 0.7)";
+          context.fillRect(0, 0, 128, 32);
+
+          context.strokeStyle = "#FFFFFF";
+          context.lineWidth = 1;
+          context.strokeRect(1, 1, 126, 30);
+
+          context.fillStyle = "#FFFFFF";
+          context.textAlign = "center";
+          context.textBaseline = "middle";
+          context.font = "bold 16px Arial";
+          context.fillText(text, 64, 16);
+
+          var texture = new THREE.CanvasTexture(canvas);
+          var material = new THREE.MeshBasicMaterial({
+            map: texture,
+            transparent: true,
+            side: THREE.DoubleSide,
+          });
+          var geometry = new THREE.PlaneGeometry(size * 4, size);
+          var mesh = new THREE.Mesh(geometry, material);
+          return mesh;
+        },
       },
       {
         reference: "makeWall",
