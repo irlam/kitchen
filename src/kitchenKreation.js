@@ -13691,20 +13691,23 @@ functions return important math algorithms required to constructs lines/walls in
               this.viewmodel.lastNode
             );
           }
+
+          // Draw items and gaps in 2D
+          if (this.floorplan && this.floorplan.model && this.floorplan.model.scene) {
+             var items = this.floorplan.model.scene.getItems();
+             for (var i = 0; i < items.length; i++) {
+               this.drawItem(items[i]);
+             }
+             
+             var controller = this.floorplan.model.scene.controller;
+             if (controller && controller.gapManager) {
+               this.drawGaps(controller.gapManager);
+             }
+          }
+
           this.floorplan.getWalls().forEach(function (wall) {
             this_.drawWallLabels(wall);
           });
-          
-          // Draw items and gaps in 2D
-          if (this.floorplan.model && this.floorplan.model.scene) {
-             this.floorplan.model.scene.getItems().forEach(function(item) {
-               this_.drawItem(item);
-             });
-             
-             if (this.floorplan.model.gapManager) {
-               this.drawGaps(this.floorplan.model.gapManager);
-             }
-          }
         },
       },
       {
@@ -14785,65 +14788,66 @@ functions return important math algorithms required to constructs lines/walls in
       });
 
       // 2. Check against walls
-      var rooms = this.model.floorplan.getRooms();
-      rooms.forEach(function (room) {
-        room.interiorCorners.forEach(function (v1, i) {
-          var v2 = room.interiorCorners[(i + 1) % room.interiorCorners.length];
-          var wallStart = new THREE.Vector2(v1.x, v1.y);
-          var wallEnd = new THREE.Vector2(v2.x, v2.y);
+      var walls = this.model.floorplan.getWalls();
+      walls.forEach(function (wall) {
+        var v1 = wall.getStart();
+        var v2 = wall.getEnd();
+        var wallStart = new THREE.Vector2(v1.x, v1.y);
+        var wallEnd = new THREE.Vector2(v2.x, v2.y);
 
-          var dirs = [
-            { x: 1, z: 0, face: box.max.x },
-            { x: -1, z: 0, face: box.min.x },
-            { x: 0, z: 1, face: box.max.z },
-            { x: 0, z: -1, face: box.min.z },
-          ];
+        var dirs = [
+          { x: 1, z: 0, face: box.max.x },
+          { x: -1, z: 0, face: box.min.x },
+          { x: 0, z: 1, face: box.max.z },
+          { x: 0, z: -1, face: box.min.z },
+        ];
 
-          dirs.forEach(function (d) {
-            var p =
-              d.x !== 0
-                ? new THREE.Vector2(d.face, center.z)
-                : new THREE.Vector2(center.x, d.face);
-            var proj = MathUtilities.closestPointOnLine(p, wallStart, wallEnd);
-            var dist = p.distanceTo(proj);
+        dirs.forEach(function (d) {
+          var p =
+            d.x !== 0
+              ? new THREE.Vector2(d.face, center.z)
+              : new THREE.Vector2(center.x, d.face);
+          var proj = MathUtilities.closestPointOnLine(p, wallStart, wallEnd);
+          var dist = p.distanceTo(proj);
 
-            var inDirection = false;
-            if (d.x > 0) inDirection = proj.x > p.x;
-            else if (d.x < 0) inDirection = proj.x < p.x;
-            else if (d.z > 0) inDirection = proj.y > p.y;
-            else if (d.z < 0) inDirection = proj.y < p.y;
+          var inDirection = false;
+          if (d.x > 0) inDirection = proj.x > p.x;
+          else if (d.x < 0) inDirection = proj.x < p.x;
+          else if (d.z > 0) inDirection = proj.y > p.y;
+          else if (d.z < 0) inDirection = proj.y < p.y;
 
-            if (dist > 0.1 && dist < threshold && inDirection) {
-              var axisMatch =
-                d.x !== 0 ? Math.abs(proj.y - p.y) : Math.abs(proj.x - p.x);
-              if (axisMatch < 1.0) {
-                scope.addGap(p.x, center.y, p.y, proj.x, center.y, proj.y);
-              }
+          if (dist > 0.1 && dist < threshold && inDirection) {
+            var axisMatch =
+              d.x !== 0 ? Math.abs(proj.y - p.y) : Math.abs(proj.x - p.x);
+            if (axisMatch < 1.0) {
+              scope.addGap(p.x, center.y, p.y, proj.x, center.y, proj.y);
             }
-          });
+          }
         });
       });
     };
 
     GapManager.prototype.addGap = function (x1, y1, z1, x2, y2, z2) {
+      if (isNaN(x1) || isNaN(y1) || isNaN(z1) || isNaN(x2) || isNaN(y2) || isNaN(z2)) return;
       var start = new THREE.Vector3(x1, y1, z1);
       var end = new THREE.Vector3(x2, y2, z2);
       var distCM = start.distanceTo(end);
+      if (distCM < 0.1) return;
 
-      var geometry = new THREE.Geometry();
-      geometry.vertices.push(start, end);
+      var points = [start, end];
+      var geometry = new THREE.BufferGeometry().setFromPoints(points);
+      
       var line = new THREE.Line(
         geometry,
-        new THREE.LineDashedMaterial({
+        new THREE.LineBasicMaterial({
           color: 0x00d2d2,
-          dashSize: 2,
-          gapSize: 1,
           transparent: true,
-          opacity: 0.6,
+          opacity: 0.8,
+          depthTest: false
         })
       );
-      line.computeLineDistances();
       this.scene.add(line);
+      line.renderOrder = 999;
 
       var label = this.createLabel(distCM);
       label.position.set((x1 + x2) / 2, y1 + 10, (z1 + z2) / 2);
