@@ -186,6 +186,71 @@ function saveProjectList(list) {
   localStorage.setItem(PROJECT_LIST_KEY, JSON.stringify(list));
 }
 
+// --- Server-side Sync Functions ---
+async function saveProjectToServer(name, content, meta) {
+  try {
+    const response = await fetch('api/projects.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, content, meta })
+    });
+    return await response.json();
+  } catch (e) {
+    console.error('Failed to save to server:', e);
+  }
+}
+
+async function deleteProjectFromServer(name) {
+  try {
+    const response = await fetch(`api/projects.php?action=delete&name=${encodeURIComponent(name)}`, {
+      method: 'DELETE'
+    });
+    return await response.json();
+  } catch (e) {
+    console.error('Failed to delete from server:', e);
+  }
+}
+
+async function fetchProjectFromServer(name) {
+  try {
+    const response = await fetch(`api/projects.php?action=load&name=${encodeURIComponent(name)}`);
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (e) {
+    console.error('Failed to fetch from server:', e);
+  }
+}
+
+async function syncProjectsWithServer() {
+  try {
+    const response = await fetch('api/projects.php?action=list');
+    const serverList = await response.json();
+    const localList = getProjectList();
+    
+    let changed = false;
+    serverList.forEach(item => {
+      if (!localList[item.name]) {
+        // We don't have the content yet, just placeholders for the names index
+        // We'll fetch content on demand when selected from the list
+        localList[item.name] = {
+          placeholder: true,
+          updatedAt: item.updated_at
+        };
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      saveProjectList(localList);
+      refreshProjectListUI((getProjectMeta().projectName || "").trim());
+    }
+  } catch (e) {
+    console.error('Failed to sync with server:', e);
+  }
+}
+// --- End Server-side Sync Functions ---
+
 function refreshProjectListUI(selectedName) {
   var list = getProjectList();
   var select = document.getElementById("projectList");
@@ -214,23 +279,52 @@ function saveProjectToList(KitchenKreation) {
     alert("Add a Project name before saving.");
     return;
   }
+  saveProjectToListSilent(KitchenKreation, projectName, false);
+}
+
+function saveProjectToListSilent(KitchenKreation, name, isNew) {
+  if (!name) return;
   var snapshot = buildSerializedProject(KitchenKreation);
   var list = getProjectList();
-  list[projectName] = {
+  var meta = getProjectMeta();
+  meta.projectName = name;
+
+  list[name] = {
     snapshot: snapshot,
-    meta: getProjectMeta(),
+    meta: meta,
     updatedAt: new Date().toISOString(),
   };
   saveProjectList(list);
   localStorage.setItem(STORAGE_KEY, snapshot);
-  refreshProjectListUI(projectName);
+  refreshProjectListUI(name);
   updateAutosaveStatus("Saved " + new Date().toLocaleTimeString());
+
+  // Also sync to server
+  saveProjectToServer(name, snapshot, meta);
 }
 
-function loadProjectFromList(KitchenKreation, name) {
+async function loadProjectFromList(KitchenKreation, name) {
   var list = getProjectList();
   var entry = list[name];
+  
+  // If not found locally or is just a placeholder from sync, fetch from server
+  if (!entry || entry.placeholder) {
+    updateAutosaveStatus("Fetching from server...");
+    const serverEntry = await fetchProjectFromServer(name);
+    if (serverEntry) {
+      entry = {
+        snapshot: serverEntry.content,
+        meta: JSON.parse(serverEntry.meta || '{}'),
+        updatedAt: serverEntry.updated_at
+      };
+      // Save locally too
+      list[name] = entry;
+      saveProjectList(list);
+    }
+  }
+
   if (!entry) {
+    alert("Project not found.");
     return;
   }
   KitchenKreation.model.loadSerialized(entry.snapshot);
@@ -243,7 +337,7 @@ function loadProjectFromList(KitchenKreation, name) {
   updateAutosaveStatus("Loaded " + new Date().toLocaleTimeString());
 }
 
-function deleteProjectFromList(name) {
+async function deleteProjectFromList(name) {
   var list = getProjectList();
   if (!list[name]) {
     return;
@@ -251,7 +345,11 @@ function deleteProjectFromList(name) {
   delete list[name];
   saveProjectList(list);
   refreshProjectListUI("");
+  
+  // Also delete from server
+  await deleteProjectFromServer(name);
 }
+
 
 function escapeHtml(value) {
   return String(value)
@@ -1351,6 +1449,7 @@ function datGUI(three, floorplanner) {
   loadProjectMeta();
   updateAutosaveStatus("Auto-save: ready");
   refreshProjectListUI((getProjectMeta().projectName || "").trim());
+  syncProjectsWithServer();
 
   if (!loadSavedProject(KitchenKreation)) {
     KitchenKreation.model.loadSerialized(BASE_LAYOUT_JSON);
