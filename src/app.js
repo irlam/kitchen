@@ -1001,9 +1001,10 @@ function buildSerializedProject(KitchenKreation) {
       backTexture: wall.backTexture,
     };
   });
-  var items = KitchenKreation.model.scene.getItems().map(function (item) {
+  var allItems = KitchenKreation.model.scene.getItems();
+  console.log("Serializing " + allItems.length + " items");
+  var items = allItems.map(function (item) {
     var metadata = item.getMetaData();
-    metadata.resizable = item.resizable;
     return metadata;
   });
 

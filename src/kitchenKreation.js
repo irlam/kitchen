@@ -12523,17 +12523,19 @@ functions return important math algorithms required to constructs lines/walls in
         reference: "getMetaData",
         value: function getMetaData() {
           var matattribs = [];
-          if (this.material.length) {
+          if (this.material && this.material.length) {
             this.material.forEach(function (mat) {
               matattribs.push("#" + mat.color.getHexString());
             });
-          } else {
+          } else if (this.material && this.material.color) {
             matattribs.push("#" + this.material.color.getHexString());
           }
           return {
             item_name: this.metadata.itemName,
             item_type: this.metadata.itemType,
             model_url: this.metadata.modelUrl,
+            format: this.metadata.format,
+            resizable: this.resizable,
             xpos: this.position.x,
             ypos: this.position.y,
             zpos: this.position.z,
@@ -13306,6 +13308,7 @@ functions return important math algorithms required to constructs lines/walls in
           this.scene.clearItems();
           this.floorplan.loadFloorplan(floorplan);
           if (items) {
+            console.log("newRoom: loading " + items.length + " items");
             items.forEach(function (item) {
               var matColors = item.material_colors ? item.material_colors : [];
               var position = new THREE.Vector3(item.xpos, item.ypos, item.zpos);
@@ -13315,6 +13318,7 @@ functions return important math algorithms required to constructs lines/walls in
                 itemType: item.item_type,
                 modelUrl: item.model_url,
                 materialColors: matColors,
+                format: item.format,
               };
               var scale = new THREE.Vector3(
                 item.scale_x,
