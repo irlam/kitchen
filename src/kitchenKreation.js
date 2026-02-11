@@ -12756,10 +12756,7 @@ functions return important math algorithms required to constructs lines/walls in
         reference: "updateSize",
         value: function updateSize() {
           this.wallOffsetScalar =
-            ((this.geometry.boundingBox.max.z -
-              this.geometry.boundingBox.min.z) *
-              this.scale.z) /
-            2.0;
+            -this.geometry.boundingBox.min.z * this.scale.z;
           this.sizeX =
             (this.geometry.boundingBox.max.x -
               this.geometry.boundingBox.min.x) *
@@ -12894,33 +12891,32 @@ functions return important math algorithms required to constructs lines/walls in
       {
         reference: "boundMove",
         value: function boundMove(vec3) {
-          var tolerance = 1;
+          var tolerance = 0.01;
           var edge = this.currentWallEdge;
+          var minX = -this.geometry.boundingBox.min.x * this.scale.x;
+          var maxX =
+            edge.interiorDistance() -
+            this.geometry.boundingBox.max.x * this.scale.x;
+          var minY = -this.geometry.boundingBox.min.y * this.scale.y;
+          var maxY = edge.height - this.geometry.boundingBox.max.y * this.scale.y;
+
           vec3.applyMatrix4(edge.interiorTransform);
-          if (vec3.x < this.sizeX / 2.0 + tolerance) {
-            vec3.x = this.sizeX / 2.0 + tolerance;
-          } else if (
-            vec3.x >
-            edge.interiorDistance() - this.sizeX / 2.0 - tolerance
-          ) {
-            vec3.x = edge.interiorDistance() - this.sizeX / 2.0 - tolerance;
+          if (vec3.x < minX + tolerance) {
+            vec3.x = minX + tolerance;
+          } else if (vec3.x > maxX - tolerance) {
+            vec3.x = maxX - tolerance;
           }
 
           if (this.boundToFloor) {
-            vec3.y =
-              0.5 *
-                (this.geometry.boundingBox.max.y -
-                  this.geometry.boundingBox.min.y) *
-                this.scale.y +
-              0.01;
+            vec3.y = minY + 0.01;
           } else {
-            if (vec3.y < this.sizeY / 2.0 + tolerance) {
-              vec3.y = this.sizeY / 2.0 + tolerance;
-            } else if (vec3.y > edge.height - this.sizeY / 2.0 - tolerance) {
-              vec3.y = edge.height - this.sizeY / 2.0 - tolerance;
+            if (vec3.y < minY + tolerance) {
+              vec3.y = minY + tolerance;
+            } else if (vec3.y > maxY - tolerance) {
+              vec3.y = maxY - tolerance;
             }
           }
-          vec3.z = this.getWallOffset();
+          vec3.z = this.getWallOffset() + 0.01;
           vec3.applyMatrix4(edge.invInteriorTransform);
         },
       },
@@ -14788,10 +14784,10 @@ functions return important math algorithms required to constructs lines/walls in
       });
 
       // 2. Check against walls
-      var walls = this.model.floorplan.getWalls();
-      walls.forEach(function (wall) {
-        var v1 = wall.getStart();
-        var v2 = wall.getEnd();
+      var edges = this.model.floorplan.wallEdges();
+      edges.forEach(function (edge) {
+        var v1 = edge.interiorStart();
+        var v2 = edge.interiorEnd();
         var wallStart = new THREE.Vector2(v1.x, v1.y);
         var wallEnd = new THREE.Vector2(v2.x, v2.y);
 
