@@ -287,23 +287,38 @@ async function saveProjectToListSilent(KitchenKreation, name, isNew) {
 
 async function loadProjectFromList(KitchenKreation, name) {
   updateAutosaveStatus("Fetching project '" + name + "'...");
+  console.log("Loading project:", name);
   const serverEntry = await fetchProjectFromServer(name);
 
   if (!serverEntry || !serverEntry.content) {
+    console.error("Project not found or empty:", serverEntry);
     alert("Project '" + name + "' not found or has no content.");
     updateAutosaveStatus("Load failed.");
     return;
   }
 
   try {
+    let meta = serverEntry.meta;
+    if (typeof meta === "string") {
+      try {
+        meta = JSON.parse(meta);
+      } catch (e) {
+        console.warn("Failed to parse meta as JSON:", meta);
+        meta = {};
+      }
+    }
+
     const entry = {
       snapshot: serverEntry.content,
-      meta: JSON.parse(serverEntry.meta || "{}"),
+      meta: meta || {},
       updatedAt: serverEntry.updated_at,
     };
 
+    console.log("Applying snapshot...");
+    historyApplying = true;
     KitchenKreation.model.loadSerialized(entry.snapshot);
-    setProjectMeta(entry.meta || {});
+    historyApplying = false;
+    setProjectMeta(entry.meta);
     projectHistory = [entry.snapshot];
     redoHistory = [];
     updateHistoryButtons();
@@ -311,7 +326,7 @@ async function loadProjectFromList(KitchenKreation, name) {
       "Loaded '" + name + "' at " + new Date().toLocaleTimeString()
     );
   } catch (err) {
-    console.error("Error parsing project data:", err);
+    console.error("Error applying project data:", err);
     alert("Error loading project: " + err.message);
     updateAutosaveStatus("Error loading.");
   }

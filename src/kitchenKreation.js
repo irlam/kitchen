@@ -13289,9 +13289,10 @@ functions return important math algorithms required to constructs lines/walls in
       {
         reference: "loadSerialized",
         value: function loadSerialized(json) {
+          console.log("loadSerialized: received", typeof json);
           this.dispatchEvent({ type: EVENT_LOADING, item: this });
 
-          var data = JSON.parse(json);
+          var data = typeof json === "string" ? JSON.parse(json) : json;
           this.newRoom(data.floorplan, data.items);
 
           this.dispatchEvent({ type: EVENT_LOADED, item: this });
