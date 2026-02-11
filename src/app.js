@@ -321,9 +321,19 @@ async function loadProjectFromList(KitchenKreation, name) {
 
     console.log("Applying snapshot...");
     historyApplying = true;
-    KitchenKreation.model.loadSerialized(entry.snapshot);
-    historyApplying = false;
+    try {
+      KitchenKreation.model.loadSerialized(entry.snapshot);
+      // Ensure the floorplan and rooms are fully updated
+      KitchenKreation.model.floorplan.update();
+    } finally {
+      historyApplying = false;
+    }
+    
     setProjectMeta(entry.meta);
+    
+    // Refresh the list to ensure the current project is correctly selected and UI is in sync
+    await refreshProjectListUI(name);
+
     projectHistory = [entry.snapshot];
     redoHistory = [];
     updateHistoryButtons();
@@ -1143,8 +1153,12 @@ function applyHistorySnapshot(KitchenKreation, snapshot) {
     return;
   }
   historyApplying = true;
-  KitchenKreation.model.loadSerialized(snapshot);
-  historyApplying = false;
+  try {
+    KitchenKreation.model.loadSerialized(snapshot);
+    KitchenKreation.model.floorplan.update();
+  } finally {
+    historyApplying = false;
+  }
   updateAutosaveStatus("Restored " + new Date().toLocaleTimeString());
 }
 
