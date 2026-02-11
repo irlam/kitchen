@@ -11573,8 +11573,8 @@ functions return important math algorithms required to constructs lines/walls in
           var corners = {};
           if (
             floorplan == null ||
-            !("corners" in floorplan) ||
-            !("walls" in floorplan)
+            !floorplan.corners ||
+            !floorplan.walls
           ) {
             return;
           }
@@ -13304,31 +13304,33 @@ functions return important math algorithms required to constructs lines/walls in
 
           this.scene.clearItems();
           this.floorplan.loadFloorplan(floorplan);
-          items.forEach(function (item) {
-            var matColors = item.material_colors ? item.material_colors : [];
-            var position = new THREE.Vector3(item.xpos, item.ypos, item.zpos);
-            var metadata = {
-              itemName: item.item_name,
-              resizable: item.resizable,
-              itemType: item.item_type,
-              modelUrl: item.model_url,
-              materialColors: matColors,
-            };
-            var scale = new THREE.Vector3(
-              item.scale_x,
-              item.scale_y,
-              item.scale_z
-            );
-            this_2.scene.addItem(
-              item.item_type,
-              item.model_url,
-              metadata,
-              position,
-              item.rotation,
-              scale,
-              item.fixed
-            );
-          });
+          if (items) {
+            items.forEach(function (item) {
+              var matColors = item.material_colors ? item.material_colors : [];
+              var position = new THREE.Vector3(item.xpos, item.ypos, item.zpos);
+              var metadata = {
+                itemName: item.item_name,
+                resizable: item.resizable,
+                itemType: item.item_type,
+                modelUrl: item.model_url,
+                materialColors: matColors,
+              };
+              var scale = new THREE.Vector3(
+                item.scale_x,
+                item.scale_y,
+                item.scale_z
+              );
+              this_2.scene.addItem(
+                item.item_type,
+                item.model_url,
+                metadata,
+                position,
+                item.rotation,
+                scale,
+                item.fixed
+              );
+            });
+          }
         },
       },
     ]);

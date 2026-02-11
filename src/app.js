@@ -223,12 +223,14 @@ async function getProjectListFromServer() {
     if (response.ok) {
       const list = await response.json();
       const obj = {};
-      list.forEach((item) => {
-        obj[item.name] = {
-          name: item.name,
-          updatedAt: item.updated_at,
-        };
-      });
+      if (Array.isArray(list)) {
+        list.forEach((item) => {
+          obj[item.name] = {
+            name: item.name,
+            updatedAt: item.updated_at,
+          };
+        });
+      }
       return obj;
     }
   } catch (e) {
