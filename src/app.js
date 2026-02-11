@@ -1670,7 +1670,13 @@ function datGUI(three, floorplanner) {
     if (!name) {
       return;
     }
-    loadProjectFromList(KitchenKreation, name);
+    if (confirm("Load project '" + name + "'? Any unsaved changes to the current layout will be lost.")) {
+      loadProjectFromList(KitchenKreation, name);
+    } else {
+      // Reset selection if cancelled
+      var meta = getProjectMeta();
+      $(this).val(meta.projectName || "");
+    }
   });
 
   var metaTimer = null;
