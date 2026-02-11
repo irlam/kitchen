@@ -14,8 +14,11 @@ $initSqlPath = __DIR__ . '/../sql/init.sql';
 try {
     $db = new PDO('sqlite:' . $dbPath);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // Auto-initialize if table doesn't exist
+    
+    // Ensure the file is writable by the web server
+    if (file_exists($dbPath)) {
+        chmod($dbPath, 0666);
+    }
     $query = $db->query("SELECT name FROM sqlite_master WHERE type='table' AND name='projects'");
     if (!$query->fetch()) {
         $sql = file_get_contents($initSqlPath);
@@ -69,17 +72,20 @@ switch ($method) {
         }
 
         try {
-            $stmt = $db->prepare("INSERT INTO projects (name, content, meta, updated_at) 
-                                  VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-                                  ON CONFLICT(name) DO UPDATE SET 
-                                  content = excluded.content,
-                                  meta = excluded.meta,
-                                  updated_at = CURRENT_TIMESTAMP");
-            $stmt->execute([$name, $content, $meta]);
+            // Use a more compatible UPSERT approach for older SQLite versions
+            $check = $db->prepare("SELECT id FROM projects WHERE name = ?");
+            $check->execute([$name]);
+            if ($check->fetch()) {
+                $stmt = $db->prepare("UPDATE projects SET content = ?, meta = ?, updated_at = CURRENT_TIMESTAMP WHERE name = ?");
+                $stmt->execute([$content, $meta, $name]);
+            } else {
+                $stmt = $db->prepare("INSERT INTO projects (name, content, meta, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)");
+                $stmt->execute([$name, $content, $meta]);
+            }
             echo json_encode(['success' => true]);
         } catch (PDOException $e) {
             http_response_code(500);
-            echo json_encode(['error' => 'Save failed: ' . $e->getMessage()]);
+            echo json_encode(['error' => 'Database operation failed: ' . $e->getMessage()]);
         }
         break;
 

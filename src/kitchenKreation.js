@@ -13292,6 +13292,7 @@ functions return important math algorithms required to constructs lines/walls in
           this.dispatchEvent({ type: EVENT_LOADING, item: this });
 
           var data = JSON.parse(json);
+          console.log("Loading serialized data:", data);
           this.newRoom(data.floorplan, data.items);
 
           this.dispatchEvent({ type: EVENT_LOADED, item: this });

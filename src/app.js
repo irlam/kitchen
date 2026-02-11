@@ -179,9 +179,14 @@ async function saveProjectToServer(name, content, meta) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, content, meta }),
     });
-    return await response.json();
+    const result = await response.json();
+    if (!response.ok || result.error) {
+      throw new Error(result.error || "Server error " + response.status);
+    }
+    return result;
   } catch (e) {
     console.error("Failed to save to server:", e);
+    alert("Save failed: " + e.message);
   }
 }
 
@@ -279,26 +284,36 @@ async function saveProjectToListSilent(KitchenKreation, name, isNew) {
 }
 
 async function loadProjectFromList(KitchenKreation, name) {
-  updateAutosaveStatus("Fetching from server...");
+  updateAutosaveStatus("Fetching project '" + name + "'...");
   const serverEntry = await fetchProjectFromServer(name);
 
-  if (!serverEntry) {
-    alert("Project not found on server.");
+  if (!serverEntry || !serverEntry.content) {
+    alert("Project '" + name + "' not found or has no content.");
+    updateAutosaveStatus("Load failed.");
     return;
   }
 
-  const entry = {
-    snapshot: serverEntry.content,
-    meta: JSON.parse(serverEntry.meta || "{}"),
-    updatedAt: serverEntry.updated_at,
-  };
+  try {
+    const entry = {
+      snapshot: serverEntry.content,
+      meta: JSON.parse(serverEntry.meta || "{}"),
+      updatedAt: serverEntry.updated_at,
+    };
 
-  KitchenKreation.model.loadSerialized(entry.snapshot);
-  setProjectMeta(entry.meta || {});
-  projectHistory = [entry.snapshot];
-  redoHistory = [];
-  updateHistoryButtons();
-  updateAutosaveStatus("Loaded from server " + new Date().toLocaleTimeString());
+    console.log("Loading project data:", entry);
+    KitchenKreation.model.loadSerialized(entry.snapshot);
+    setProjectMeta(entry.meta || {});
+    projectHistory = [entry.snapshot];
+    redoHistory = [];
+    updateHistoryButtons();
+    updateAutosaveStatus(
+      "Loaded '" + name + "' at " + new Date().toLocaleTimeString()
+    );
+  } catch (err) {
+    console.error("Error parsing project data:", err);
+    alert("Error loading project: " + err.message);
+    updateAutosaveStatus("Error loading.");
+  }
 }
 
 async function deleteProjectFromList(name) {
@@ -975,6 +990,8 @@ function buildSerializedProject(KitchenKreation) {
     metadata.resizable = item.resizable;
     return metadata;
   });
+
+  console.log("Saving items count:", items.length);
 
   var floorplanData = {
     corners: corners,
