@@ -49,7 +49,15 @@ switch ($method) {
         break;
 
     case 'POST':
-        $data = json_decode(file_get_contents('php://input'), true);
+        $json = file_get_contents('php://input');
+        $data = json_decode($json, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid JSON input']);
+            break;
+        }
+
         $name = $data['name'] ?? '';
         $content = $data['content'] ?? '';
         $meta = isset($data['meta']) ? json_encode($data['meta']) : null;
@@ -60,14 +68,19 @@ switch ($method) {
             break;
         }
 
-        $stmt = $db->prepare("INSERT INTO projects (name, content, meta, updated_at) 
-                              VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-                              ON CONFLICT(name) DO UPDATE SET 
-                              content = excluded.content,
-                              meta = excluded.meta,
-                              updated_at = CURRENT_TIMESTAMP");
-        $stmt->execute([$name, $content, $meta]);
-        echo json_encode(['success' => true]);
+        try {
+            $stmt = $db->prepare("INSERT INTO projects (name, content, meta, updated_at) 
+                                  VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                                  ON CONFLICT(name) DO UPDATE SET 
+                                  content = excluded.content,
+                                  meta = excluded.meta,
+                                  updated_at = CURRENT_TIMESTAMP");
+            $stmt->execute([$name, $content, $meta]);
+            echo json_encode(['success' => true]);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Save failed: ' . $e->getMessage()]);
+        }
         break;
 
     case 'DELETE':
