@@ -12096,7 +12096,7 @@ functions return important math algorithms required to constructs lines/walls in
           context.clearRect(0, 0, w, h);
           context.textAlign = "center";
           context.textBaseline = "middle";
-          context.font = "bold 35pt Aldrich";
+          context.font = "bold 22pt Aldrich";
 
           var wText = wPrefix + Dimensioning.cmToMeasureString(w / scale);
           var hText = hPrefix + Dimensioning.cmToMeasureString(h / scale);
@@ -12105,12 +12105,12 @@ functions return important math algorithms required to constructs lines/walls in
           var tw = context.measureText(wText).width;
           context.fillStyle = "rgba(12, 22, 33, 0.9)";
           context.beginPath();
-          var px = (w - (tw + 80)) / 2;
-          var py = h * 0.45 - 50;
-          context.rect(px, py, tw + 80, 100);
+          var px = (w - (tw + 50)) / 2;
+          var py = h * 0.45 - 35;
+          context.rect(px, py, tw + 50, 70);
           context.fill();
           context.strokeStyle = "#5fffea";
-          context.lineWidth = 6;
+          context.lineWidth = 4;
           context.stroke();
 
           context.fillStyle = "#FFFFFF";
@@ -12118,15 +12118,15 @@ functions return important math algorithms required to constructs lines/walls in
 
           // Background Pill Height
           context.save();
-          context.translate(w * 0.15, h * 0.5);
+          context.translate(w * 0.1, h * 0.5);
           context.rotate(-Math.PI * 0.5);
           var th = context.measureText(hText).width;
           context.fillStyle = "rgba(12, 22, 33, 0.9)";
           context.beginPath();
-          context.rect(-(th + 80) / 2, -50, th + 80, 100);
+          context.rect(-(th + 50) / 2, -35, th + 50, 70);
           context.fill();
           context.strokeStyle = "#5fffea";
-          context.lineWidth = 6;
+          context.lineWidth = 4;
           context.stroke();
 
           context.fillStyle = "#FFFFFF";
@@ -15023,6 +15023,7 @@ functions return important math algorithms required to constructs lines/walls in
             this.selectedObject
           );
           if (intersection) {
+            this.dragHeight = intersection.point.y;
             this.selectedObject.clickPressed(intersection);
           }
         },
@@ -15283,6 +15284,7 @@ functions return important math algorithms required to constructs lines/walls in
               } else {
                 this.three.setCursorStyle("auto");
               }
+              this.dragHeight = undefined;
               break;
             case states.ROTATING:
             case states.ROTATING_FREE:
@@ -15352,6 +15354,16 @@ functions return important math algorithms required to constructs lines/walls in
               true
             );
           } else {
+            // Slick Movement: If dragging a floor item, intersect with a plane at the drag height
+            if (this.state === states.DRAGGING && this.dragHeight !== undefined) {
+                var raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(this.normalizeVector2(vec2), this.camera);
+                var plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -this.dragHeight);
+                var point = new THREE.Vector3();
+                if (raycaster.ray.intersectPlane(plane, point)) {
+                    return { point: point };
+                }
+            }
             intersections = this.getIntersections(vec2, this.plane);
           }
           if (intersections.length > 0) {
