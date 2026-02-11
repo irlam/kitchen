@@ -300,7 +300,6 @@ async function loadProjectFromList(KitchenKreation, name) {
       updatedAt: serverEntry.updated_at,
     };
 
-    console.log("Loading project data:", entry);
     KitchenKreation.model.loadSerialized(entry.snapshot);
     setProjectMeta(entry.meta || {});
     projectHistory = [entry.snapshot];
@@ -991,8 +990,6 @@ function buildSerializedProject(KitchenKreation) {
     return metadata;
   });
 
-  console.log("Saving items count:", items.length);
-
   var floorplanData = {
     corners: corners,
     walls: walls,
@@ -1013,7 +1010,7 @@ function buildSerializedProject(KitchenKreation) {
     };
   }
 
-  return JSON.stringify({ floorplan: floorplanData, items: items });
+  return { floorplan: floorplanData, items: items };
 }
 
 function loadSavedProject(KitchenKreation) {
