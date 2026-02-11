@@ -587,10 +587,83 @@ function captureElement(elementId) {
   });
 }
 
+function applyRotationToModel(KitchenKreation, angle) {
+  var model = KitchenKreation.model;
+  var center = model.floorplan.getCenter();
+  var cx = center.x;
+  var cz = center.z;
+
+  var cos = Math.cos(angle);
+  var sin = Math.sin(angle);
+
+  // Rotate corners
+  model.floorplan.getCorners().forEach(function (corner) {
+    var rx = corner.getX() - cx;
+    var rz = corner.getY() - cz;
+    var nx = rx * cos - rz * sin;
+    var nz = rx * sin + rz * cos;
+    corner.move(cx + nx, cz + nz);
+  });
+
+  // Rotate items
+  model.scene.getItems().forEach(function (item) {
+    var rx = item.position.x - cx;
+    var rz = item.position.z - cz;
+    var nx = rx * cos - rz * sin;
+    var nz = rx * sin + rz * cos;
+    item.position.x = cx + nx;
+    item.position.z = cz + nz;
+    item.rotation.y += angle;
+  });
+
+  model.floorplan.update();
+  if (KitchenKreation.three) {
+    KitchenKreation.three.render(true);
+  }
+}
+
+function orientProjectForExport(KitchenKreation) {
+  var items = KitchenKreation.model.scene.getItems();
+  var angle = 0;
+
+  if (items.length > 0) {
+    var sumCos = 0;
+    var sumSin = 0;
+    items.forEach(function (item) {
+      sumCos += Math.cos(item.rotation.y);
+      sumSin += Math.sin(item.rotation.y);
+    });
+    // Average facing vector
+    var avgFacing = Math.atan2(sumSin, sumCos);
+    // We want avgFacing to be 0 (facing towards the user/camera)
+    // so rotate by -avgFacing.
+    angle = -avgFacing;
+  }
+
+  // Round to nearest 90 degrees
+  var degrees = (angle * 180) / Math.PI;
+  var roundedDegrees = Math.round(degrees / 90) * 90;
+  var finalAngle = (roundedDegrees * Math.PI) / 180;
+
+  if (Math.abs(finalAngle) > 0.01) {
+    applyRotationToModel(KitchenKreation, finalAngle);
+    return finalAngle;
+  }
+  return 0;
+}
+
 function exportPrintablePlan(KitchenKreation, options) {
   options = options || {};
   var wasDesignActive = $("#showDesign").hasClass("active");
   var wasPlanActive = $("#showFloorPlan").hasClass("active");
+
+  var appliedRotation = 0;
+  historyApplying = true;
+  try {
+    appliedRotation = orientProjectForExport(KitchenKreation);
+  } catch (e) {
+    console.error("Failed to auto-orient:", e);
+  }
 
   function show2D() {
     if (!wasPlanActive) {
@@ -622,6 +695,12 @@ function exportPrintablePlan(KitchenKreation, options) {
       });
     })
     .then(function (images) {
+      // Restore orientation
+      if (Math.abs(appliedRotation) > 0.01) {
+        applyRotationToModel(KitchenKreation, -appliedRotation);
+      }
+      historyApplying = false;
+
       if (wasPlanActive) {
         $("#showFloorPlan").trigger("click");
       } else if (wasDesignActive) {
@@ -640,6 +719,13 @@ function exportPrintablePlan(KitchenKreation, options) {
         projectNotes: projectMeta.projectNotes,
         autoPrint: options.autoPrint !== false,
       });
+    })
+    .catch(function (err) {
+      console.error("Export failed:", err);
+      if (Math.abs(appliedRotation) > 0.01) {
+        applyRotationToModel(KitchenKreation, -appliedRotation);
+      }
+      historyApplying = false;
     });
 }
 
