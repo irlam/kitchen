@@ -174,15 +174,20 @@ function saveProjectList(list) {
 // --- Server-side Sync Functions ---
 async function saveProjectToServer(name, content, meta) {
   try {
+    const payload = { name, content, meta };
+    console.log("Saving to server. Payload size (approx):", JSON.stringify(payload).length, "bytes");
+    console.log("Payload items count:", content.items ? content.items.length : 0);
+    
     const response = await fetch("api/projects.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, content, meta }),
+      body: JSON.stringify(payload),
     });
     const result = await response.json();
     if (!response.ok || result.error) {
       throw new Error(result.error || "Server error " + response.status);
     }
+    console.log("Save successful:", result);
     return result;
   } catch (e) {
     console.error("Failed to save to server:", e);
@@ -1001,11 +1006,38 @@ function buildSerializedProject(KitchenKreation) {
       backTexture: wall.backTexture,
     };
   });
-  var allItems = KitchenKreation.model.scene.getItems();
-  console.log("Serializing " + allItems.length + " items");
-  var items = allItems.map(function (item) {
-    var metadata = item.getMetaData();
-    return metadata;
+  
+  // Try to get items from multiple possible locations to be safe
+  var allItems = [];
+  if (KitchenKreation.model.scene.getItems) {
+    allItems = KitchenKreation.model.scene.getItems();
+  } else if (KitchenKreation.model.scene.items) {
+    allItems = KitchenKreation.model.scene.items;
+  }
+  
+  console.log("Serializing Project. Found items count:", allItems.length);
+  
+  var items = allItems.map(function (item, index) {
+    try {
+      var metadata = item.getMetaData();
+      console.log("Item " + index + " metadata:", metadata);
+      return metadata;
+    } catch (e) {
+      console.error("Failed to get metadata for item at index " + index, item, e);
+      // Fallback if getMetaData fails
+      return {
+        item_name: item.metadata ? item.metadata.itemName : "Unknown",
+        item_type: item.metadata ? item.metadata.itemType : 1,
+        model_url: item.metadata ? item.metadata.modelUrl : "",
+        xpos: item.position.x,
+        ypos: item.position.y,
+        zpos: item.position.z,
+        rotation: item.rotation.y,
+        scale_x: item.scale.x,
+        scale_y: item.scale.y,
+        scale_z: item.scale.z
+      };
+    }
   });
 
   var floorplanData = {

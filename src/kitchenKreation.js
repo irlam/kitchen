@@ -13155,6 +13155,7 @@ functions return important math algorithms required to constructs lines/walls in
           }
 
           var loaderCallback = function loaderCallback(geometry, materials) {
+            console.log("addItem: loaderCallback for", metadata.itemName);
             //			var item = new (Catalogue.getClass(itemType))(local.model, metadata, geometry, new MeshFaceMaterial(materials), position, rotation, scale);
             var item = new (Catalogue.getClass(itemType))(
               local.model,
@@ -13167,6 +13168,7 @@ functions return important math algorithms required to constructs lines/walls in
             );
             item.fixed = fixed || false;
             local.items.push(item);
+            console.log("addItem: total items now", local.items.length);
             local.add(item);
             item.initObject();
             local.dispatchEvent({ type: EVENT_ITEM_LOADED, item: item });
