@@ -1328,6 +1328,7 @@ function datGUI(three, floorplanner) {
         '<div class="title">Design Controls</div>' +
       '</div>' +
       '<div id="gui-content"></div>';
+    guiContainer.classList.add("collapsed");
     document.body.appendChild(guiContainer);
 
     // Make the container draggable
@@ -1418,9 +1419,7 @@ function datGUI(three, floorplanner) {
   wallPropFolder = getWallAndFloorPropertiesFolder(gui, aWall, aFloor);
   itemPropFolder = getItemPropertiesFolder(gui, anItem);
 
-    globalPropFolder.open();
-    wallPropFolder.open();
-      itemPropFolder.open();
+    // Folders are closed by default
   }
 
   $(document).ready(function () {
