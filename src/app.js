@@ -928,8 +928,11 @@ var ItemProperties = function (gui) {
 
   this.deleteItem = function () {
     if (this.currentItem) {
-      this.currentItem.remove();
-      this.setItem(null);
+      var itemName = this.name || "this item";
+      if (confirm("Are you sure you want to delete " + itemName + "?")) {
+        this.currentItem.remove();
+        this.setItem(null);
+      }
     }
   };
 };
@@ -1597,6 +1600,18 @@ function datGUI(three, floorplanner) {
     // Initialize dat.GUI within the content div
     gui = new dat.GUI({ autoPlace: false, width: 400 });
     document.getElementById("gui-content").appendChild(gui.domElement);
+
+    // Add keyboard shortcuts for deletion
+    window.addEventListener("keydown", function(e) {
+      if ((e.key === "Delete" || e.key === "Backspace") && !e.repeat) {
+        // Only trigger if not typing in an input field
+        if (!["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
+          if (anItem && anItem.currentItem) {
+            anItem.deleteItem();
+          }
+        }
+      }
+    });
 
     aGlobal = new GlobalProperties();
     aWall = new WallProperties();
