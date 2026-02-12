@@ -977,14 +977,14 @@ var WallProperties = function () {
     ["rooms/textures/floor/checkered-tiles-square.jpg", false, 150], //30 checkered tiles
 
     // Modern Wall & Floor additions
-    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Concrete033.jpg", false, 150], //31 Modern Concrete
-    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Tiles101.jpg", false, 50],   //32 Navy SubTile
-    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Wood067.jpg", false, 150],  //33 Vertical Slats
-    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Tiles107.jpg", false, 50],   //34 White Hex
-    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Terrazzo018.jpg", false, 150], //35 Terrazzo
-    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-101010/Marble006.jpg", false, 200],   //36 Calacatta Marble
-    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Tiles011.jpg", false, 200],    //37 Slate
-    ["https://acg-media.struffelproductions.com/file/ambientCG-Web/media/thumbnail/2048-JPG-242424/Wood066.jpg", false, 150],     //38 Herringbone Walnut
+    ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Concrete033/Concrete033_SQ_Color.jpg", false, 150], //31 Modern Concrete
+    ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Tiles101/Tiles101_SQ_Color.jpg", false, 50],   //32 Navy SubTile
+    ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Wood067/Wood067_SQ_Color.jpg", false, 150],  //33 Vertical Slats
+    ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Tiles107/Tiles107_SQ_Color.jpg", false, 50],   //34 White Hex
+    ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Terrazzo018/Terrazzo018_SQ_Color.jpg", false, 150], //35 Terrazzo
+    ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Marble006/Marble006_SQ_Color.jpg", false, 200],   //36 Calacatta Marble
+    ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Tiles011/Tiles011_SQ_Color.jpg", false, 200],    //37 Slate
+    ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Wood066/Wood066_SQ_Color.jpg", false, 150],     //38 Herringbone Walnut
   ];
 
   this.floormaterialname = 0;
