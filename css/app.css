@@ -1078,6 +1078,32 @@ button {
     text-transform: uppercase;
 }
 
+/* Premium Branding */
+.premium-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+    color: #000;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 800;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    z-index: 10;
+    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.premium-card .thumbnail {
+    border: 1px solid rgba(255, 215, 0, 0.3) !important;
+}
+
+.premium-card:hover .thumbnail {
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2) !important;
+}
+
 /* Modal Perfection */
 #add-items-modal .modal-dialog {
     width: 95% !important;

@@ -288,6 +288,55 @@ $(document).ready(function () {
       image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Avocado/screenshot/screenshot.png",
       format: "gltf",
     },
+    // --- PREMIUM COLLECTION ---
+    {
+      name: "Professional Espresso Machine",
+      model: "https://assets.babylonjs.com/meshes/espressoMachine.glb",
+      type: "1",
+      image: "https://webgi.xyz/docs/assets/espresso.jpg",
+      format: "gltf",
+      premium: true
+    },
+    {
+      name: "Designer Toaster",
+      model: "https://assets.babylonjs.com/meshes/toaster.glb",
+      type: "1",
+      image: "https://www.babylonjs-controlled.com/assets/toaster.jpg",
+      format: "gltf",
+      premium: true
+    },
+    {
+      name: "Modern Potted Monstera",
+      model: "https://assets.babylonjs.com/meshes/pottedPlant.glb",
+      type: "1",
+      image: "https://models.babylonjs.com/thumbnails/pottedPlant.png",
+      format: "gltf",
+      premium: true
+    },
+    {
+      name: "Minimalist Pendant Light",
+      model: "https://assets.babylonjs.com/meshes/lamp.powder.glb",
+      type: "1",
+      image: "https://models.babylonjs.com/thumbnails/lamp.png",
+      format: "gltf",
+      premium: true
+    },
+    {
+      name: "Luxury Velvet Stool",
+      model: "https://assets.babylonjs.com/meshes/chair.glb",
+      type: "1",
+      image: "https://models.babylonjs.com/thumbnails/chair.png",
+      format: "gltf",
+      premium: true
+    },
+    {
+      name: "Artisan Olive Dish",
+      model: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/IridescentDishwithOlives/glTF-Binary/IridescentDishwithOlives.glb",
+      type: "1",
+      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/IridescentDishwithOlives/screenshot/screenshot.png",
+      format: "gltf",
+      premium: true
+    },
   ];
   var modelTypesNum = ["1", "2", "3"];
   var modelTypesIds = ["floor-items", "wall-items", "in-wall-items"];
@@ -312,15 +361,17 @@ $(document).ready(function () {
 
     var modelformat = item.format ? " model-format=\"" + item.format + "\" " : "";
     var cleanName = item.name.replace(/_/g, " ");
+    var premiumBadge = item.premium ? "<span class=\"premium-badge\">PREMIUM</span>" : "";
 
     var html =
-      "<div class=\"catalog-item-card\">" +
+      "<div class=\"catalog-item-card" + (item.premium ? " premium-card" : "") + "\">" +
       "<a class=\"thumbnail add-item\"" +
       " model-name=\"" + item.name + "\" " +
       " model-url=\"" + item.model + "\" " +
       " model-type=\"" + item.type + "\" " +
       modelformat +
       ">" +
+      premiumBadge +
       "<div class=\"thumb-container\">" +
       "<img src=\"" + item.image + "\" alt=\"" + item.name + "\" data-dismiss=\"modal\" " +
       " onerror=\"this.onerror=null;this.src='https://placehold.co/200x200/0b141d/00d2d2?text=" + encodeURIComponent(item.name) + "';\">" +
