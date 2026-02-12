@@ -9056,11 +9056,11 @@ var KKJS = (function (exports) {
     scope.domElement.addEventListener("contextmenu", onContextMenu, false);
 
     scope.domElement.addEventListener("mousedown", onMouseDown, false);
-    scope.domElement.addEventListener("wheel", onMouseWheel, false);
+    scope.domElement.addEventListener("wheel", onMouseWheel, { passive: false });
 
-    scope.domElement.addEventListener("touchstart", onTouchStart, false);
-    scope.domElement.addEventListener("touchend", onTouchEnd, false);
-    scope.domElement.addEventListener("touchmove", onTouchMove, false);
+    scope.domElement.addEventListener("touchstart", onTouchStart, { passive: false });
+    scope.domElement.addEventListener("touchend", onTouchEnd, { passive: false });
+    scope.domElement.addEventListener("touchmove", onTouchMove, { passive: false });
 
     window.addEventListener("keydown", onKeyDown, false);
 
@@ -15639,23 +15639,23 @@ functions return important math algorithms required to constructs lines/walls in
       this_.domElement.addEventListener(
         "mousewheel",
         this_.mousewheelevent,
-        false
+        { passive: false }
       );
       this_.domElement.addEventListener(
         "DOMMouseScroll",
         this_.mousewheelevent,
-        false
+        { passive: false }
       ); // firefox
       this_.domElement.addEventListener(
         "touchstart",
         this_.touchstartevent,
-        false
+        { passive: false }
       );
-      this_.domElement.addEventListener("touchend", this_.touchendevent, false);
+      this_.domElement.addEventListener("touchend", this_.touchendevent, { passive: false });
       this_.domElement.addEventListener(
         "touchmove",
         this_.touchmoveevent,
-        false
+        { passive: false }
       );
       window.addEventListener("keydown", this_.keydownevent, false);
       return this_;

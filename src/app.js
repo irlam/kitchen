@@ -1640,7 +1640,8 @@ function datGUI(three, floorplanner) {
       axis: "x",
     });
   } else {
-    console.error("jQuery Flip plugin not loaded!");
+    console.warn("jQuery Flip plugin not loaded! Using fallback visibility toggle.");
+    $(".card").find(".back").hide();
   }
 
   $("#showFloorPlan").click(function () {
