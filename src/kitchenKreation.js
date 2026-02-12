@@ -5843,6 +5843,10 @@ var KKJS = (function (exports) {
       this.json.meshUses = meshUses;
     };
 
+    GLTFParser.prototype.loadCamera = function (cameraIndex) {
+      return Promise.resolve(new THREE.Object3D());
+    };
+
     /**
      * Requests the specified dependency asynchronously, with caching.
      *  {string} type
@@ -5900,9 +5904,12 @@ var KKJS = (function (exports) {
             break;
 
           case "light":
-            dependency = this.extensions[
-              EXTENSIONS.KHR_LIGHTS_PUNCTUAL
-            ].loadLight(index);
+            var extension = this.extensions[EXTENSIONS.KHR_LIGHTS_PUNCTUAL];
+            if (extension && extension.loadLight) {
+              dependency = extension.loadLight(index);
+            } else {
+              dependency = Promise.resolve(new THREE.Object3D());
+            }
             break;
 
           default:
@@ -6667,7 +6674,7 @@ var KKJS = (function (exports) {
             )
             .then(resolve);
         } else {
-          resolve(new three_module.Object3D());
+          resolve(new THREE.Object3D());
         }
       }).then(function (node) {
         if (nodeDef.name !== undefined) {
@@ -13258,10 +13265,9 @@ functions return important math algorithms required to constructs lines/walls in
                   newGeometry.merge(tGeometry, child.matrixWorld);
                 } else {
                   child.geometry.faces.forEach(function (face) {
-                    //							face.materialIndex = face.materialIndex + newmaterials.length;
                     face.materialIndex = materialindices[face.materialIndex];
                   });
-                  newGeometry.mergeMesh(child);
+                  newGeometry.merge(child.geometry, child.matrixWorld);
                 }
               }
             });

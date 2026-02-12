@@ -1266,13 +1266,15 @@ function setupAutoSave(KitchenKreation) {
       var snapshot = buildSerializedProject(KitchenKreation);
       pushHistory(snapshot);
 
+      var currentProjectName = (getProjectMeta().projectName || "").trim();
+
       // If we are in a project, save to server as well
-      if (projectName && projectName !== "") {
-        console.log("Auto-saving project to server:", projectName);
+      if (currentProjectName && currentProjectName !== "") {
+        console.log("Auto-saving project to server:", currentProjectName);
         // We use the silent version to avoid blocking UI too much
         var meta = getProjectMeta();
-        meta.projectName = projectName;
-        await saveProjectToServer(projectName, snapshot, meta);
+        meta.projectName = currentProjectName;
+        await saveProjectToServer(currentProjectName, snapshot, meta);
         updateAutosaveStatus(
           "Auto-saved to server " + new Date().toLocaleTimeString()
         );
