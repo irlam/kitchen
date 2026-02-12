@@ -13166,7 +13166,7 @@ functions return important math algorithms required to constructs lines/walls in
               rotation,
               scale
             );
-            item.fixed = fixed || false;
+            item.fixed = (fixed === true || fixed === "true" || fixed === 1 || fixed === "1");
             local.items.push(item);
             console.log("addItem: total items now", local.items.length);
             local.add(item);
@@ -13313,26 +13313,34 @@ functions return important math algorithms required to constructs lines/walls in
             console.log("newRoom: loading " + items.length + " items");
             items.forEach(function (item) {
               var matColors = item.material_colors ? item.material_colors : [];
-              var position = new THREE.Vector3(item.xpos, item.ypos, item.zpos);
+              var position = new THREE.Vector3(
+                parseFloat(item.xpos),
+                parseFloat(item.ypos),
+                parseFloat(item.zpos)
+              );
               var metadata = {
                 itemName: item.item_name,
-                resizable: item.resizable,
-                itemType: item.item_type,
+                resizable:
+                  item.resizable === true ||
+                  item.resizable === "true" ||
+                  item.resizable === 1 ||
+                  item.resizable === "1",
+                itemType: parseInt(item.item_type),
                 modelUrl: item.model_url,
                 materialColors: matColors,
                 format: item.format,
               };
               var scale = new THREE.Vector3(
-                item.scale_x,
-                item.scale_y,
-                item.scale_z
+                parseFloat(item.scale_x || 1),
+                parseFloat(item.scale_y || 1),
+                parseFloat(item.scale_z || 1)
               );
               this_2.scene.addItem(
-                item.item_type,
+                metadata.itemType,
                 item.model_url,
                 metadata,
                 position,
-                item.rotation,
+                parseFloat(item.rotation || 0),
                 scale,
                 item.fixed
               );
@@ -15342,10 +15350,16 @@ functions return important math algorithms required to constructs lines/walls in
             this.mouse,
             items,
             false,
+            true,
             true
           );
           if (intersects.length > 0) {
-            this.intersectedObject = intersects[0].object;
+            // Find the actual Item root in case we intersected a child mesh
+            var target = intersects[0].object;
+            while (target && !target.metadata && target.parent) {
+              target = target.parent;
+            }
+            this.intersectedObject = target || intersects[0].object;
           } else {
             this.intersectedObject = null;
           }

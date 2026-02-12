@@ -1211,12 +1211,27 @@ function setupAutoSave(KitchenKreation) {
     if (saveTimer) {
       clearTimeout(saveTimer);
     }
-    saveTimer = setTimeout(function () {
+    saveTimer = setTimeout(async function () {
+      if (historyApplying) return;
       var snapshot = buildSerializedProject(KitchenKreation);
-      // localStorage.setItem(STORAGE_KEY, snapshot); // Removed
       pushHistory(snapshot);
-      updateAutosaveStatus("Auto-snapshot " + new Date().toLocaleTimeString());
-    }, 300);
+
+      // If we are in a project, save to server as well
+      if (projectName && projectName !== "") {
+        console.log("Auto-saving project to server:", projectName);
+        // We use the silent version to avoid blocking UI too much
+        var meta = getProjectMeta();
+        meta.projectName = projectName;
+        await saveProjectToServer(projectName, snapshot, meta);
+        updateAutosaveStatus(
+          "Auto-saved to server " + new Date().toLocaleTimeString()
+        );
+      } else {
+        updateAutosaveStatus(
+          "Auto-snapshot " + new Date().toLocaleTimeString()
+        );
+      }
+    }, 1000); // 1 second debounce for server saves
   }
 
   KitchenKreation.model.floorplan.addEventListener(
