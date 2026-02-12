@@ -816,11 +816,7 @@ var ItemProperties = function (gui) {
       var scope = this;
       var material = item.material;
       this.name = item.metadata.itemName;
-      this.width = KKJS.Dimensioning.cmToMeasureInt(item.getWidth());
-      this.height = KKJS.Dimensioning.cmToMeasureInt(item.getHeight());
-      this.depth = KKJS.Dimensioning.cmToMeasureInt(item.getDepth());
-      this.fixed = item.fixed;
-      this.proportionalsize = item.getProportionalResize();
+      this.updateGUIFromItem();
 
       for (var i in this.guiControllers) {
         // Iterate over gui controllers to update the values
@@ -933,6 +929,52 @@ var ItemProperties = function (gui) {
         this.currentItem.remove();
         this.setItem(null);
       }
+    }
+  };
+
+  this.updateGUIFromItem = function () {
+    if (this.currentItem) {
+      this.width = KKJS.Dimensioning.cmToMeasureInt(this.currentItem.getWidth());
+      this.height = KKJS.Dimensioning.cmToMeasureInt(
+        this.currentItem.getHeight()
+      );
+      this.depth = KKJS.Dimensioning.cmToMeasureInt(this.currentItem.getDepth());
+      this.fixed = this.currentItem.fixed;
+      this.proportionalsize = this.currentItem.getProportionalResize();
+
+      if (this.guiControllers) {
+        for (var i = 0; i < this.guiControllers.length; i++) {
+          this.guiControllers[i].updateDisplay();
+        }
+      }
+    }
+  };
+
+  this.snapToNearest = function () {
+    if (this.currentItem) {
+      var standardWidths = [30, 45, 60, 80, 90, 100, 120];
+      var standardDepths = [30, 60];
+      var standardHeights = [72, 90, 210];
+
+      var w = this.currentItem.getWidth();
+      var h = this.currentItem.getHeight();
+      var d = this.currentItem.getDepth();
+
+      var snap = function (val, snapPoints) {
+        var closest = snapPoints[0];
+        var minDist = Math.abs(val - closest);
+        for (var i = 1; i < snapPoints.length; i++) {
+          var dist = Math.abs(val - snapPoints[i]);
+          if (dist < minDist) {
+            minDist = dist;
+            closest = snapPoints[i];
+          }
+        }
+        return closest;
+      };
+
+      this.currentItem.resize(snap(h, standardHeights), snap(w, standardWidths), snap(d, standardDepths));
+      this.updateGUIFromItem();
     }
   };
 };
@@ -1098,6 +1140,11 @@ function addKitchenKreationListeners(KitchenKreation) {
   });
   three.addEventListener(KKJS.EVENT_ITEM_UNSELECTED, function (o) {
     itemUnselected();
+  });
+  three.addEventListener(KKJS.EVENT_ITEM_RESIZED, function (o) {
+    if (anItem.currentItem === o.item) {
+      anItem.updateGUIFromItem();
+    }
   });
   three.addEventListener(KKJS.EVENT_WALL_CLICKED, function (o) {
     wallClicked(o.item);
@@ -1363,15 +1410,16 @@ function getGlobalPropertiesFolder(gui, global) {
 
 function getItemPropertiesFolder(gui, anItem) {
   var f = gui.addFolder("Current Item");
-  var inamecontrol = f.add(anItem, "name");
+  var inamecontrol = f.add(anItem, "name").name("Item Name");
 
-  var wcontrol = f.add(anItem, "width", 0.2, 1.5).step(0.1);
-  var hcontrol = f.add(anItem, "height", 0.2, 1.5).step(0.1);
-  var dcontrol = f.add(anItem, "depth", 0.2, 1.5).step(0.1);
+  var wcontrol = f.add(anItem, "width", 0.05, 5.0).step(0.005).name("Width (m)");
+  var hcontrol = f.add(anItem, "height", 0.05, 5.0).step(0.005).name("Height (m)");
+  var dcontrol = f.add(anItem, "depth", 0.05, 5.0).step(0.005).name("Depth (m)");
 
-  var pcontrol = f.add(anItem, "proportionalsize").name("Maintain Size Ratio");
-  var lockcontrol = f.add(anItem, "fixed").name("Locked in place");
-  var deleteItemControl = f.add(anItem, "deleteItem").name("Delete Item");
+  var snapcontrol = f.add(anItem, "snapToNearest").name("✨ Snap to Cabinet Size");
+  var pcontrol = f.add(anItem, "proportionalsize").name("🔗 Maintain Size Ratio");
+  var lockcontrol = f.add(anItem, "fixed").name("📌 Locked in place");
+  var deleteItemControl = f.add(anItem, "deleteItem").name("🗑️ Delete Item");
 
   function changed() {
     anItem.dimensionsChanged();
@@ -1396,6 +1444,7 @@ function getItemPropertiesFolder(gui, anItem) {
     wcontrol,
     hcontrol,
     dcontrol,
+    snapcontrol,
     pcontrol,
     lockcontrol,
     deleteItemControl,

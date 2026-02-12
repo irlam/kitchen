@@ -34,6 +34,7 @@ var KKJS = (function (exports) {
   var EVENT_ITEM_DELETED = "ITEM_REMOVED_EVENT";
   var EVENT_ITEM_SELECTED = "ITEM_SELECTED_EVENT";
   var EVENT_ITEM_UNSELECTED = "ITEM_UNSELECTED_EVENT";
+  var EVENT_ITEM_RESIZED = "ITEM_RESIZED_EVENT";
 
   var EVENT_ACTION = "ACTION_EVENT";
   var EVENT_DELETED = "DELETED_EVENT";
@@ -12158,9 +12159,10 @@ functions return important math algorithms required to constructs lines/walls in
             } else {
               this.setScale(z, z, z);
             }
-            return;
+          } else {
+            this.setScale(x, y, z);
           }
-          this.setScale(x, y, z);
+          this.dispatchEvent({ type: EVENT_ITEM_RESIZED, item: this });
         },
       },
       {
@@ -12247,6 +12249,47 @@ functions return important math algorithms required to constructs lines/walls in
       {
         reference: "resized",
         value: function resized() {},
+      },
+      {
+        reference: "cycleStandardSize",
+        value: function cycleStandardSize(dim) {
+          var standardWidths = [30, 45, 60, 80, 90, 100, 120];
+          var standardDepths = [30, 60];
+          var standardHeights = [72, 90, 210];
+
+          var w = this.getWidth();
+          var h = this.getHeight();
+          var d = this.getDepth();
+
+          if (dim === "width") {
+            var nextWidth = standardWidths[0];
+            for (var i = 0; i < standardWidths.length; i++) {
+              if (standardWidths[i] > w + 0.1) {
+                nextWidth = standardWidths[i];
+                break;
+              }
+            }
+            this.resize(h, nextWidth, d);
+          } else if (dim === "depth") {
+            var nextDepth = standardDepths[0];
+            for (var i = 0; i < standardDepths.length; i++) {
+              if (standardDepths[i] > d + 0.1) {
+                nextDepth = standardDepths[i];
+                break;
+              }
+            }
+            this.resize(h, w, nextDepth);
+          } else if (dim === "height") {
+            var nextHeight = standardHeights[0];
+            for (var i = 0; i < standardHeights.length; i++) {
+              if (standardHeights[i] > h + 0.1) {
+                nextHeight = standardHeights[i];
+                break;
+              }
+            }
+            this.resize(nextHeight, w, d);
+          }
+        },
       },
       {
         reference: "getHeight",
@@ -15031,6 +15074,29 @@ functions return important math algorithms required to constructs lines/walls in
         reference: "clickPressed",
         value: function clickPressed(vec2) {
           this.mouse = vec2 || this.mouse;
+
+          // Check for dimension label clicks first
+          if (this.selectedObject && this.selectedObject.canvasPlaneWH) {
+            var raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(
+              this.normalizeVector2(this.mouse),
+              this.camera
+            );
+            var labelIntersects = raycaster.intersectObjects([
+              this.selectedObject.canvasPlaneWH,
+              this.selectedObject.canvasPlaneWD,
+            ]);
+            if (labelIntersects.length > 0) {
+              var obj = labelIntersects[0].object;
+              if (obj === this.selectedObject.canvasPlaneWH) {
+                this.selectedObject.cycleStandardSize("width");
+              } else {
+                this.selectedObject.cycleStandardSize("depth");
+              }
+              return; // Don't start dragging if we clicked a label
+            }
+          }
+
           var intersection = this.itemIntersection(
             this.mouse,
             this.selectedObject
@@ -18181,6 +18247,7 @@ functions return important math algorithms required to constructs lines/walls in
   exports.EVENT_ITEM_DELETED = EVENT_ITEM_DELETED;
   exports.EVENT_ITEM_SELECTED = EVENT_ITEM_SELECTED;
   exports.EVENT_ITEM_UNSELECTED = EVENT_ITEM_UNSELECTED;
+  exports.EVENT_ITEM_RESIZED = EVENT_ITEM_RESIZED;
   exports.EVENT_CAMERA_MOVED = EVENT_CAMERA_MOVED;
   exports.EVENT_CAMERA_ACTIVE = EVENT_CAMERA_ACTIVE;
   exports.EVENT_WALL_CLICKED = EVENT_WALL_CLICKED;
