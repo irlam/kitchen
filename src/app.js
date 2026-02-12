@@ -985,6 +985,24 @@ var WallProperties = function () {
     ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Marble006/Marble006_SQ_Color.jpg", false, 200],   //36 Calacatta Marble
     ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Tiles011/Tiles011_SQ_Color.jpg", false, 200],    //37 Slate
     ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Wood066/Wood066_SQ_Color.jpg", false, 150],     //38 Herringbone Walnut
+
+    // Premium Textures
+    ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Metal009/Metal009_SQ_Color.jpg", false, 100],   //39 Stainless Steel
+    ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Wood062/Wood062_SQ_Color.jpg", false, 150],    //40 Scandi Oak
+    ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Wood051/Wood051_SQ_Color.jpg", false, 150],    //41 Black Ash
+    ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Bricks076/Bricks076_SQ_Color.jpg", false, 100],  //42 White Loft Brick
+    ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Marble012/Marble012_SQ_Color.jpg", false, 150],  //43 Luxury Stone
+    ["https://f003.backblazeb2.com/file/ambientCG-Web/media/surface-preview/Fabric030/Fabric030_SQ_Color.jpg", false, 100],  //44 Grey Fabric
+
+    // Contemporary Plain Colors
+    ["https://dummyimage.com/100/212121/212121.png", false, 100], //45 Matte Black
+    ["https://dummyimage.com/100/FFFFFF/FFFFFF.png", false, 100], //46 Pure White
+    ["https://dummyimage.com/100/8DA399/8DA399.png", false, 100], //47 Sage Green
+    ["https://dummyimage.com/100/C29B9B/C29B9B.png", false, 100], //48 Dusty Rose
+    ["https://dummyimage.com/100/1B2631/1B2631.png", false, 100], //49 Midnight Navy
+    ["https://dummyimage.com/100/D1C4AC/D1C4AC.png", false, 100], //50 Warm Sand
+    ["https://dummyimage.com/100/B04A33/B04A33.png", false, 100], //51 Terracotta
+    ["https://dummyimage.com/100/ABB2B9/ABB2B9.png", false, 100], //52 Cool Grey
   ];
 
   this.floormaterialname = 0;
@@ -1372,7 +1390,23 @@ function getWallAndFloorPropertiesFolder(gui, aWall, aFloor) {
   var f = gui.addFolder("Wall and Floor");
   var wcontrol = f
     .add(aWall, "wallmaterialname", {
-      "*** NEW MODERN ***": 31,
+      "*** PREMIUM ***": 39,
+      "Stainless Steel": 39,
+      "Scandi Oak": 40,
+      "Black Ash": 41,
+      "White Loft Brick": 42,
+      "Luxury Stone": 43,
+      "Grey Fabric": 44,
+      "*** COLORS ***": 45,
+      "Matte Black": 45,
+      "Pure White": 46,
+      "Sage Green": 47,
+      "Dusty Rose": 48,
+      "Midnight Navy": 49,
+      "Warm Sand": 50,
+      Terracotta: 51,
+      "Cool Grey": 52,
+      "*** MODERN ***": 31,
       "Navy Subway Tiles": 32,
       "Modern Concrete": 31,
       "Vertical Wood Slats": 33,
@@ -1396,7 +1430,22 @@ function getWallAndFloorPropertiesFolder(gui, aWall, aFloor) {
     .name("Wall");
   var fcontrol = f
     .add(aFloor, "floormaterialname", {
-      "*** NEW MODERN ***": 31,
+      "*** PREMIUM ***": 39,
+      "Stainless Steel": 39,
+      "Scandi Oak": 40,
+      "Black Ash": 41,
+      "Luxury Stone": 43,
+      "Grey Fabric": 44,
+      "*** COLORS ***": 45,
+      "Matte Black": 45,
+      "Pure White": 46,
+      "Sage Green": 47,
+      "Dusty Rose": 48,
+      "Midnight Navy": 49,
+      "Warm Sand": 50,
+      Terracotta: 51,
+      "Cool Grey": 52,
+      "*** MODERN ***": 31,
       "Navy Subway Tiles": 32,
       "Industrial Concrete": 31,
       "Vertical Wood Slats": 33,
