@@ -295,15 +295,15 @@ $(document).ready(function () {
       name: "Antique Designer Camera",
       model: "models/gltf/antiqueCamera.glb",
       type: "1",
-      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/AntiqueCamera/screenshot/screenshot.png",
+      image: "models/thumbnails_new/antiqueCamera.png",
       format: "gltf",
       premium: true
     },
     {
-      name: "Artisan Toaster",
-      model: "models/gltf/toaster.glb",
+      name: "Gourmet Blender",
+      model: "models/gltf/kitchenBlender.glb",
       type: "1",
-      image: "models/thumbnails_new/toaster.png",
+      image: "models/thumbnails_new/kitchenBlender.png",
       format: "gltf",
       premium: true
     },
@@ -311,7 +311,7 @@ $(document).ready(function () {
       name: "Classic Rubber Duck",
       model: "models/gltf/duck.glb",
       type: "1",
-      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Duck/screenshot/screenshot.png",
+      image: "models/thumbnails_new/duck.png",
       format: "gltf",
       premium: true
     },
@@ -319,7 +319,7 @@ $(document).ready(function () {
       name: "Vintage Lantern",
       model: "models/gltf/lantern.glb",
       type: "1",
-      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Lantern/screenshot/screenshot.png",
+      image: "models/thumbnails_new/lantern.png",
       format: "gltf",
       premium: true
     },
@@ -327,7 +327,7 @@ $(document).ready(function () {
       name: "Designer Water Bottle",
       model: "models/gltf/waterBottle.glb",
       type: "1",
-      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/WaterBottle/screenshot/screenshot.png",
+      image: "models/thumbnails_new/waterBottle.png",
       format: "gltf",
       premium: true
     },
@@ -335,7 +335,15 @@ $(document).ready(function () {
       name: "Gourmet Barramundi",
       model: "models/gltf/fish.glb",
       type: "1",
-      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BarramundiFish/screenshot/screenshot.png",
+      image: "models/thumbnails_new/fish.png",
+      format: "gltf",
+      premium: true
+    },
+    {
+      name: "Organic Avocado",
+      model: "models/gltf/avocado.glb",
+      type: "1",
+      image: "models/thumbnails_new/avocado.png",
       format: "gltf",
       premium: true
     },

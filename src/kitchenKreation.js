@@ -13227,8 +13227,10 @@ functions return important math algorithms required to constructs lines/walls in
             var newmaterials = [];
             var newGeometry = new THREE.Geometry();
 
+            gltfModel.scene.updateMatrixWorld(true);
+
             gltfModel.scene.traverse(function (child) {
-              if (child.type == "Mesh") {
+              if (child.type == "Mesh" || child.isMesh) {
                 var materialindices = [];
                 if (child.material.length) {
                   for (var k = 0; k < child.material.length; k++) {
@@ -13253,14 +13255,12 @@ functions return important math algorithms required to constructs lines/walls in
                     //							face.materialIndex = face.materialIndex + newmaterials.length;
                     face.materialIndex = materialindices[face.materialIndex];
                   });
-                  child.updateMatrix();
-                  newGeometry.merge(tGeometry, child.matrix);
+                  newGeometry.merge(tGeometry, child.matrixWorld);
                 } else {
                   child.geometry.faces.forEach(function (face) {
                     //							face.materialIndex = face.materialIndex + newmaterials.length;
                     face.materialIndex = materialindices[face.materialIndex];
                   });
-                  child.updateMatrix();
                   newGeometry.mergeMesh(child);
                 }
               }
