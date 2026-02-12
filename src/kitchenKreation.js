@@ -15135,6 +15135,12 @@ functions return important math algorithms required to constructs lines/walls in
               this.alternateMouse.y = event.touches[0].clientY;
               this.updateIntersections();
               this.checkWallsAndFloors();
+            } else {
+              this.mouse.x = event.clientX;
+              this.mouse.y = event.clientY;
+              this.alternateMouse.x = event.clientX;
+              this.alternateMouse.y = event.clientY;
+              this.updateIntersections();
             }
 
             switch (this.state) {
