@@ -15149,6 +15149,7 @@ functions return important math algorithms required to constructs lines/walls in
               this.alternateMouse.x = event.clientX;
               this.alternateMouse.y = event.clientY;
               this.updateIntersections();
+              this.checkWallsAndFloors();
             }
 
             switch (this.state) {
@@ -15160,6 +15161,8 @@ functions return important math algorithms required to constructs lines/walls in
                   if (!this.intersectedObject.fixed) {
                     this.switchState(states.DRAGGING);
                   }
+                } else {
+                  this.setSelectedObject(null);
                 }
                 break;
               case states.UNSELECTED:
@@ -15353,13 +15356,23 @@ functions return important math algorithms required to constructs lines/walls in
             true,
             true
           );
+
           if (intersects.length > 0) {
-            // Find the actual Item root in case we intersected a child mesh
+            // Find the actual Item root. An item has metadata and a getMetaData function.
             var target = intersects[0].object;
-            while (target && !target.metadata && target.parent) {
-              target = target.parent;
+            var foundItem = null;
+            
+            // Go up the tree until we find an object that is in our items list
+            var current = target;
+            while (current) {
+              if (items.indexOf(current) !== -1) {
+                foundItem = current;
+                break;
+              }
+              current = current.parent;
             }
-            this.intersectedObject = target || intersects[0].object;
+            
+            this.intersectedObject = foundItem;
           } else {
             this.intersectedObject = null;
           }
@@ -15446,7 +15459,7 @@ functions return important math algorithms required to constructs lines/walls in
           onlyVisible = onlyVisible || false;
           filterByNormals = filterByNormals || false;
           recursive = recursive || false;
-          linePrecision = linePrecision || 20;
+          linePrecision = linePrecision || 5;
 
           var raycaster = new THREE.Raycaster();
           raycaster.params.Line.threshold = linePrecision;
