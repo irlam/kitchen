@@ -67,24 +67,18 @@ var ViewerFloorplanner = function (KitchenKreation) {
     });
 
     $(screenshot2D).click(function () {
-      html2canvas(document.getElementById("floorplanner-canvas")).then(
-        function (canvas) {
-          document.body.appendChild(canvas);
-          var a = document.createElement("a");
-          a.href = canvas.toDataURL("png");
-          a.download = "2D-Floorplan.png";
-          a.click();
-        }
-      );
+      captureElement("floorplanner-canvas").then(function (dataUrl) {
+        var a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = "2D-Floorplan.png";
+        a.click();
+      });
     });
 
     $(screenshot3D).click(function () {
-      html2canvas(document.getElementById("3D-Floorplan")).then(function (
-        canvas
-      ) {
-        document.body.appendChild(canvas);
+      captureElement("3D-Floorplan").then(function (dataUrl) {
         var a = document.createElement("a");
-        a.href = canvas.toDataURL("png");
+        a.href = dataUrl;
         a.download = "3D-Render.png";
         a.click();
       });
@@ -580,7 +574,16 @@ function openPrintWindow(payload) {
 }
 
 function captureElement(elementId) {
-  return html2canvas(document.getElementById(elementId), {
+  var el = document.getElementById(elementId);
+  // Bypass html2canvas for 3D view to avoid upside-down orientation caused by CSS flip transforms
+  if (elementId === "3D-Floorplan") {
+    var canvas = el.querySelector("canvas");
+    if (canvas) {
+      return Promise.resolve(canvas.toDataURL("image/png"));
+    }
+  }
+
+  return html2canvas(el, {
     backgroundColor: "#ffffff",
   }).then(function (canvas) {
     return canvas.toDataURL("image/png");
@@ -670,7 +673,7 @@ function exportPrintablePlan(KitchenKreation, options) {
       $("#showFloorPlan").trigger("click");
     }
     return new Promise(function (resolve) {
-      setTimeout(resolve, 300);
+      setTimeout(resolve, 600);
     });
   }
 
@@ -679,7 +682,7 @@ function exportPrintablePlan(KitchenKreation, options) {
       $("#showDesign").trigger("click");
     }
     return new Promise(function (resolve) {
-      setTimeout(resolve, 300);
+      setTimeout(resolve, 600);
     });
   }
 
