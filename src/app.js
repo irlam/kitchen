@@ -523,7 +523,7 @@ function openPrintWindow(payload) {
     "<!DOCTYPE html>" +
     "<html><head><meta charset='utf-8'>" +
     "<link href='https://fonts.googleapis.com/css?family=Aldrich' rel='stylesheet'>" +
-    "<title>Kitchen Kreation Plan</title>" +
+    "<title>KitchenLab Pro Plan</title>" +
     "<style>" +
     "@page { size: A4; margin: 12mm; }" +
     "body { font-family: 'Aldrich', 'Trebuchet MS', sans-serif; color: #111; }" +
@@ -535,7 +535,7 @@ function openPrintWindow(payload) {
     "th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }" +
     ".notes { min-height: 80px; border: 1px dashed #bbb; padding: 8px; }" +
     "</style></head><body>" +
-    "<h1>Kitchen Kreation Plan</h1>" +
+    "<h1>KitchenLab Pro Plan</h1>" +
     "<div class='meta'>" +
     escapeHtml(payload.timestamp) +
     " | Units: " +

@@ -127,7 +127,7 @@ var KKJS = (function (exports) {
 
   /**
    * @alert TO SKIP TO BUILD CODE
-   * CTRL+F "KITCHEN KREATION CODE STARTS HERE"
+   * CTRL+F "KITCHENLAB PRO CODE STARTS HERE"
    **/
 
   /*!
@@ -9840,7 +9840,7 @@ functions return important math algorithms required to constructs lines/walls in
   /**
 
 
-[KITCHEN KREATION CODE STARTS HERE]
+[KITCHENLAB PRO CODE STARTS HERE]
 
 
 **/

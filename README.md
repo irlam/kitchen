@@ -1,4 +1,4 @@
-﻿# KitchenKreation - 2D/3D Javascript Kitchen Planner
+﻿# KitchenLab Pro - 2D/3D Javascript Kitchen Planner
 
 ## Local development
 
