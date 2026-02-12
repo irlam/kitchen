@@ -1634,12 +1634,22 @@ function datGUI(three, floorplanner) {
   datGUI(KitchenKreation.three, KitchenKreation.floorplanner);
 
   $("#showAddItems").show();
-  $(".card").flip({
-    trigger: "manual",
-    axis: "x",
-  });
+  if (typeof $.fn.flip === "function") {
+    $(".card").flip({
+      trigger: "manual",
+      axis: "x",
+    });
+  } else {
+    console.error("jQuery Flip plugin not loaded!");
+  }
+
   $("#showFloorPlan").click(function () {
-    $(".card").flip(false);
+    if (typeof $.fn.flip === "function") {
+      $(".card").flip(false);
+    } else {
+      $(".card").find(".back").hide();
+      $(".card").find(".front").show();
+    }
     $(this).addClass("active");
     $("#showDesign").removeClass("active");
     $("#add-items-modal").modal("hide");
@@ -1649,7 +1659,12 @@ function datGUI(three, floorplanner) {
 
   $("#showDesign").click(function () {
     KitchenKreation.model.floorplan.update();
-    $(".card").flip(true);
+    if (typeof $.fn.flip === "function") {
+      $(".card").flip(true);
+    } else {
+      $(".card").find(".front").hide();
+      $(".card").find(".back").show();
+    }
     $(this).addClass("active");
     $("#showFloorPlan").removeClass("active");
 
