@@ -276,16 +276,16 @@ $(document).ready(function () {
     // Modern Additions
     {
       name: "Modern Velvet Chair",
-      model: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/SheenChair/glTF-Binary/SheenChair.glb",
+      model: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/SheenChair/glTF-Binary/SheenChair.glb",
       type: "1",
-      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/SheenChair/screenshot/screenshot.png",
+      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/SheenChair/screenshot/screenshot.png",
       format: "gltf",
     },
     {
       name: "Decorative Avocado",
-      model: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF-Binary/Avocado.glb",
+      model: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Avocado/glTF-Binary/Avocado.glb",
       type: "1",
-      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/screenshot/screenshot.png",
+      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Avocado/screenshot/screenshot.png",
       format: "gltf",
     },
   ];
@@ -322,7 +322,8 @@ $(document).ready(function () {
       modelformat +
       ">" +
       "<div class=\"thumb-container\">" +
-      "<img src=\"" + item.image + "\" alt=\"" + item.name + "\" data-dismiss=\"modal\">" +
+      "<img src=\"" + item.image + "\" alt=\"" + item.name + "\" data-dismiss=\"modal\" " +
+      " onerror=\"this.onerror=null;this.src='https://placehold.co/200x200/0b141d/00d2d2?text=" + encodeURIComponent(item.name) + "';\">" +
       "</div>" +
       "<div class=\"caption\">" +
       "<h3>" + cleanName + "</h3>" +
