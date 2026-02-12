@@ -3878,10 +3878,10 @@ var KKJS = (function (exports) {
           !(attribute && attribute.isInterleavedBufferAttribute)
         ) {
           console.warn(
-            "THREE.BufferGeometry: .addAttribute() now expects ( name, attribute )."
+            "THREE.BufferGeometry: .setAttribute() now expects ( name, attribute )."
           );
 
-          return this.addAttribute(
+          return this.setAttribute(
             name,
             new BufferAttribute(arguments[1], arguments[2])
           );
@@ -3916,7 +3916,7 @@ var KKJS = (function (exports) {
         return function rotateX(angle) {
           m1.makeRotationX(angle);
 
-          this.applyMatrix(m1);
+          this.applyMatrix4(m1);
 
           return this;
         };
@@ -3930,7 +3930,7 @@ var KKJS = (function (exports) {
         return function rotateY(angle) {
           m1.makeRotationY(angle);
 
-          this.applyMatrix(m1);
+          this.applyMatrix4(m1);
 
           return this;
         };
@@ -3944,7 +3944,7 @@ var KKJS = (function (exports) {
         return function rotateZ(angle) {
           m1.makeRotationZ(angle);
 
-          this.applyMatrix(m1);
+          this.applyMatrix4(m1);
 
           return this;
         };
@@ -3958,7 +3958,7 @@ var KKJS = (function (exports) {
         return function translate(x, y, z) {
           m1.makeTranslation(x, y, z);
 
-          this.applyMatrix(m1);
+          this.applyMatrix4(m1);
 
           return this;
         };
@@ -3972,7 +3972,7 @@ var KKJS = (function (exports) {
         return function scale(x, y, z) {
           m1.makeScale(x, y, z);
 
-          this.applyMatrix(m1);
+          this.applyMatrix4(m1);
 
           return this;
         };
@@ -3986,7 +3986,7 @@ var KKJS = (function (exports) {
 
           obj.updateMatrix();
 
-          this.applyMatrix(obj.matrix);
+          this.applyMatrix4(obj.matrix);
         };
       })(),
 
@@ -4019,11 +4019,11 @@ var KKJS = (function (exports) {
             3
           );
 
-          this.addAttribute(
+          this.setAttribute(
             "position",
             positions.copyVector3sArray(geometry.vertices)
           );
-          this.addAttribute("color", colors.copyColorsArray(geometry.colors));
+          this.setAttribute("color", colors.copyColorsArray(geometry.colors));
 
           if (
             geometry.lineDistances &&
@@ -4034,7 +4034,7 @@ var KKJS = (function (exports) {
               1
             );
 
-            this.addAttribute(
+            this.setAttribute(
               "lineDistance",
               lineDistances.copyArray(geometry.lineDistances)
             );
@@ -4064,7 +4064,7 @@ var KKJS = (function (exports) {
           position.push(point.x, point.y, point.z || 0);
         }
 
-        this.addAttribute("position", new Float32BufferAttribute(position, 3));
+        this.setAttribute("position", new Float32BufferAttribute(position, 3));
 
         return this;
       },
@@ -4174,14 +4174,14 @@ var KKJS = (function (exports) {
 
       fromDirectGeometry: function (geometry) {
         var positions = new Float32Array(geometry.vertices.length * 3);
-        this.addAttribute(
+        this.setAttribute(
           "position",
           new BufferAttribute(positions, 3).copyVector3sArray(geometry.vertices)
         );
 
         if (geometry.normals.length > 0) {
           var normals = new Float32Array(geometry.normals.length * 3);
-          this.addAttribute(
+          this.setAttribute(
             "normal",
             new BufferAttribute(normals, 3).copyVector3sArray(geometry.normals)
           );
@@ -4189,7 +4189,7 @@ var KKJS = (function (exports) {
 
         if (geometry.colors.length > 0) {
           var colors = new Float32Array(geometry.colors.length * 3);
-          this.addAttribute(
+          this.setAttribute(
             "color",
             new BufferAttribute(colors, 3).copyColorsArray(geometry.colors)
           );
@@ -4197,7 +4197,7 @@ var KKJS = (function (exports) {
 
         if (geometry.uvs.length > 0) {
           var uvs = new Float32Array(geometry.uvs.length * 2);
-          this.addAttribute(
+          this.setAttribute(
             "uv",
             new BufferAttribute(uvs, 2).copyVector2sArray(geometry.uvs)
           );
@@ -4205,7 +4205,7 @@ var KKJS = (function (exports) {
 
         if (geometry.uvs2.length > 0) {
           var uvs2 = new Float32Array(geometry.uvs2.length * 2);
-          this.addAttribute(
+          this.setAttribute(
             "uv2",
             new BufferAttribute(uvs2, 2).copyVector2sArray(geometry.uvs2)
           );
@@ -4222,7 +4222,7 @@ var KKJS = (function (exports) {
             geometry.skinIndices.length * 4,
             4
           );
-          this.addAttribute(
+          this.setAttribute(
             "skinIndex",
             skinIndices.copyVector4sArray(geometry.skinIndices)
           );
@@ -4233,7 +4233,7 @@ var KKJS = (function (exports) {
             geometry.skinWeights.length * 4,
             4
           );
-          this.addAttribute(
+          this.setAttribute(
             "skinWeight",
             skinWeights.copyVector4sArray(geometry.skinWeights)
           );
@@ -6310,7 +6310,7 @@ var KKJS = (function (exports) {
         return parser
           .getDependency("accessor", accessorIndex)
           .then(function (accessor) {
-            geometry.addAttribute(attributeName, accessor);
+            geometry.setAttribute(attributeName, accessor);
           });
       }
 
@@ -6438,7 +6438,7 @@ var KKJS = (function (exports) {
           geometry.userData = baseGeometry.userData;
 
           for (var key in baseGeometry.attributes)
-            geometry.addAttribute(key, baseGeometry.attributes[key]);
+            geometry.setAttribute(key, baseGeometry.attributes[key]);
           for (var key in baseGeometry.morphAttributes)
             geometry.morphAttributes[key] = baseGeometry.morphAttributes[key];
 
@@ -6681,7 +6681,7 @@ var KKJS = (function (exports) {
         if (nodeDef.matrix !== undefined) {
           var matrix = new THREE.Matrix4();
           matrix.fromArray(nodeDef.matrix);
-          node.applyMatrix(matrix);
+          node.applyMatrix4(matrix);
         } else {
           if (nodeDef.translation !== undefined) {
             node.position.fromArray(nodeDef.translation);
@@ -8946,8 +8946,8 @@ var KKJS = (function (exports) {
       )
         return;
 
-      event.preventDefault();
-      event.stopPropagation();
+      // event.preventDefault();
+      // event.stopPropagation();
 
       scope.dispatchEvent(startEvent);
 
@@ -8970,7 +8970,7 @@ var KKJS = (function (exports) {
     function onTouchStart(event) {
       if (scope.enabled === false) return;
 
-      event.preventDefault();
+      // event.preventDefault();
 
       switch (event.touches.length) {
         case 1:
@@ -9007,8 +9007,8 @@ var KKJS = (function (exports) {
     function onTouchMove(event) {
       if (scope.enabled === false) return;
 
-      event.preventDefault();
-      event.stopPropagation();
+      // event.preventDefault();
+      // event.stopPropagation();
 
       switch (event.touches.length) {
         case 1:
@@ -9056,11 +9056,11 @@ var KKJS = (function (exports) {
     scope.domElement.addEventListener("contextmenu", onContextMenu, false);
 
     scope.domElement.addEventListener("mousedown", onMouseDown, false);
-    scope.domElement.addEventListener("wheel", onMouseWheel, { passive: false });
+    scope.domElement.addEventListener("wheel", onMouseWheel, { passive: true });
 
-    scope.domElement.addEventListener("touchstart", onTouchStart, { passive: false });
-    scope.domElement.addEventListener("touchend", onTouchEnd, { passive: false });
-    scope.domElement.addEventListener("touchmove", onTouchMove, { passive: false });
+    scope.domElement.addEventListener("touchstart", onTouchStart, { passive: true });
+    scope.domElement.addEventListener("touchend", onTouchEnd, { passive: true });
+    scope.domElement.addEventListener("touchmove", onTouchMove, { passive: true });
 
     window.addEventListener("keydown", onKeyDown, false);
 
@@ -11981,7 +11981,7 @@ functions return important math algorithms required to constructs lines/walls in
 
       // center in its boundingbox
       this_.geometry.computeBoundingBox();
-      this_.geometry.applyMatrix(
+      this_.geometry.applyMatrix4(
         new THREE.Matrix4().makeTranslation(
           -0.5 *
             (this_.geometry.boundingBox.max.x +

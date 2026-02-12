@@ -293,7 +293,7 @@ $(document).ready(function () {
       name: "Professional Espresso Machine",
       model: "https://assets.babylonjs.com/meshes/espressoMachine.glb",
       type: "1",
-      image: "https://webgi.xyz/docs/assets/espresso.jpg",
+      image: "https://models.babylonjs.com/thumbnails/espressoMachine.png",
       format: "gltf",
       premium: true
     },
@@ -301,7 +301,7 @@ $(document).ready(function () {
       name: "Designer Toaster",
       model: "https://assets.babylonjs.com/meshes/toaster.glb",
       type: "1",
-      image: "https://www.babylonjs-controlled.com/assets/toaster.jpg",
+      image: "https://models.babylonjs.com/thumbnails/toaster.png",
       format: "gltf",
       premium: true
     },
@@ -315,7 +315,7 @@ $(document).ready(function () {
     },
     {
       name: "Minimalist Pendant Light",
-      model: "https://assets.babylonjs.com/meshes/lamp.powder.glb",
+      model: "https://assets.babylonjs.com/meshes/lamp.glb",
       type: "1",
       image: "https://models.babylonjs.com/thumbnails/lamp.png",
       format: "gltf",
@@ -334,6 +334,63 @@ $(document).ready(function () {
       model: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/IridescentDishwithOlives/glTF-Binary/IridescentDishwithOlives.glb",
       type: "1",
       image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/IridescentDishwithOlives/screenshot/screenshot.png",
+      format: "gltf",
+      premium: true
+    },
+    // --- MODERN KITCHEN UNITS ---
+    {
+      name: "Modern Island (Waterfall)",
+      model: "https://assets.babylonjs.com/meshes/island.glb",
+      type: "1",
+      image: "https://models.babylonjs.com/thumbnails/island.png",
+      format: "gltf",
+      premium: true
+    },
+    {
+      name: "Dual Oven Professional",
+      model: "https://assets.babylonjs.com/meshes/oven.glb",
+      type: "1",
+      image: "https://models.babylonjs.com/thumbnails/oven.png",
+      format: "gltf",
+      premium: true
+    },
+    {
+      name: "Minimalist Floating Shelf",
+      model: "https://assets.babylonjs.com/meshes/shelf.glb",
+      type: "2",
+      image: "https://models.babylonjs.com/thumbnails/shelf.png",
+      format: "gltf",
+      premium: true
+    },
+    {
+      name: "Wine Storage Unit",
+      model: "https://assets.babylonjs.com/meshes/wineRack.glb",
+      type: "1",
+      image: "https://models.babylonjs.com/thumbnails/wineRack.png",
+      format: "gltf",
+      premium: true
+    },
+    {
+      name: "Modular Pantry Tall",
+      model: "https://assets.babylonjs.com/meshes/cabinetTall.glb",
+      type: "1",
+      image: "https://models.babylonjs.com/thumbnails/cabinetTall.png",
+      format: "gltf",
+      premium: true
+    },
+    {
+      name: "Glass Display Wall Unit",
+      model: "https://assets.babylonjs.com/meshes/glassCabinet.glb",
+      type: "2",
+      image: "https://models.babylonjs.com/thumbnails/glassCabinet.png",
+      format: "gltf",
+      premium: true
+    },
+    {
+      name: "Modern Range Hood",
+      model: "https://assets.babylonjs.com/meshes/rangeHood.glb",
+      type: "2",
+      image: "https://models.babylonjs.com/thumbnails/rangeHood.png",
       format: "gltf",
       premium: true
     },
