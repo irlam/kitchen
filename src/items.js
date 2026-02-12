@@ -273,124 +273,86 @@ $(document).ready(function () {
       image: "models/thumbnails_new/washerDryerStacked.png",
       format: "gltf",
     },
-    // Modern Additions
+    // Local High-Quality Additions
     {
       name: "Modern Velvet Chair",
-      model: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/SheenChair/glTF-Binary/SheenChair.glb",
+      model: "models/gltf/sheenChair.glb",
       type: "1",
       image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/SheenChair/screenshot/screenshot.png",
       format: "gltf",
+      premium: true
     },
     {
       name: "Decorative Avocado",
-      model: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Avocado/glTF-Binary/Avocado.glb",
+      model: "models/gltf/avocado.glb",
       type: "1",
       image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Avocado/screenshot/screenshot.png",
       format: "gltf",
+      premium: true
     },
     // --- PREMIUM COLLECTION ---
     {
-      name: "Professional Espresso Machine",
-      model: "https://assets.babylonjs.com/meshes/espressoMachine.glb",
+      name: "Antique Designer Camera",
+      model: "models/gltf/antiqueCamera.glb",
       type: "1",
-      image: "https://models.babylonjs.com/thumbnails/espressoMachine.png",
+      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/AntiqueCamera/screenshot/screenshot.png",
       format: "gltf",
       premium: true
     },
     {
-      name: "Designer Toaster",
-      model: "https://assets.babylonjs.com/meshes/toaster.glb",
+      name: "Artisan Toaster",
+      model: "models/gltf/toaster.glb",
       type: "1",
-      image: "https://models.babylonjs.com/thumbnails/toaster.png",
+      image: "models/thumbnails_new/toaster.png",
       format: "gltf",
       premium: true
     },
     {
-      name: "Modern Potted Monstera",
-      model: "https://assets.babylonjs.com/meshes/pottedPlant.glb",
+      name: "Classic Rubber Duck",
+      model: "models/gltf/duck.glb",
       type: "1",
-      image: "https://models.babylonjs.com/thumbnails/pottedPlant.png",
+      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Duck/screenshot/screenshot.png",
       format: "gltf",
       premium: true
     },
     {
-      name: "Minimalist Pendant Light",
-      model: "https://assets.babylonjs.com/meshes/lamp.glb",
+      name: "Vintage Lantern",
+      model: "models/gltf/lantern.glb",
       type: "1",
-      image: "https://models.babylonjs.com/thumbnails/lamp.png",
+      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Lantern/screenshot/screenshot.png",
       format: "gltf",
       premium: true
     },
     {
-      name: "Luxury Velvet Stool",
-      model: "https://assets.babylonjs.com/meshes/chair.glb",
+      name: "Designer Water Bottle",
+      model: "models/gltf/waterBottle.glb",
       type: "1",
-      image: "https://models.babylonjs.com/thumbnails/chair.png",
+      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/WaterBottle/screenshot/screenshot.png",
       format: "gltf",
       premium: true
     },
     {
-      name: "Artisan Olive Dish",
-      model: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/IridescentDishwithOlives/glTF-Binary/IridescentDishwithOlives.glb",
+      name: "Gourmet Barramundi",
+      model: "models/gltf/fish.glb",
       type: "1",
-      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/IridescentDishwithOlives/screenshot/screenshot.png",
+      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BarramundiFish/screenshot/screenshot.png",
       format: "gltf",
       premium: true
     },
     // --- MODERN KITCHEN UNITS ---
     {
-      name: "Modern Island (Waterfall)",
-      model: "https://assets.babylonjs.com/meshes/island.glb",
+      name: "Built-in Luxury Fridge",
+      model: "models/gltf/kitchenFridgeBuiltIn.glb",
       type: "1",
-      image: "https://models.babylonjs.com/thumbnails/island.png",
+      image: "models/thumbnails_new/kitchenFridgeBuiltIn.png",
       format: "gltf",
       premium: true
     },
     {
-      name: "Dual Oven Professional",
-      model: "https://assets.babylonjs.com/meshes/oven.glb",
+      name: "Stackable Laundry Center",
+      model: "models/gltf/washerDryerStacked.glb",
       type: "1",
-      image: "https://models.babylonjs.com/thumbnails/oven.png",
-      format: "gltf",
-      premium: true
-    },
-    {
-      name: "Minimalist Floating Shelf",
-      model: "https://assets.babylonjs.com/meshes/shelf.glb",
-      type: "2",
-      image: "https://models.babylonjs.com/thumbnails/shelf.png",
-      format: "gltf",
-      premium: true
-    },
-    {
-      name: "Wine Storage Unit",
-      model: "https://assets.babylonjs.com/meshes/wineRack.glb",
-      type: "1",
-      image: "https://models.babylonjs.com/thumbnails/wineRack.png",
-      format: "gltf",
-      premium: true
-    },
-    {
-      name: "Modular Pantry Tall",
-      model: "https://assets.babylonjs.com/meshes/cabinetTall.glb",
-      type: "1",
-      image: "https://models.babylonjs.com/thumbnails/cabinetTall.png",
-      format: "gltf",
-      premium: true
-    },
-    {
-      name: "Glass Display Wall Unit",
-      model: "https://assets.babylonjs.com/meshes/glassCabinet.glb",
-      type: "2",
-      image: "https://models.babylonjs.com/thumbnails/glassCabinet.png",
-      format: "gltf",
-      premium: true
-    },
-    {
-      name: "Modern Range Hood",
-      model: "https://assets.babylonjs.com/meshes/rangeHood.glb",
-      type: "2",
-      image: "https://models.babylonjs.com/thumbnails/rangeHood.png",
+      image: "models/thumbnails_new/washerDryerStacked.png",
       format: "gltf",
       premium: true
     },
