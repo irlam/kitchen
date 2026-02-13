@@ -62,7 +62,10 @@ switch ($method) {
         }
 
         $name = $data['name'] ?? '';
-        $content = isset($data['content']) ? json_encode($data['content']) : '';
+        $content = $data['content'] ?? '';
+        if (is_array($content)) {
+            $content = json_encode($content);
+        }
         $meta = isset($data['meta']) ? json_encode($data['meta']) : null;
 
         if (!$name || !$content) {
