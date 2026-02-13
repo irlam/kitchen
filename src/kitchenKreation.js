@@ -15744,19 +15744,19 @@ functions return important math algorithms required to constructs lines/walls in
       this_.domElement.addEventListener(
         "mousewheel",
         this_.mousewheelevent,
-        { passive: false }
+        { passive: true }
       );
       this_.domElement.addEventListener(
         "DOMMouseScroll",
         this_.mousewheelevent,
-        { passive: false }
+        { passive: true }
       ); // firefox
       this_.domElement.addEventListener(
         "touchstart",
         this_.touchstartevent,
-        { passive: false }
+        { passive: true }
       );
-      this_.domElement.addEventListener("touchend", this_.touchendevent, { passive: false });
+      this_.domElement.addEventListener("touchend", this_.touchendevent, { passive: true });
       this_.domElement.addEventListener(
         "touchmove",
         this_.touchmoveevent,
