@@ -14136,7 +14136,6 @@ functions return important math algorithms required to constructs lines/walls in
         reference: "drawItem",
         value: function drawItem(item) {
           if (!item.visible) return;
-          var local = this;
           var pos = item.position;
           var halfSize = item.halfSize; // in cm
           var rotation = item.rotation.y;
@@ -14162,6 +14161,45 @@ functions return important math algorithms required to constructs lines/walls in
           // Draw a small indicator for the "front" of the item
           this.context.fillStyle = "#00d2d2";
           this.context.fillRect(-w/2, h/2 - 4, w, 4);
+
+          if (item.selected || item === this.viewmodel.activeItem) {
+            var widthCm = halfSize.x * 2;
+            var depthCm = halfSize.z * 2;
+            var widthText = "W: " + Dimensioning.cmToMeasureString(widthCm);
+            var depthText = "D: " + Dimensioning.cmToMeasureString(depthCm);
+
+            this.context.font = "bold 12px Aldrich";
+            this.context.textAlign = "center";
+            this.context.textBaseline = "middle";
+
+            var widthMetrics = this.context.measureText(widthText);
+            var widthBoxW = widthMetrics.width + 10;
+            var widthBoxH = 20;
+            var widthBoxX = -widthBoxW / 2;
+            var widthBoxY = -h / 2 - widthBoxH - 8;
+
+            this.context.fillStyle = "rgba(10, 20, 30, 0.85)";
+            this.context.fillRect(widthBoxX, widthBoxY, widthBoxW, widthBoxH);
+            this.context.strokeStyle = "#00d2d2";
+            this.context.lineWidth = 1;
+            this.context.strokeRect(widthBoxX, widthBoxY, widthBoxW, widthBoxH);
+            this.context.fillStyle = "#FFFFFF";
+            this.context.fillText(widthText, 0, widthBoxY + widthBoxH / 2);
+
+            var depthMetrics = this.context.measureText(depthText);
+            var depthBoxW = depthMetrics.width + 10;
+            var depthBoxH = 20;
+            var depthBoxX = w / 2 + 8;
+            var depthBoxY = -depthBoxH / 2;
+
+            this.context.fillStyle = "rgba(10, 20, 30, 0.85)";
+            this.context.fillRect(depthBoxX, depthBoxY, depthBoxW, depthBoxH);
+            this.context.strokeStyle = "#00d2d2";
+            this.context.strokeRect(depthBoxX, depthBoxY, depthBoxW, depthBoxH);
+            this.context.fillStyle = "#FFFFFF";
+            this.context.textAlign = "left";
+            this.context.fillText(depthText, depthBoxX + 5, depthBoxY + depthBoxH / 2);
+          }
           
           this.context.restore();
         }
@@ -14187,12 +14225,11 @@ functions return important math algorithms required to constructs lines/walls in
             local.context.setLineDash([]);
             
             // Draw gap label
-            var mm = Math.round(gap.dist * 10);
             var mx = (x1 + x2) / 2;
             var my = (y1 + y2) / 2;
             
             local.context.font = "bold 12px Aldrich";
-            var text = mm + "mm";
+            var text = Dimensioning.cmToMeasureString(gap.dist);
             var metrics = local.context.measureText(text);
             
             local.context.fillStyle = "rgba(10, 20, 30, 0.8)";
