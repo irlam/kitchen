@@ -1419,9 +1419,9 @@ function getItemPropertiesFolder(gui, anItem) {
   var f = gui.addFolder("Current Item");
   var inamecontrol = f.add(anItem, "name").name("Item Name");
 
-  var wcontrol = f.add(anItem, "width", 0.05, 5.0).step(0.005).name("Width (m)");
-  var hcontrol = f.add(anItem, "height", 0.05, 5.0).step(0.005).name("Height (m)");
-  var dcontrol = f.add(anItem, "depth", 0.05, 5.0).step(0.005).name("Depth (m)");
+  var wcontrol = f.add(anItem, "width", 50, 5000).step(1).name("Width (mm)");
+  var hcontrol = f.add(anItem, "height", 50, 5000).step(1).name("Height (mm)");
+  var dcontrol = f.add(anItem, "depth", 50, 5000).step(1).name("Depth (mm)");
 
   var snapcontrol = f.add(anItem, "snapToNearest").name("✨ Snap to Cabinet Size");
   var pcontrol = f.add(anItem, "proportionalsize").name("🔗 Maintain Size Ratio");
