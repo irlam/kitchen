@@ -143,6 +143,30 @@ $(document).ready(function () {
       initialDepthCm: 60,
       proportionalResize: false,
     },
+      {
+        name: "Base Unit 400 - Single Door",
+        model: "models/gltf/kitchenCabinet.glb",
+        type: "1",
+        image: "models/thumbnails_new/kitchenCabinet.png",
+        format: "gltf",
+        doorType: "single",
+        initialWidthCm: 40,
+        initialHeightCm: 90,
+        initialDepthCm: 60,
+        proportionalResize: false,
+      },
+      {
+        name: "Base Unit 500 - Single Door",
+        model: "models/gltf/kitchenCabinet.glb",
+        type: "1",
+        image: "models/thumbnails_new/kitchenCabinet.png",
+        format: "gltf",
+        doorType: "single",
+        initialWidthCm: 50,
+        initialHeightCm: 90,
+        initialDepthCm: 60,
+        proportionalResize: false,
+      },
     {
       name: "Base Unit 1000 - Double Door",
       model: "models/gltf/kitchenCabinet.glb",
@@ -162,6 +186,32 @@ $(document).ready(function () {
       image: "models/thumbnails_new/kitchenCabinetCornerInner.png",
       format: "gltf",
     },
+      {
+        name: "Wall Unit 400 - Single Door",
+        model: "models/gltf/kitchenCabinetUpper.glb",
+        type: "2",
+        image: "models/thumbnails_new/kitchenCabinetUpper.png",
+        format: "gltf",
+        doorType: "single",
+        mountHeightCm: 150,
+        initialWidthCm: 40,
+        initialHeightCm: 72,
+        initialDepthCm: 35,
+        proportionalResize: false,
+      },
+      {
+        name: "Wall Unit 500 - Single Door",
+        model: "models/gltf/kitchenCabinetUpper.glb",
+        type: "2",
+        image: "models/thumbnails_new/kitchenCabinetUpper.png",
+        format: "gltf",
+        doorType: "single",
+        mountHeightCm: 150,
+        initialWidthCm: 50,
+        initialHeightCm: 72,
+        initialDepthCm: 35,
+        proportionalResize: false,
+      },
     {
       name: "Kitchen cabinet corner round",
       model: "models/gltf/kitchenCabinetCornerRound.glb",
@@ -482,6 +532,7 @@ $(document).ready(function () {
     var proportionalResize = item.proportionalResize === false ? " model-proportional-resize=\"false\" " : "";
     var cleanName = item.name.replace(/_/g, " ");
     var premiumBadge = item.premium ? "<span class=\"premium-badge\">PREMIUM</span>" : "";
+      var doorBadge = item.doorType ? "<span class=\"door-badge\">" + item.doorType.toUpperCase() + " DOOR</span>" : "";
 
     var html =
       "<div class=\"catalog-item-card" + (item.premium ? " premium-card" : "") + "\">" +
@@ -498,6 +549,7 @@ $(document).ready(function () {
       modelformat +
       ">" +
       premiumBadge +
+        doorBadge +
       "<div class=\"thumb-container\">" +
       "<img src=\"" + item.image + "\" alt=\"" + item.name + "\" data-dismiss=\"modal\" " +
       " onerror=\"this.onerror=null;this.src='https://placehold.co/200x200/0b141d/00d2d2?text=" + encodeURIComponent(item.name) + "';\">" +
