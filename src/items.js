@@ -512,8 +512,28 @@ $(document).ready(function () {
 
   console.log("Populating catalog with " + items.length + " items");
 
-  for (var i = 0; i < items.length; i++) {
-    var item = items[i];
+  var sortedItems = items
+    .map(function(item, index) {
+      return { item: item, index: index };
+    })
+    .sort(function(a, b) {
+      // Keep ordering logic scoped to each section type
+      if (a.item.type === b.item.type) {
+        var aIsDoorUnit = !!a.item.doorType;
+        var bIsDoorUnit = !!b.item.doorType;
+        if (aIsDoorUnit !== bIsDoorUnit) {
+          return aIsDoorUnit ? -1 : 1;
+        }
+      }
+      // Stable fallback to original insertion order
+      return a.index - b.index;
+    })
+    .map(function(entry) {
+      return entry.item;
+    });
+
+  for (var i = 0; i < sortedItems.length; i++) {
+    var item = sortedItems[i];
     var itemsDiv = $(
       "#" + modelTypesIds[modelTypesNum.indexOf(item.type)] + "-wrapper"
     );
