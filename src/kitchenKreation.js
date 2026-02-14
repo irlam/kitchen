@@ -10180,14 +10180,14 @@ functions return important math algorithms required to constructs lines/walls in
         value: function cmToMeasureString(cm) {
           switch (Configuration.getStringValue(configDimUnit)) {
             case dimFeetAndInch:
-              var allInFeet = cm * 0.03;
+              var allInFeet = cm / 30.48;
               var floorFeet = Math.floor(allInFeet);
               var remainingFeet = allInFeet - floorFeet;
               var remainingInches = Math.round(remainingFeet * 12);
               return floorFeet + "'" + remainingInches + '"';
             case dimInch:
-              var inches = Math.round(decimals * (cm * 0.39)) / decimals;
-              return inches + "'";
+              var inches = Math.round(decimals * (cm / 2.54)) / decimals;
+              return inches + '"';
             case dimMilliMeter:
               var mm = Math.round(decimals * (10 * cm)) / decimals;
               return "" + mm + "mm";
@@ -15003,6 +15003,7 @@ functions return important math algorithms required to constructs lines/walls in
 
           var scale = targetCenterDistance / currentCenterDistance;
           end.move(start.getX() + dx * scale, start.getY() + dy * scale);
+          this.floorplan.update();
         },
       },
       {
