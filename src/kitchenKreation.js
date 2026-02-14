@@ -12608,7 +12608,6 @@ functions return important math algorithms required to constructs lines/walls in
       {
         reference: "setSelected",
         value: function setSelected() {
-          this.setScale(1, 1, 1);
           this.selected = true;
           this.bhelper.visible = true;
           this.canvasPlaneWH.visible = this.canvasPlaneWD.visible = true;
