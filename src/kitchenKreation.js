@@ -14727,7 +14727,15 @@ functions return important math algorithms required to constructs lines/walls in
             this.activeItem = overlappedItem;
             this.activeCorner = null;
             this.activeWall = null;
-            this.floorplan.model.scene.controller.setSelectedObject(this.activeItem);
+            var sceneController =
+              this.floorplan &&
+              this.floorplan.model &&
+              this.floorplan.model.scene
+                ? this.floorplan.model.scene.controller
+                : null;
+            if (sceneController && sceneController.setSelectedObject) {
+              sceneController.setSelectedObject(this.activeItem);
+            }
             this.activeItem.clickPressed({
               point: new THREE.Vector3(this.mouseX, 0, this.mouseY),
             });
@@ -14828,7 +14836,15 @@ functions return important math algorithms required to constructs lines/walls in
           if (this.mode == floorplannerModes.MOVE && this.mouseDown) {
             if (this.activeItem) {
               this.activeItem.clickDragged({ point: new THREE.Vector3(this.mouseX, 0, this.mouseY) });
-              this.floorplan.model.scene.controller.gapManager.update(this.activeItem);
+              var controller =
+                this.floorplan &&
+                this.floorplan.model &&
+                this.floorplan.model.scene
+                  ? this.floorplan.model.scene.controller
+                  : null;
+              if (controller && controller.gapManager) {
+                controller.gapManager.update(this.activeItem);
+              }
             } else if (this.activeCorner) {
               this.activeCorner.move(this.mouseX, this.mouseY);
             } else if (this.activeWall) {
