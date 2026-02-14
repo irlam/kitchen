@@ -15680,28 +15680,6 @@ functions return important math algorithms required to constructs lines/walls in
         value: function clickPressed(vec2) {
           this.mouse = vec2 || this.mouse;
 
-          // Check for dimension label clicks first
-          if (this.selectedObject && this.selectedObject.canvasPlaneWH) {
-            var raycaster = new THREE.Raycaster();
-            raycaster.setFromCamera(
-              this.normalizeVector2(this.mouse),
-              this.camera
-            );
-            var labelIntersects = raycaster.intersectObjects([
-              this.selectedObject.canvasPlaneWH,
-              this.selectedObject.canvasPlaneWD,
-            ]);
-            if (labelIntersects.length > 0) {
-              var obj = labelIntersects[0].object;
-              if (obj === this.selectedObject.canvasPlaneWH) {
-                this.selectedObject.cycleStandardSize("width");
-              } else {
-                this.selectedObject.cycleStandardSize("depth");
-              }
-              return; // Don't start dragging if we clicked a label
-            }
-          }
-
           var intersection = this.itemIntersection(
             this.mouse,
             this.selectedObject
