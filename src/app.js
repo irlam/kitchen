@@ -1586,7 +1586,7 @@ function datGUI(three, floorplanner) {
     var header = guiContainer.querySelector(".gui-header");
 
     header.addEventListener("mousedown", dragStart);
-    header.addEventListener("touchstart", dragStart);
+    header.addEventListener("touchstart", dragStart, { passive: true });
     document.addEventListener("mousemove", drag);
     // Passive listener allows smoother scrolling, touch-action:none in CSS handles the lock
     document.addEventListener("touchmove", drag, { passive: true });
