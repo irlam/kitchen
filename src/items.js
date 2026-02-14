@@ -278,7 +278,7 @@ $(document).ready(function () {
       name: "Modern Velvet Chair",
       model: "models/gltf/sheenChair.glb",
       type: "1",
-      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/SheenChair/screenshot/screenshot.png",
+      image: "models/thumbnails_new/sheenChair.png",
       format: "gltf",
       premium: true
     },
@@ -286,7 +286,7 @@ $(document).ready(function () {
       name: "Decorative Avocado",
       model: "models/gltf/avocado.glb",
       type: "1",
-      image: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Avocado/screenshot/screenshot.png",
+      image: "models/thumbnails_new/avocado.png",
       format: "gltf",
       premium: true
     },
