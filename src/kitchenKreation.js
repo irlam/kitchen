@@ -14851,8 +14851,8 @@ functions return important math algorithms required to constructs lines/walls in
 
           var raw = this.labelEditor.value;
           var nextLength = this.parseMeasurementToCm(raw);
-          if (nextLength && !isNaN(nextLength) && nextLength > 0) {
-            this.setWallLength(this.labelEditInfo.edge.wall, nextLength);
+          if (nextLength !== null && !isNaN(nextLength) && nextLength > 0) {
+            this.setWallLength(this.labelEditInfo.edge, nextLength);
             this.view.draw();
           }
 
@@ -14949,21 +14949,28 @@ functions return important math algorithms required to constructs lines/walls in
       },
       {
         reference: "setWallLength",
-        value: function setWallLength(wall, lengthCm) {
-          if (!wall) {
+        value: function setWallLength(edge, lengthCm) {
+          if (!edge || !edge.wall) {
             return;
           }
+          var wall = edge.wall;
 
           var start = wall.getStart();
           var end = wall.getEnd();
           var dx = end.getX() - start.getX();
           var dy = end.getY() - start.getY();
-          var distance = Math.sqrt(dx * dx + dy * dy);
-          if (!distance) {
+          var currentCenterDistance = Math.sqrt(dx * dx + dy * dy);
+
+          if (currentCenterDistance < 0.001) {
             return;
           }
 
-          var scale = lengthCm / distance;
+          var currentInteriorDistance = edge.interiorDistance();
+          // The diff between center-to-center and interior distance
+          var offset = currentCenterDistance - currentInteriorDistance;
+          var targetCenterDistance = lengthCm + offset;
+
+          var scale = targetCenterDistance / currentCenterDistance;
           end.move(start.getX() + dx * scale, start.getY() + dy * scale);
         },
       },
