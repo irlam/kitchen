@@ -15155,7 +15155,6 @@ functions return important math algorithms required to constructs lines/walls in
           var items = this.floorplan.model.scene.getItems();
           for (var i = items.length - 1; i >= 0; i--) {
             var item = items[i];
-            if (!item.visible) continue;
             
             var pos = item.position;
             var halfSize = item.halfSize;
@@ -15529,11 +15528,15 @@ functions return important math algorithms required to constructs lines/walls in
           var local = this;
           if (!item.position_set) {
             local.setSelectedObject(item);
-            local.switchState(states.DRAGGING);
-            var pos = item.position.clone();
-            pos.y = 0;
-            var vec = local.three.projectVector(pos);
-            local.clickPressed(vec);
+            if (local.mouseDown) {
+              local.switchState(states.DRAGGING);
+              var pos = item.position.clone();
+              pos.y = 0;
+              var vec = local.three.projectVector(pos);
+              local.clickPressed(vec);
+            } else {
+              local.switchState(states.SELECTED);
+            }
           }
           item.position_set = true;
         },
