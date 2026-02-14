@@ -10153,10 +10153,10 @@ functions return important math algorithms required to constructs lines/walls in
           switch (Configuration.getStringValue(configDimUnit)) {
             case dimFeetAndInch:
               // dimFeetAndInch returns only the feet
-              var allInFeet = cm * 0.03;
+              var allInFeet = cm / 30.48;
               return allInFeet;
             case dimInch:
-              var inches = Math.round(decimals * (cm * 0.39)) / decimals;
+              var inches = Math.round(decimals * (cm / 2.54)) / decimals;
               return inches;
             case dimMilliMeter:
               var mm = Math.round(decimals * (10 * cm)) / decimals;
@@ -18570,7 +18570,7 @@ functions return important math algorithms required to constructs lines/walls in
   var KitchenKreationJS = function KitchenKreationJS(options) {
     classCallCheck(this, KitchenKreationJS);
 
-    Configuration.setValue(configDimUnit, dimMilliMeter);
+    Configuration.setValue(configDimUnit, dimMeter);
 
     this.options = options;
     this.model = new Model(options.textureDir);

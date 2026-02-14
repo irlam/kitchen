@@ -884,19 +884,24 @@ var ItemProperties = function (gui) {
       var w = KKJS.Dimensioning.cmFromMeasureInt(this.width);
       var d = KKJS.Dimensioning.cmFromMeasureInt(this.depth);
 
-      this.currentItem.resize(h, w, d);
+      // Only resize if values actually changed more than 1mm
+      if (Math.abs(w - item.getWidth()) > 0.1 || 
+          Math.abs(h - item.getHeight()) > 0.1 || 
+          Math.abs(d - item.getDepth()) > 0.1) {
+          this.currentItem.resize(h, w, d);
+      }
 
-      if (w != ow) {
+      if (Math.abs(this.width - ow) > 0.001) {
         this.height = KKJS.Dimensioning.cmToMeasureInt(item.getHeight());
         this.depth = KKJS.Dimensioning.cmToMeasureInt(item.getDepth());
       }
 
-      if (h != oh) {
+      if (Math.abs(this.height - oh) > 0.001) {
         this.width = KKJS.Dimensioning.cmToMeasureInt(item.getWidth());
         this.depth = KKJS.Dimensioning.cmToMeasureInt(item.getDepth());
       }
 
-      if (d != od) {
+      if (Math.abs(this.depth - od) > 0.001) {
         this.width = KKJS.Dimensioning.cmToMeasureInt(item.getWidth());
         this.height = KKJS.Dimensioning.cmToMeasureInt(item.getHeight());
       }
