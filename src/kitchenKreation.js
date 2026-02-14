@@ -5721,6 +5721,7 @@ var KKJS = (function (exports) {
         }
       }
     }
+
     function addMorphTargets(geometry, targets, parser) {
       var pending = [];
       for (var i = 0, il = targets.length; i < il; i++) {
@@ -5937,6 +5938,106 @@ var KKJS = (function (exports) {
 
     GLTFParser.prototype.loadCamera = function (cameraIndex) {
       return Promise.resolve(new THREE.Object3D());
+    };
+
+    GLTFParser.prototype.assignTexture = function (
+      materialParams,
+      mapName,
+      textureDef
+    ) {
+      var parser = this;
+
+      return this.getDependency("texture", textureDef.index).then(function (
+        texture
+      ) {
+        if (textureDef.texCoord !== undefined && textureDef.texCoord > 0) {
+          console.warn(
+            "THREE.GLTFLoader: Custom texCoord not supported. Using default."
+          );
+        }
+
+        if (parser.extensions[EXTENSIONS.KHR_TEXTURE_TRANSFORM]) {
+          var transform =
+            textureDef.extensions !== undefined
+              ? textureDef.extensions[EXTENSIONS.KHR_TEXTURE_TRANSFORM]
+              : undefined;
+
+          if (transform) {
+            parser.extensions[EXTENSIONS.KHR_TEXTURE_TRANSFORM].extendTexture(
+              texture,
+              transform
+            );
+          }
+        }
+
+        materialParams[mapName] = texture;
+      });
+    };
+
+    GLTFParser.prototype.loadSampler = function (samplerIndex) {
+      var json = this.json;
+      var samplerDef = (json.samplers || [])[samplerIndex] || {};
+
+      return Promise.resolve({
+        magFilter: samplerDef.magFilter,
+        minFilter: samplerDef.minFilter,
+        wrapS: samplerDef.wrapS,
+        wrapT: samplerDef.wrapT,
+      });
+    };
+
+    GLTFParser.prototype.loadTexture = function (textureIndex) {
+      var parser = this;
+      var json = this.json;
+      var options = this.options;
+      var textureDef = json.textures[textureIndex];
+
+      var source = json.images[textureDef.source];
+      var loader = parser.textureLoader;
+
+      if (source.uri) {
+        var handler = options.manager.getHandler(source.uri);
+        if (handler !== null) loader = handler;
+      }
+
+      return parser.loadSampler(textureDef.sampler).then(function (sampler) {
+        return new Promise(function (resolve, reject) {
+          loader.load(
+            resolveURL(source.uri || "", options.path),
+            function (texture) {
+              texture.flipY = false;
+
+              if (textureDef.name !== undefined) texture.name = textureDef.name;
+
+              texture.magFilter = sampler.magFilter || THREE.LinearFilter;
+              texture.minFilter =
+                sampler.minFilter || THREE.LinearMipmapLinearFilter;
+              texture.wrapS = sampler.wrapS || THREE.RepeatWrapping;
+              texture.wrapT = sampler.wrapT || THREE.RepeatWrapping;
+
+              resolve(texture);
+            },
+            undefined,
+            function () {
+              reject(
+                new Error(
+                  'THREE.GLTFLoader: Failed to load texture "' +
+                    source.uri +
+                    '".'
+                )
+              );
+            }
+          );
+        });
+      });
+    };
+
+    GLTFParser.prototype.loadSkin = function (skinIndex) {
+      return Promise.resolve(null);
+    };
+
+    GLTFParser.prototype.loadAnimation = function (animationIndex) {
+      return Promise.resolve(null);
     };
 
     /**
