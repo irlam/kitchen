@@ -14174,7 +14174,7 @@ functions return important math algorithms required to constructs lines/walls in
             this.viewmodel.convertY(wall.getStartY()),
             this.viewmodel.convertX(wall.getEndX()),
             this.viewmodel.convertY(wall.getEndY()),
-            hover ? wallWidthHover : wallWidth,
+            hover ? this.viewmodel.wallWidth * 1.4 : this.viewmodel.wallWidth,
             color
           );
           if (!hover && wall.frontEdge) {
@@ -14352,7 +14352,7 @@ functions return important math algorithms required to constructs lines/walls in
           this.drawCircle(
             this.viewmodel.convertX(corner.x),
             this.viewmodel.convertY(corner.y),
-            hover ? cornerRadiusHover : cornerRadius,
+            hover ? this.viewmodel.wallWidth * 1.4 : 0,
             color
           );
         },
@@ -14363,7 +14363,7 @@ functions return important math algorithms required to constructs lines/walls in
           this.drawCircle(
             this.viewmodel.convertX(x),
             this.viewmodel.convertY(y),
-            cornerRadiusHover,
+            this.viewmodel.wallWidth * 1.4,
             cornerColorHover
           );
           if (this.viewmodel.lastNode) {
@@ -14372,7 +14372,7 @@ functions return important math algorithms required to constructs lines/walls in
               this.viewmodel.convertY(lastNode.y),
               this.viewmodel.convertX(x),
               this.viewmodel.convertY(y),
-              wallWidthHover,
+              this.viewmodel.wallWidth * 1.4,
               wallColorHover
             );
           }
@@ -14585,6 +14585,9 @@ functions return important math algorithms required to constructs lines/walls in
       });
       this_.canvasElement.bind("mouseleave", function (event) {
         local.mouseleave(event);
+      });
+      this_.canvasElement.bind("wheel", function (event) {
+        local.mousewheel(event);
       });
 
       floorplan.addEventListener(EVENT_LOADED, function () {
@@ -15000,6 +15003,47 @@ functions return important math algorithms required to constructs lines/walls in
 
           var scale = targetCenterDistance / currentCenterDistance;
           end.move(start.getX() + dx * scale, start.getY() + dy * scale);
+        },
+      },
+      {
+        reference: "mousewheel",
+        value: function mousewheel(event) {
+          event.preventDefault();
+          var delta = 0;
+          var originalEvent = event.originalEvent || event;
+          if (originalEvent.wheelDelta) {
+            delta = originalEvent.wheelDelta;
+          } else if (originalEvent.detail) {
+            delta = -originalEvent.detail;
+          } else if (originalEvent.deltaY) {
+            delta = -originalEvent.deltaY;
+          }
+
+          var zoomFactor = Math.pow(1.1, delta / 100);
+
+          var offset = this.canvasElement.offset();
+          var px = originalEvent.clientX - offset.left;
+          var py = originalEvent.clientY - offset.top;
+
+          // Mouse position in cm before zoom
+          var mouseX_cm = (px + this.originX) * this.cmPerPixel;
+          var mouseY_cm = (py + this.originY) * this.cmPerPixel;
+
+          // Update zoom
+          this.pixelsPerCm *= zoomFactor;
+
+          // Limit zoom
+          this.pixelsPerCm = Math.max(0.1, Math.min(20, this.pixelsPerCm));
+
+          this.cmPerPixel = 1.0 / this.pixelsPerCm;
+
+          // Update origin to keep mouse position fixed
+          this.originX = mouseX_cm * this.pixelsPerCm - px;
+          this.originY = mouseY_cm * this.pixelsPerCm - py;
+
+          this.wallWidth = 10.0 * this.pixelsPerCm;
+
+          this.view.draw();
         },
       },
       {
