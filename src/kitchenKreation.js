@@ -12637,10 +12637,102 @@ functions return important math algorithms required to constructs lines/walls in
       {
         reference: "moveToPosition",
         value: function moveToPosition(vec3) {
-          this.position.copy(vec3);
+          var snapped = this.getSnappedPosition(vec3.clone());
+          this.position.copy(snapped);
           if (this.bhelper) {
             this.bhelper.update();
           }
+        },
+      },
+      {
+        reference: "getSnappedPosition",
+        value: function getSnappedPosition(vec3) {
+          var scope = this;
+          var snapThreshold = 10; // cm
+          var allItems = this.model.scene.getItems();
+          
+          // Current item bounding box at target position
+          var box = new THREE.Box3().setFromObject(this);
+          var offset = vec3.clone().sub(this.position);
+          box.min.add(offset);
+          box.max.add(offset);
+          
+          var snappedPos = vec3.clone();
+          var foundSnapX = false;
+          var foundSnapZ = false;
+
+          // 1. Snap to other items
+          allItems.forEach(function (item) {
+            if (item === scope || !item.visible) return;
+            var otherBox = new THREE.Box3().setFromObject(item);
+
+            // X-axis snapping
+            var overlapZ = Math.min(box.max.z, otherBox.max.z) - Math.max(box.min.z, otherBox.min.z);
+            if (overlapZ > 2) { // Some overlap in Z
+              // Snap A.max.x to B.min.x
+              if (Math.abs(box.max.x - otherBox.min.x) < snapThreshold && !foundSnapX) {
+                snappedPos.x -= (box.max.x - otherBox.min.x);
+                foundSnapX = true;
+              }
+              // Snap A.min.x to B.max.x
+              else if (Math.abs(box.min.x - otherBox.max.x) < snapThreshold && !foundSnapX) {
+                snappedPos.x += (otherBox.max.x - box.min.x);
+                foundSnapX = true;
+              }
+              // Snap centers or other faces could be added here
+            }
+
+            // Z-axis snapping
+            var overlapX = Math.min(box.max.x, otherBox.max.x) - Math.max(box.min.x, otherBox.min.x);
+            if (overlapX > 2) { // Some overlap in X
+              // Snap A.max.z to B.min.z
+              if (Math.abs(box.max.z - otherBox.min.z) < snapThreshold && !foundSnapZ) {
+                snappedPos.z -= (box.max.z - otherBox.min.z);
+                foundSnapZ = true;
+              }
+              // Snap A.min.z to B.max.z
+              else if (Math.abs(box.min.z - otherBox.max.z) < snapThreshold && !foundSnapZ) {
+                snappedPos.z += (otherBox.max.z - box.min.z);
+                foundSnapZ = true;
+              }
+            }
+          });
+
+          // 2. Snap to walls
+          if (!foundSnapX || !foundSnapZ) {
+            var edges = this.model.floorplan.wallEdges();
+            edges.forEach(function (edge) {
+              var v1 = edge.interiorStart();
+              var v2 = edge.interiorEnd();
+              var wallStart = new THREE.Vector2(v1.x, v1.y);
+              var wallEnd = new THREE.Vector2(v2.x, v2.y);
+
+              // Simple axis-aligned wall snapping
+              var isVertical = Math.abs(wallStart.x - wallEnd.x) < 1;
+              var isHorizontal = Math.abs(wallStart.y - wallEnd.y) < 1;
+
+              if (isVertical && !foundSnapX) {
+                if (Math.abs(box.max.x - wallStart.x) < snapThreshold) {
+                  snappedPos.x -= (box.max.x - wallStart.x);
+                  foundSnapX = true;
+                } else if (Math.abs(box.min.x - wallStart.x) < snapThreshold) {
+                  snappedPos.x += (wallStart.x - box.min.x);
+                  foundSnapX = true;
+                }
+              }
+              if (isHorizontal && !foundSnapZ) {
+                if (Math.abs(box.max.z - wallStart.y) < snapThreshold) {
+                  snappedPos.z -= (box.max.z - wallStart.y);
+                  foundSnapZ = true;
+                } else if (Math.abs(box.min.z - wallStart.y) < snapThreshold) {
+                  snappedPos.z += (wallStart.y - box.min.z);
+                  foundSnapZ = true;
+                }
+              }
+            });
+          }
+
+          return snappedPos;
         },
       },
       {
@@ -14404,6 +14496,8 @@ functions return important math algorithms required to constructs lines/walls in
 
       this_.activeCorner = null;
 
+      this_.activeItem = null;
+
       this_.originX = 0;
 
       this_.originY = 0;
@@ -14535,6 +14629,17 @@ functions return important math algorithms required to constructs lines/walls in
           this.lastX = this.rawMouseX;
           this.lastY = this.rawMouseY;
 
+          // Select item (if not clicking a corner or wall)
+          if (!this.activeCorner && !this.activeWall) {
+            this.activeItem = this.overlappedItem(this.mouseX, this.mouseY);
+            if (this.activeItem) {
+              this.floorplan.model.scene.controller.setSelectedObject(this.activeItem);
+              this.activeItem.clickPressed({
+                point: new THREE.Vector3(this.mouseX, 0, this.mouseY),
+              });
+            }
+          }
+
           // delete
           if (this.mode == floorplannerModes.DELETE) {
             if (this.activeCorner) {
@@ -14577,6 +14682,7 @@ functions return important math algorithms required to constructs lines/walls in
 
           // update object target
           if (this.mode != floorplannerModes.DRAW && !this.mouseDown) {
+            var hoverItem = this.overlappedItem(this.mouseX, this.mouseY);
             var hoverCorner = this.floorplan.overlappedCorner(
               this.mouseX,
               this.mouseY
@@ -14586,6 +14692,12 @@ functions return important math algorithms required to constructs lines/walls in
               this.mouseY
             );
             var draw = false;
+
+            if (hoverItem != this.activeItem) {
+              this.activeItem = hoverItem;
+              draw = true;
+            }
+
             if (hoverCorner != this.activeCorner) {
               this.activeCorner = hoverCorner;
               draw = true;
@@ -14615,7 +14727,10 @@ functions return important math algorithms required to constructs lines/walls in
 
           // dragging
           if (this.mode == floorplannerModes.MOVE && this.mouseDown) {
-            if (this.activeCorner) {
+            if (this.activeItem) {
+              this.activeItem.clickDragged({ point: new THREE.Vector3(this.mouseX, 0, this.mouseY) });
+              this.floorplan.model.scene.controller.gapManager.update(this.activeItem);
+            } else if (this.activeCorner) {
               this.activeCorner.move(this.mouseX, this.mouseY);
             } else if (this.activeWall) {
               this.activeWall.relativeMove(
@@ -14633,6 +14748,11 @@ functions return important math algorithms required to constructs lines/walls in
         reference: "mouseup",
         value: function mouseup(event) {
           this.mouseDown = false;
+
+          if (this.activeItem) {
+            this.activeItem.clickReleased();
+            this.activeItem = null;
+          }
 
           if (
             this.mode == floorplannerModes.MOVE &&
@@ -14906,6 +15026,34 @@ functions return important math algorithms required to constructs lines/walls in
         reference: "convertY",
         value: function convertY(y) {
           return (y - this.originY * this.cmPerPixel) * this.pixelsPerCm;
+        },
+      },
+      {
+        reference: "overlappedItem",
+        value: function overlappedItem(x, y) {
+          var items = this.floorplan.model.scene.getItems();
+          for (var i = items.length - 1; i >= 0; i--) {
+            var item = items[i];
+            if (!item.visible) continue;
+            
+            var pos = item.position;
+            var halfSize = item.halfSize;
+            
+            // Check if (x, y) is within item bounds (rotated)
+            // For simplicity in 2D, we can use a simpler axis-aligned check or full rotated check
+            var dx = x - pos.x;
+            var dz = y - pos.z;
+            
+            // Un-rotate the point to check against AABB
+            var angle = -item.rotation.y;
+            var ux = dx * Math.cos(angle) - dz * Math.sin(angle);
+            var uz = dx * Math.sin(angle) + dz * Math.cos(angle);
+            
+            if (Math.abs(ux) < halfSize.x && Math.abs(uz) < halfSize.z) {
+               return item;
+            }
+          }
+          return null;
         },
       },
       {
