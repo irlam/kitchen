@@ -5992,8 +5992,41 @@ var KKJS = (function (exports) {
       var options = this.options;
       var textureDef = json.textures[textureIndex];
 
+      function createFallbackTexture(name, sampler) {
+        var data = new Uint8Array([255, 255, 255, 255]);
+        var texture = new THREE.DataTexture(data, 1, 1, THREE.RGBAFormat);
+        texture.needsUpdate = true;
+        texture.flipY = false;
+        if (name !== undefined) texture.name = name;
+        texture.magFilter =
+          (sampler && sampler.magFilter) || THREE.LinearFilter;
+        texture.minFilter =
+          (sampler && sampler.minFilter) || THREE.LinearMipmapLinearFilter;
+        texture.wrapS =
+          (sampler && sampler.wrapS) || THREE.RepeatWrapping;
+        texture.wrapT =
+          (sampler && sampler.wrapT) || THREE.RepeatWrapping;
+        return texture;
+      }
+
+      if (!textureDef || textureDef.source === undefined || !json.images) {
+        return parser.loadSampler(textureDef ? textureDef.sampler : undefined).then(function (sampler) {
+          return createFallbackTexture(textureDef ? textureDef.name : undefined, sampler);
+        });
+      }
+
       var source = json.images[textureDef.source];
       var loader = parser.textureLoader;
+
+      if (!source || !source.uri) {
+        return parser.loadSampler(textureDef.sampler).then(function (sampler) {
+          console.warn(
+            "THREE.GLTFLoader: Missing texture URI, using fallback texture.",
+            source
+          );
+          return createFallbackTexture(textureDef.name, sampler);
+        });
+      }
 
       if (source.uri) {
         var handler = options.manager.getHandler(source.uri);
@@ -6019,13 +6052,12 @@ var KKJS = (function (exports) {
             },
             undefined,
             function () {
-              reject(
-                new Error(
-                  'THREE.GLTFLoader: Failed to load texture "' +
-                    source.uri +
-                    '".'
-                )
+              console.warn(
+                'THREE.GLTFLoader: Failed to load texture "' +
+                  source.uri +
+                  '". Using fallback texture.'
               );
+              resolve(createFallbackTexture(textureDef.name, sampler));
             }
           );
         });
@@ -16869,24 +16901,46 @@ functions return important math algorithms required to constructs lines/walls in
           var stretch = textureData.stretch;
           var url = textureData.url;
           var scale = textureData.scale;
-          
-          console.log("Edge.updateTexture loading:", url, "stretch:", stretch, "scale:", scale);
-          
-          this.texture = new THREE.TextureLoader().load(url, function(tex) {
-              tex.mapping = THREE.UVMapping;
-              if (callback) callback(tex);
-          }, undefined, function(err) {
-              console.error("Failed to load texture:", url, err);
-          });
 
-          if (!stretch) {
-            var height = this.wall.height;
-            var width = this.edge.interiorDistance();
-            this.texture.wrapT = THREE.RepeatWrapping;
-            this.texture.wrapS = THREE.RepeatWrapping;
-            this.texture.repeat.set(width / scale, height / scale);
-            this.texture.needsUpdate = true;
+          var makeFallbackTexture = function () {
+            var data = new Uint8Array([255, 255, 255, 255]);
+            var fallback = new THREE.DataTexture(data, 1, 1, THREE.RGBAFormat);
+            fallback.needsUpdate = true;
+            fallback.flipY = false;
+            return fallback;
+          };
+
+          var applyTextureSettings = function (tex) {
+            tex.mapping = THREE.UVMapping;
+            if (!stretch) {
+              var height = local.wall.height;
+              var width = local.edge.interiorDistance();
+              var safeScale = scale > 0 ? scale : 1;
+              tex.wrapT = THREE.RepeatWrapping;
+              tex.wrapS = THREE.RepeatWrapping;
+              tex.repeat.set(width / safeScale, height / safeScale);
+            }
+            if (callback) callback(tex);
+          };
+
+          if (!url) {
+            this.texture = makeFallbackTexture();
+            applyTextureSettings(this.texture);
+            return;
           }
+
+          this.texture = new THREE.TextureLoader().load(
+            url,
+            function (tex) {
+              applyTextureSettings(tex);
+            },
+            undefined,
+            function () {
+              console.warn("Failed to load wall texture:", url, "Using fallback texture.");
+              local.texture = makeFallbackTexture();
+              applyTextureSettings(local.texture);
+            }
+          );
         },
       },
       {
