@@ -13554,6 +13554,33 @@ functions return important math algorithms required to constructs lines/walls in
             console.log("addItem: total items now", local.items.length);
             local.add(item);
             item.initObject();
+
+            if (metadata && metadata.proportionalResize === false) {
+              item.setProportionalResize(false);
+            }
+            if (
+              metadata &&
+              (
+                (metadata.initialWidthCm !== null && metadata.initialWidthCm !== undefined && !isNaN(metadata.initialWidthCm)) ||
+                (metadata.initialHeightCm !== null && metadata.initialHeightCm !== undefined && !isNaN(metadata.initialHeightCm)) ||
+                (metadata.initialDepthCm !== null && metadata.initialDepthCm !== undefined && !isNaN(metadata.initialDepthCm))
+              )
+            ) {
+              var targetHeight =
+                metadata.initialHeightCm !== null && metadata.initialHeightCm !== undefined && !isNaN(metadata.initialHeightCm)
+                  ? Number(metadata.initialHeightCm)
+                  : item.getHeight();
+              var targetWidth =
+                metadata.initialWidthCm !== null && metadata.initialWidthCm !== undefined && !isNaN(metadata.initialWidthCm)
+                  ? Number(metadata.initialWidthCm)
+                  : item.getWidth();
+              var targetDepth =
+                metadata.initialDepthCm !== null && metadata.initialDepthCm !== undefined && !isNaN(metadata.initialDepthCm)
+                  ? Number(metadata.initialDepthCm)
+                  : item.getDepth();
+              item.resize(targetHeight, targetWidth, targetDepth);
+            }
+
             local.dispatchEvent({ type: EVENT_ITEM_LOADED, item: item });
             if (newItemDefinitions) {
               item.moveToPosition(

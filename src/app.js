@@ -1768,6 +1768,14 @@ function datGUI(three, floorplanner) {
       var itemName = $(this).attr("model-name");
       var mountHeightAttr = $(this).attr("model-mount-height-cm");
       var mountHeightCm = mountHeightAttr ? parseFloat(mountHeightAttr) : null;
+      var initialWidthAttr = $(this).attr("model-initial-width-cm");
+      var initialHeightAttr = $(this).attr("model-initial-height-cm");
+      var initialDepthAttr = $(this).attr("model-initial-depth-cm");
+      var initialWidthCm = initialWidthAttr ? parseFloat(initialWidthAttr) : null;
+      var initialHeightCm = initialHeightAttr ? parseFloat(initialHeightAttr) : null;
+      var initialDepthCm = initialDepthAttr ? parseFloat(initialDepthAttr) : null;
+      var proportionalResizeAttr = $(this).attr("model-proportional-resize");
+      var proportionalResize = proportionalResizeAttr === "false" ? false : true;
 
       console.log("Adding item:", itemName, "Type:", itemType, "URL:", modelUrl);
 
@@ -1780,6 +1788,10 @@ function datGUI(three, floorplanner) {
         itemType: itemType,
         format: itemFormat,
         mountHeightCm: isNaN(mountHeightCm) ? null : mountHeightCm,
+        initialWidthCm: isNaN(initialWidthCm) ? null : initialWidthCm,
+        initialHeightCm: isNaN(initialHeightCm) ? null : initialHeightCm,
+        initialDepthCm: isNaN(initialDepthCm) ? null : initialDepthCm,
+        proportionalResize: proportionalResize,
       };
 
       if ($("#showFloorPlan").hasClass("active")) {

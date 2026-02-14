@@ -364,6 +364,57 @@ $(document).ready(function () {
       format: "gltf",
       premium: true
     },
+    {
+      name: "Splashback Panel 600mm",
+      model: "models/gltf/wallHalf.glb",
+      type: "2",
+      image: "models/thumbnails_new/wallHalf.png",
+      format: "gltf",
+      mountHeightCm: 96,
+      initialWidthCm: 60,
+      initialHeightCm: 55,
+      initialDepthCm: 2,
+      proportionalResize: false,
+      premium: false
+    },
+    {
+      name: "Splashback Panel 900mm",
+      model: "models/gltf/wallHalf.glb",
+      type: "2",
+      image: "models/thumbnails_new/wallHalf.png",
+      format: "gltf",
+      mountHeightCm: 96,
+      initialWidthCm: 90,
+      initialHeightCm: 55,
+      initialDepthCm: 2,
+      proportionalResize: false,
+      premium: false
+    },
+    {
+      name: "Splashback Panel 1200mm",
+      model: "models/gltf/wallHalf.glb",
+      type: "2",
+      image: "models/thumbnails_new/wallHalf.png",
+      format: "gltf",
+      mountHeightCm: 96,
+      initialWidthCm: 120,
+      initialHeightCm: 55,
+      initialDepthCm: 2,
+      proportionalResize: false,
+      premium: false
+    },
+    {
+      name: "Range Cooker 1100mm",
+      model: "models/gltf/kitchenStove.glb",
+      type: "1",
+      image: "models/thumbnails_new/kitchenStove.png",
+      format: "gltf",
+      initialWidthCm: 110,
+      initialHeightCm: 90,
+      initialDepthCm: 65,
+      proportionalResize: false,
+      premium: true
+    },
   ];
   var modelTypesNum = ["1", "2", "3"];
   var modelTypesIds = ["floor-items", "wall-items", "in-wall-items"];
@@ -388,6 +439,10 @@ $(document).ready(function () {
 
     var modelformat = item.format ? " model-format=\"" + item.format + "\" " : "";
     var mountHeight = typeof item.mountHeightCm === "number" ? " model-mount-height-cm=\"" + item.mountHeightCm + "\" " : "";
+    var initialWidth = typeof item.initialWidthCm === "number" ? " model-initial-width-cm=\"" + item.initialWidthCm + "\" " : "";
+    var initialHeight = typeof item.initialHeightCm === "number" ? " model-initial-height-cm=\"" + item.initialHeightCm + "\" " : "";
+    var initialDepth = typeof item.initialDepthCm === "number" ? " model-initial-depth-cm=\"" + item.initialDepthCm + "\" " : "";
+    var proportionalResize = item.proportionalResize === false ? " model-proportional-resize=\"false\" " : "";
     var cleanName = item.name.replace(/_/g, " ");
     var premiumBadge = item.premium ? "<span class=\"premium-badge\">PREMIUM</span>" : "";
 
@@ -398,6 +453,10 @@ $(document).ready(function () {
       " model-url=\"" + item.model + "\" " +
       " model-type=\"" + item.type + "\" " +
       mountHeight +
+      initialWidth +
+      initialHeight +
+      initialDepth +
+      proportionalResize +
       modelformat +
       ">" +
       premiumBadge +
