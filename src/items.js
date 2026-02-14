@@ -120,6 +120,42 @@ $(document).ready(function () {
       format: "gltf",
     },
     {
+      name: "Base Unit 600 - Single Door",
+      model: "models/gltf/kitchenCabinet.glb",
+      type: "1",
+      image: "models/thumbnails_new/kitchenCabinet.png",
+      format: "gltf",
+      doorType: "single",
+      initialWidthCm: 60,
+      initialHeightCm: 90,
+      initialDepthCm: 60,
+      proportionalResize: false,
+    },
+    {
+      name: "Base Unit 800 - Double Door",
+      model: "models/gltf/kitchenCabinet.glb",
+      type: "1",
+      image: "models/thumbnails_new/kitchenCabinet.png",
+      format: "gltf",
+      doorType: "double",
+      initialWidthCm: 80,
+      initialHeightCm: 90,
+      initialDepthCm: 60,
+      proportionalResize: false,
+    },
+    {
+      name: "Base Unit 1000 - Double Door",
+      model: "models/gltf/kitchenCabinet.glb",
+      type: "1",
+      image: "models/thumbnails_new/kitchenCabinet.png",
+      format: "gltf",
+      doorType: "double",
+      initialWidthCm: 100,
+      initialHeightCm: 90,
+      initialDepthCm: 60,
+      proportionalResize: false,
+    },
+    {
       name: "Kitchen cabinet corner",
       model: "models/gltf/kitchenCabinetCornerInner.glb",
       type: "2",
@@ -439,6 +475,7 @@ $(document).ready(function () {
 
     var modelformat = item.format ? " model-format=\"" + item.format + "\" " : "";
     var mountHeight = typeof item.mountHeightCm === "number" ? " model-mount-height-cm=\"" + item.mountHeightCm + "\" " : "";
+    var doorType = item.doorType ? " model-door-type=\"" + item.doorType + "\" " : "";
     var initialWidth = typeof item.initialWidthCm === "number" ? " model-initial-width-cm=\"" + item.initialWidthCm + "\" " : "";
     var initialHeight = typeof item.initialHeightCm === "number" ? " model-initial-height-cm=\"" + item.initialHeightCm + "\" " : "";
     var initialDepth = typeof item.initialDepthCm === "number" ? " model-initial-depth-cm=\"" + item.initialDepthCm + "\" " : "";
@@ -453,6 +490,7 @@ $(document).ready(function () {
       " model-url=\"" + item.model + "\" " +
       " model-type=\"" + item.type + "\" " +
       mountHeight +
+      doorType +
       initialWidth +
       initialHeight +
       initialDepth +

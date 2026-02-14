@@ -12902,6 +12902,7 @@ functions return important math algorithms required to constructs lines/walls in
             item_type: this.metadata.itemType,
             model_url: this.metadata.modelUrl,
             format: this.metadata.format,
+            door_type: this.metadata.doorType || null,
             resizable: this.resizable,
             xpos: this.position.x,
             ypos: this.position.y,
@@ -13738,6 +13739,7 @@ functions return important math algorithms required to constructs lines/walls in
                 modelUrl: item.model_url,
                 materialColors: matColors,
                 format: item.format,
+                doorType: item.door_type || item.doorType || null,
               };
               var scale = new THREE.Vector3(
                 parseFloat(item.scale_x || 1),

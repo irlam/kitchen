@@ -780,6 +780,9 @@ var ItemProperties = function (gui) {
   this.width = 1;
   this.height = 1;
   this.depth = 1;
+  this.doorType = "N/A";
+  this.doorRequired = "-";
+  this.doorRecommended = "-";
   this.fixed = false;
   this.currentItem = null;
   this.guiControllers = null;
@@ -792,6 +795,45 @@ var ItemProperties = function (gui) {
 
   this.setGUIControllers = function (guiControls) {
     this.guiControllers = guiControls;
+  };
+
+  this.updateDoorGuide = function () {
+    if (!this.currentItem || !this.currentItem.metadata || !this.currentItem.metadata.doorType) {
+      this.doorType = "N/A";
+      this.doorRequired = "-";
+      this.doorRecommended = "-";
+      return;
+    }
+
+    var doorType = String(this.currentItem.metadata.doorType).toLowerCase();
+    var cabinetWidthMm = Math.round(this.currentItem.getWidth() * 10);
+    var standardDoorSizesMm = [300, 350, 400, 450, 500, 550, 600];
+    var nearest = function (value) {
+      var best = standardDoorSizesMm[0];
+      var minDelta = Math.abs(value - best);
+      for (var i = 1; i < standardDoorSizesMm.length; i++) {
+        var delta = Math.abs(value - standardDoorSizesMm[i]);
+        if (delta < minDelta) {
+          minDelta = delta;
+          best = standardDoorSizesMm[i];
+        }
+      }
+      return best;
+    };
+
+    if (doorType === "double") {
+      var requiredLeaf = Math.max(100, Math.round((cabinetWidthMm - 9) / 2));
+      var recommendedLeaf = nearest(requiredLeaf);
+      this.doorType = "Double Door";
+      this.doorRequired = requiredLeaf + " mm each";
+      this.doorRecommended = "2 x " + recommendedLeaf + " mm";
+    } else {
+      var requiredSingle = Math.max(100, Math.round(cabinetWidthMm - 6));
+      var recommendedSingle = nearest(requiredSingle);
+      this.doorType = "Single Door";
+      this.doorRequired = requiredSingle + " mm";
+      this.doorRecommended = recommendedSingle + " mm";
+    }
   };
 
   this.setItem = function (item) {
@@ -869,6 +911,9 @@ var ItemProperties = function (gui) {
       return;
     }
     this.name = "None";
+    this.doorType = "N/A";
+    this.doorRequired = "-";
+    this.doorRecommended = "-";
     return;
   };
 
@@ -905,6 +950,7 @@ var ItemProperties = function (gui) {
         this.width = KKJS.Dimensioning.cmToMeasureInt(item.getWidth());
         this.height = KKJS.Dimensioning.cmToMeasureInt(item.getHeight());
       }
+      this.updateDoorGuide();
       for (var i = 0; i < this.totalmaterials; i++) {
         this.currentItem.setMaterialColor(this.materials["mat_" + i], i);
       }
@@ -946,6 +992,7 @@ var ItemProperties = function (gui) {
       this.depth = KKJS.Dimensioning.cmToMeasureInt(this.currentItem.getDepth());
       this.fixed = this.currentItem.fixed;
       this.proportionalsize = this.currentItem.getProportionalResize();
+      this.updateDoorGuide();
 
       if (this.guiControllers) {
         for (var i = 0; i < this.guiControllers.length; i++) {
@@ -1201,6 +1248,7 @@ function buildSerializedProject(KitchenKreation) {
         item_name: item.metadata ? item.metadata.itemName : "Unknown",
         item_type: item.metadata ? item.metadata.itemType : 1,
         model_url: item.metadata ? item.metadata.modelUrl : "",
+        door_type: item.metadata ? item.metadata.doorType : null,
         xpos: item.position.x,
         ypos: item.position.y,
         zpos: item.position.z,
@@ -1422,6 +1470,9 @@ function getItemPropertiesFolder(gui, anItem) {
   var wcontrol = f.add(anItem, "width", 50, 5000).step(1).name("Width (mm)");
   var hcontrol = f.add(anItem, "height", 50, 5000).step(1).name("Height (mm)");
   var dcontrol = f.add(anItem, "depth", 50, 5000).step(1).name("Depth (mm)");
+  var doorTypeControl = f.add(anItem, "doorType").name("Door Type");
+  var doorRequiredControl = f.add(anItem, "doorRequired").name("Door Required");
+  var doorRecommendedControl = f.add(anItem, "doorRecommended").name("Door Standard");
 
   var snapcontrol = f.add(anItem, "snapToNearest").name("✨ Snap to Cabinet Size");
   var pcontrol = f.add(anItem, "proportionalsize").name("🔗 Maintain Size Ratio");
@@ -1451,6 +1502,9 @@ function getItemPropertiesFolder(gui, anItem) {
     wcontrol,
     hcontrol,
     dcontrol,
+    doorTypeControl,
+    doorRequiredControl,
+    doorRecommendedControl,
     snapcontrol,
     pcontrol,
     lockcontrol,
@@ -1766,6 +1820,7 @@ function datGUI(three, floorplanner) {
       var itemType = parseInt($(this).attr("model-type"));
       var itemFormat = $(this).attr("model-format");
       var itemName = $(this).attr("model-name");
+      var doorType = $(this).attr("model-door-type");
       var mountHeightAttr = $(this).attr("model-mount-height-cm");
       var mountHeightCm = mountHeightAttr ? parseFloat(mountHeightAttr) : null;
       var initialWidthAttr = $(this).attr("model-initial-width-cm");
@@ -1787,6 +1842,7 @@ function datGUI(three, floorplanner) {
         modelUrl: modelUrl,
         itemType: itemType,
         format: itemFormat,
+        doorType: doorType || null,
         mountHeightCm: isNaN(mountHeightCm) ? null : mountHeightCm,
         initialWidthCm: isNaN(initialWidthCm) ? null : initialWidthCm,
         initialHeightCm: isNaN(initialHeightCm) ? null : initialHeightCm,
