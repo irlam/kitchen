@@ -14213,35 +14213,88 @@ functions return important math algorithms required to constructs lines/walls in
             var y1 = local.viewmodel.convertY(gap.p1.z);
             var x2 = local.viewmodel.convertX(gap.p2.x);
             var y2 = local.viewmodel.convertY(gap.p2.z);
-            
-            // Draw cyan dashed line
-            local.context.setLineDash([5, 5]);
-            local.context.strokeStyle = "#00d2d2";
-            local.context.lineWidth = 2;
-            local.context.beginPath();
-            local.context.moveTo(x1, y1);
-            local.context.lineTo(x2, y2);
-            local.context.stroke();
-            local.context.setLineDash([]);
-            
-            // Draw gap label
-            var mx = (x1 + x2) / 2;
-            var my = (y1 + y2) / 2;
-            
-            local.context.font = "bold 12px Aldrich";
+
             var text = Dimensioning.cmToMeasureString(gap.dist);
-            var metrics = local.context.measureText(text);
-            
-            local.context.fillStyle = "rgba(10, 20, 30, 0.8)";
-            local.context.fillRect(mx - metrics.width/2 - 4, my - 10, metrics.width + 8, 20);
-            local.context.strokeStyle = "#00d2d2";
-            local.context.strokeRect(mx - metrics.width/2 - 4, my - 10, metrics.width + 8, 20);
-            
-            local.context.fillStyle = "#FFFFFF";
-            local.context.textAlign = "center";
-            local.context.textBaseline = "middle";
-            local.context.fillText(text, mx, my);
+            local.drawDimensionLine(x1, y1, x2, y2, text, "#00d2d2");
           });
+        }
+      },
+      {
+        reference: "drawDimensionLine",
+        value: function drawDimensionLine(startX, startY, endX, endY, text, color) {
+          var ctx = this.context;
+          var dx = endX - startX;
+          var dy = endY - startY;
+          var len = Math.sqrt(dx * dx + dy * dy);
+          if (len < 1) {
+            return;
+          }
+
+          var ux = dx / len;
+          var uy = dy / len;
+          var nx = -uy;
+          var ny = ux;
+
+          var offset = 16;
+          var ext = 8;
+          var arrow = 7;
+          var halfWing = 4;
+
+          var sx = startX + nx * offset;
+          var sy = startY + ny * offset;
+          var ex = endX + nx * offset;
+          var ey = endY + ny * offset;
+
+          // extension lines
+          ctx.beginPath();
+          ctx.moveTo(startX, startY);
+          ctx.lineTo(startX + nx * (offset + ext), startY + ny * (offset + ext));
+          ctx.moveTo(endX, endY);
+          ctx.lineTo(endX + nx * (offset + ext), endY + ny * (offset + ext));
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = color;
+          ctx.stroke();
+
+          // dimension line
+          ctx.beginPath();
+          ctx.moveTo(sx, sy);
+          ctx.lineTo(ex, ey);
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = color;
+          ctx.stroke();
+
+          // arrowheads
+          ctx.beginPath();
+          ctx.moveTo(sx, sy);
+          ctx.lineTo(sx + ux * arrow + nx * halfWing, sy + uy * arrow + ny * halfWing);
+          ctx.moveTo(sx, sy);
+          ctx.lineTo(sx + ux * arrow - nx * halfWing, sy + uy * arrow - ny * halfWing);
+          ctx.moveTo(ex, ey);
+          ctx.lineTo(ex - ux * arrow + nx * halfWing, ey - uy * arrow + ny * halfWing);
+          ctx.moveTo(ex, ey);
+          ctx.lineTo(ex - ux * arrow - nx * halfWing, ey - uy * arrow - ny * halfWing);
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = color;
+          ctx.stroke();
+
+          // label
+          var tx = (sx + ex) / 2 + nx * 12;
+          var ty = (sy + ey) / 2 + ny * 12;
+          ctx.font = "bold 12px Aldrich";
+          var metrics = ctx.measureText(text);
+          var labelW = metrics.width + 10;
+          var labelH = 20;
+
+          ctx.fillStyle = "rgba(10, 20, 30, 0.85)";
+          ctx.fillRect(tx - labelW / 2, ty - labelH / 2, labelW, labelH);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1;
+          ctx.strokeRect(tx - labelW / 2, ty - labelH / 2, labelW, labelH);
+
+          ctx.fillStyle = "#FFFFFF";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(text, tx, ty);
         }
       },
       {
