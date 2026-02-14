@@ -13045,12 +13045,12 @@ functions return important math algorithms required to constructs lines/walls in
     createClass(WallItem, [
       {
         reference: "closestWallEdge",
-        value: function closestWallEdge() {
+        value: function closestWallEdge(pos) {
           var wallEdges = this.model.floorplan.wallEdges();
           var wallEdge = null;
           var minDistance = null;
-          var itemX = this.position.x;
-          var itemZ = this.position.z;
+          var itemX = pos ? pos.x : this.position.x;
+          var itemZ = pos ? pos.z : this.position.z;
           wallEdges.forEach(function (edge) {
             var distance = edge.distanceTo(itemX, itemZ);
             if (minDistance === null || distance < minDistance) {
@@ -13143,12 +13143,19 @@ functions return important math algorithms required to constructs lines/walls in
       {
         reference: "moveToPosition",
         value: function moveToPosition(vec3, intersection) {
-          var intersectionEdge = intersection
-            ? intersection.object
-              ? intersection.object.edge
-              : intersection
-            : this.closestWallEdge();
-          this.changeWallEdge(intersectionEdge);
+          var intersectionEdge = null;
+          if (intersection && intersection.object && intersection.object.edge) {
+            intersectionEdge = intersection.object.edge;
+          } else if (intersection && intersection.wall) {
+            // Already an edge?
+            intersectionEdge = intersection;
+          } else {
+            intersectionEdge = this.closestWallEdge(vec3);
+          }
+
+          if (intersectionEdge) {
+            this.changeWallEdge(intersectionEdge);
+          }
           this.boundMove(vec3);
           //		this.position.copy(vec3);
           get(
@@ -14621,23 +14628,39 @@ functions return important math algorithms required to constructs lines/walls in
         value: function mousedown(event) {
           this.mouseDown = true;
           this.mouseMoved = false;
+
+          var pointEvent = event;
           if (event.touches) {
-            this.rawMouseX = event.touches[0].clientX;
-            this.rawMouseY = event.touches[0].clientY;
+            pointEvent = event.touches[0];
           }
+
+          // update mouse
+          this.rawMouseX = pointEvent.clientX;
+          this.rawMouseY = pointEvent.clientY;
+
+          this.mouseX =
+            (pointEvent.clientX - this.canvasElement.offset().left) *
+              this.cmPerPixel +
+            this.originX * this.cmPerPixel;
+          this.mouseY =
+            (pointEvent.clientY - this.canvasElement.offset().top) *
+              this.cmPerPixel +
+            this.originY * this.cmPerPixel;
 
           this.lastX = this.rawMouseX;
           this.lastY = this.rawMouseY;
 
-          // Select item (if not clicking a corner or wall)
-          if (!this.activeCorner && !this.activeWall) {
-            this.activeItem = this.overlappedItem(this.mouseX, this.mouseY);
-            if (this.activeItem) {
-              this.floorplan.model.scene.controller.setSelectedObject(this.activeItem);
-              this.activeItem.clickPressed({
-                point: new THREE.Vector3(this.mouseX, 0, this.mouseY),
-              });
-            }
+          // Select item (priority: items should be clickable in 2D even if near walls)
+          var overlappedItem = this.overlappedItem(this.mouseX, this.mouseY);
+          if (overlappedItem) {
+            this.activeItem = overlappedItem;
+            this.activeCorner = null;
+            this.activeWall = null;
+            this.floorplan.model.scene.controller.setSelectedObject(this.activeItem);
+            this.activeItem.clickPressed({
+              point: new THREE.Vector3(this.mouseX, 0, this.mouseY),
+            });
+            this.view.draw();
           }
 
           // delete
@@ -14717,7 +14740,12 @@ functions return important math algorithms required to constructs lines/walls in
           }
 
           // panning
-          if (this.mouseDown && !this.activeCorner && !this.activeWall) {
+          if (
+            this.mouseDown &&
+            !this.activeCorner &&
+            !this.activeWall &&
+            !this.activeItem
+          ) {
             this.originX += this.lastX - this.rawMouseX;
             this.originY += this.lastY - this.rawMouseY;
             this.lastX = this.rawMouseX;
