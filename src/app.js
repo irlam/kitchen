@@ -1766,6 +1766,8 @@ function datGUI(three, floorplanner) {
       var itemType = parseInt($(this).attr("model-type"));
       var itemFormat = $(this).attr("model-format");
       var itemName = $(this).attr("model-name");
+      var mountHeightAttr = $(this).attr("model-mount-height-cm");
+      var mountHeightCm = mountHeightAttr ? parseFloat(mountHeightAttr) : null;
 
       console.log("Adding item:", itemName, "Type:", itemType, "URL:", modelUrl);
 
@@ -1777,6 +1779,7 @@ function datGUI(three, floorplanner) {
         modelUrl: modelUrl,
         itemType: itemType,
         format: itemFormat,
+        mountHeightCm: isNaN(mountHeightCm) ? null : mountHeightCm,
       };
 
       if ($("#showFloorPlan").hasClass("active")) {
@@ -1801,7 +1804,8 @@ function datGUI(three, floorplanner) {
         var edge = wallWrapper.edge;
         var start = edge.interiorStart();
         var end = edge.interiorEnd();
-        var placeAt = new THREE.Vector3((start.x + end.x) / 2.0, 0, (start.y + end.y) / 2.0);
+        var placeY = metadata.mountHeightCm !== null ? metadata.mountHeightCm : 0;
+        var placeAt = new THREE.Vector3((start.x + end.x) / 2.0, placeY, (start.y + end.y) / 2.0);
 
         KitchenKreation.model.scene.addItem(
           itemType,

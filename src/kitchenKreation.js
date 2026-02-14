@@ -13161,9 +13161,18 @@ functions return important math algorithms required to constructs lines/walls in
           if (!this.position_set) {
             // position not set
             var center = closestWallEdge.interiorCenter();
+            var defaultY = closestWallEdge.wall.height / 2.0;
+            if (
+              this.metadata &&
+              this.metadata.mountHeightCm !== undefined &&
+              this.metadata.mountHeightCm !== null &&
+              !isNaN(this.metadata.mountHeightCm)
+            ) {
+              defaultY = Number(this.metadata.mountHeightCm);
+            }
             var newPos = new THREE.Vector3(
               center.x,
-              closestWallEdge.wall.height / 2.0,
+              defaultY,
               center.y
             );
             this.boundMove(newPos);

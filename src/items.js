@@ -387,6 +387,7 @@ $(document).ready(function () {
     }
 
     var modelformat = item.format ? " model-format=\"" + item.format + "\" " : "";
+    var mountHeight = typeof item.mountHeightCm === "number" ? " model-mount-height-cm=\"" + item.mountHeightCm + "\" " : "";
     var cleanName = item.name.replace(/_/g, " ");
     var premiumBadge = item.premium ? "<span class=\"premium-badge\">PREMIUM</span>" : "";
 
@@ -396,6 +397,7 @@ $(document).ready(function () {
       " model-name=\"" + item.name + "\" " +
       " model-url=\"" + item.model + "\" " +
       " model-type=\"" + item.type + "\" " +
+      mountHeight +
       modelformat +
       ">" +
       premiumBadge +
