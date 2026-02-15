@@ -1,24 +1,24 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 
+// Shared helper functions
+const createBox = (minX, minY, minZ, maxX, maxY, maxZ) => ({
+  min: { x: minX, y: minY, z: minZ },
+  max: { x: maxX, y: maxY, z: maxZ }
+});
+
+const checkBoxIntersection = (box1, box2) => {
+  return (
+    box1.min.x < box2.max.x &&
+    box1.max.x > box2.min.x &&
+    box1.min.y < box2.max.y &&
+    box1.max.y > box2.min.y &&
+    box1.min.z < box2.max.z &&
+    box1.max.z > box2.min.z
+  );
+};
+
 describe('Collision Detection', () => {
   describe('Bounding Box Overlap Detection', () => {
-    // Mock Box3 structure
-    const createBox = (minX, minY, minZ, maxX, maxY, maxZ) => ({
-      min: { x: minX, y: minY, z: minZ },
-      max: { x: maxX, y: maxY, z: maxZ }
-    });
-
-    const checkBoxIntersection = (box1, box2) => {
-      return (
-        box1.min.x < box2.max.x &&
-        box1.max.x > box2.min.x &&
-        box1.min.y < box2.max.y &&
-        box1.max.y > box2.min.y &&
-        box1.min.z < box2.max.z &&
-        box1.max.z > box2.min.z
-      );
-    };
-
     it('detects overlap when boxes intersect', () => {
       const box1 = createBox(0, 0, 0, 10, 10, 10);
       const box2 = createBox(5, 5, 5, 15, 15, 15);
@@ -93,17 +93,6 @@ describe('Collision Detection', () => {
 
   describe('Multiple Item Collision Detection', () => {
     const checkMultipleCollisions = (targetBox, existingBoxes) => {
-      const checkBoxIntersection = (box1, box2) => {
-        return (
-          box1.min.x < box2.max.x &&
-          box1.max.x > box2.min.x &&
-          box1.min.y < box2.max.y &&
-          box1.max.y > box2.min.y &&
-          box1.min.z < box2.max.z &&
-          box1.max.z > box2.min.z
-        );
-      };
-
       for (let i = 0; i < existingBoxes.length; i++) {
         if (checkBoxIntersection(targetBox, existingBoxes[i])) {
           return true;
@@ -111,11 +100,6 @@ describe('Collision Detection', () => {
       }
       return false;
     };
-
-    const createBox = (minX, minY, minZ, maxX, maxY, maxZ) => ({
-      min: { x: minX, y: minY, z: minZ },
-      max: { x: maxX, y: maxY, z: maxZ }
-    });
 
     it('detects collision with first item in list', () => {
       const targetBox = createBox(0, 0, 0, 10, 10, 10);

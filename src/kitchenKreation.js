@@ -12584,6 +12584,9 @@ functions return important math algorithms required to constructs lines/walls in
           this.bhelper = new THREE.BoxHelper(this);
           this.scene.add(this.bhelper);
           this.bhelper.visible = false;
+          // Initialize collision state
+          this.hasCollision = false;
+          this.lastValidPosition = this.position.clone();
           // select and stuff
           this.scene.needsUpdate = true;
         },
@@ -12864,10 +12867,11 @@ functions return important math algorithms required to constructs lines/walls in
           // If item has collision on release, revert to last valid position
           if (this.hasCollision && this.lastValidPosition) {
             this.position.copy(this.lastValidPosition);
-            this.clearCollisionState();
+            this.hasCollision = false; // Clear collision state directly
             if (this.bhelper) {
               this.bhelper.update();
             }
+            this.updateHighlight(); // Single highlight update
           } else if (!this.hasCollision) {
             // Update last valid position if no collision
             this.lastValidPosition = this.position.clone();
