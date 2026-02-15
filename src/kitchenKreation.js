@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 if (THREE.Quaternion.prototype.invert) {
   // Three r124+ renamed inverse() to invert(); keep legacy calls working.
@@ -12584,6 +12584,9 @@ functions return important math algorithms required to constructs lines/walls in
           this.bhelper = new THREE.BoxHelper(this);
           this.scene.add(this.bhelper);
           this.bhelper.visible = false;
+          // Initialize collision state
+          this.hasCollision = false;
+          this.lastValidPosition = this.position.clone();
           // select and stuff
           this.scene.needsUpdate = true;
         },
@@ -12601,7 +12604,10 @@ functions return important math algorithms required to constructs lines/walls in
 
           var on = this.hover || this.selected;
           this.highlighted = on;
-          var hex = on ? this.emissiveColor : 0x000000;
+          
+          // Red for collision, normal emissive color for selection/hover
+          var hex = this.hasCollision ? 0xff0000 : (on ? this.emissiveColor : 0x000000);
+          
           if (this.material) {
             if (this.material.length) {
               this.material.forEach(function (material) {
@@ -12655,9 +12661,60 @@ functions return important math algorithms required to constructs lines/walls in
         /** intersection has attributes point (vec3) and object (THREE.Mesh) */
       },
       {
+        reference: "checkCollisionAt",
+        value: function checkCollisionAt(targetPos) {
+          var scope = this;
+          var allItems = this.model.scene.getItems();
+          
+          // Create bounding box at target position
+          var box = new THREE.Box3().setFromObject(this);
+          var offset = targetPos.clone().sub(this.position);
+          box.min.add(offset);
+          box.max.add(offset);
+          
+          // Check against all other items
+          for (var i = 0; i < allItems.length; i++) {
+            var item = allItems[i];
+            if (item === scope || !item.visible) continue;
+            
+            var otherBox = new THREE.Box3().setFromObject(item);
+            
+            // Check for intersection (overlap)
+            if (
+              box.min.x < otherBox.max.x &&
+              box.max.x > otherBox.min.x &&
+              box.min.y < otherBox.max.y &&
+              box.max.y > otherBox.min.y &&
+              box.min.z < otherBox.max.z &&
+              box.max.z > otherBox.min.z
+            ) {
+              return true; // Collision detected
+            }
+          }
+          
+          return false; // No collision
+        },
+      },
+      {
+        reference: "setCollisionState",
+        value: function setCollisionState(hasCollision) {
+          this.hasCollision = hasCollision;
+          this.updateHighlight();
+        },
+      },
+      {
+        reference: "clearCollisionState",
+        value: function clearCollisionState() {
+          this.hasCollision = false;
+          this.updateHighlight();
+        },
+      },
+      {
         reference: "clickPressed",
         value: function clickPressed(intersection) {
           this.dragOffset.copy(intersection.point).sub(this.position);
+          // Store the last valid position before drag
+          this.lastValidPosition = this.position.clone();
         },
       },
       {
@@ -12699,6 +12756,11 @@ functions return important math algorithms required to constructs lines/walls in
         value: function moveToPosition(vec3) {
           var snapped = this.getSnappedPosition(vec3.clone());
           this.position.copy(snapped);
+          
+          // Check for collision at new position
+          var hasCollision = this.checkCollisionAt(this.position);
+          this.setCollisionState(hasCollision);
+          
           if (this.bhelper) {
             this.bhelper.update();
           }
@@ -12800,6 +12862,19 @@ functions return important math algorithms required to constructs lines/walls in
         value: function clickReleased() {
           if (this.error) {
             this.hideError();
+          }
+          
+          // If item has collision on release, revert to last valid position
+          if (this.hasCollision && this.lastValidPosition) {
+            this.position.copy(this.lastValidPosition);
+            this.hasCollision = false; // Clear collision state directly
+            if (this.bhelper) {
+              this.bhelper.update();
+            }
+            this.updateHighlight(); // Single highlight update
+          } else if (!this.hasCollision) {
+            // Update last valid position if no collision
+            this.lastValidPosition = this.position.clone();
           }
         },
 
