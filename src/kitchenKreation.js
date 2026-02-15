@@ -13848,7 +13848,7 @@ functions return important math algorithms required to constructs lines/walls in
 
           this.scene.clearItems();
           this.floorplan.loadFloorplan(floorplan);
-          if (items) {
+          if (items && Array.isArray(items)) {
             console.log("newRoom: loading " + items.length + " items");
             items.forEach(function (item) {
               var matColors = item.material_colors ? item.material_colors : [];
