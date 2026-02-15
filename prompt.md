@@ -107,3 +107,84 @@ Rules:
 - For each issue include: severity, reproduction steps, expected vs actual, likely root cause, and suggested fix.
 - If you cannot run something, explicitly state why and provide a fallback verification method.
 """
+
+
+## Copilot implementation prompt: execute fixes from QA report
+
+Use this in Copilot Chat after your QA report is done:
+
+"""
+Act as a senior staff engineer responsible for implementing and validating fixes from a completed release-readiness QA review.
+
+Context:
+- The QA review concluded NO-GO with critical issues.
+- Critical issues to fix first:
+  1) Security vulnerability in three.js dependency
+  2) No automated tests present
+  3) 3D dimensions not visible (labels hidden)
+- Project is a kitchen planner with both 2D and 3D views; dimensions are a release-critical feature.
+
+Your mission:
+Implement fixes in safe, incremental phases, and keep the app working after each phase.
+
+Execution rules:
+1) Start by restating the plan as Phase 1 / Phase 2 / Phase 3 with acceptance criteria.
+2) For each phase:
+   - Inspect relevant files and identify exact code locations before editing.
+   - Make the smallest viable change set.
+   - Run validation commands after changes.
+   - Summarize what changed, why, and risks.
+3) Never claim success without evidence from commands/tests.
+4) If blocked, provide fallback and next-best action.
+
+Phase 1 (must-fix, release blocker):
+A) Security remediation
+   - Upgrade vulnerable dependencies (especially three.js) to a secure compatible version.
+   - Resolve any breaking import/API changes.
+   - Run build and smoke checks.
+   - Output: dependency diff + compatibility notes.
+
+B) 3D dimension visibility fix
+   - Find where 3D labels/overlays are created and where visibility is toggled.
+   - Ensure default behavior shows 3D dimensions when user is in 3D mode.
+   - Preserve performance and avoid label clutter regression.
+   - Add/adjust a UI toggle if needed, but default must satisfy QA requirement.
+   - Output: before/after behavior + files changed.
+
+C) Minimum automated test baseline
+   - Add a lightweight test setup (Vitest or existing stack).
+   - Add high-value tests for:
+     1. dimension formatting/unit conversion
+     2. dimension visibility state logic (2D vs 3D)
+     3. one core interaction path (e.g., add item then dimension updates)
+   - Ensure tests run in CI-friendly command.
+   - Output: test files added + pass/fail evidence.
+
+Phase 2 (high priority quality improvements):
+- Fix precision/rounding inconsistencies in dimensions.
+- Improve snap-to-grid reliability and collision edge cases.
+- Add catalog search/filter tests if functionality exists.
+
+Phase 3 (release hardening):
+- Regression pass on save/load/share/export flows.
+- Document known limitations and create release checklist.
+
+Required output format for every response:
+1) Current Phase
+2) Files Inspected
+3) Changes Made
+4) Commands Run + Results
+5) Acceptance Criteria Status (Pass/Fail)
+6) Next Step
+
+Definition of Done (for GO recommendation):
+- No known high-severity dependency vulnerabilities in shipped dependencies.
+- 3D dimensions are visible and verified in runtime checks.
+- Automated tests exist and pass for critical dimension logic.
+- Build succeeds and core user journeys smoke-tested.
+"""
+
+## Optional one-shot Copilot command for immediate first pass
+
+"Please execute Phase 1 only: patch security dependencies, fix 3D dimension visibility defaults, add minimum tests for dimension logic, run build/tests, and return evidence in the required 6-section format."
+
