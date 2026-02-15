@@ -17449,7 +17449,8 @@ functions return important math algorithms required to constructs lines/walls in
           var shape = new THREE.Shape(spoints);
 
           // add holes for each wall item
-          this.wall.items.forEach(function (item) {
+          var wallItems = Array.isArray(this.wall.items) ? this.wall.items : [];
+          wallItems.forEach(function (item) {
             var pos = item.position.clone();
             pos.applyMatrix4(transform);
             var halfSize = item.halfSize;
@@ -17467,48 +17468,58 @@ functions return important math algorithms required to constructs lines/walls in
             shape.holes.push(new THREE.Path(holePoints));
           });
 
-          var geometry = new THREE.ShapeBufferGeometry(shape);
-          if (geometry.toGeometry) {
-              geometry = geometry.toGeometry();
-          } else if (THREE.Geometry) {
-              var tempGeom = new THREE.Geometry();
-              tempGeom.fromBufferGeometry(geometry);
-              geometry = tempGeom;
-          }
-
-          geometry.vertices.forEach(function (v) {
-            v.applyMatrix4(invTransform);
-          });
+          var geometry = new THREE.ShapeGeometry(shape);
 
           // make UVs
           var totalDistance = MathUtilities.distance(
             new THREE.Vector2(v1.x, v1.z),
             new THREE.Vector2(v2.x, v2.z)
           );
+          var safeDistance = totalDistance || 1;
           var height = this.wall.height;
-          geometry.faceVertexUvs[0] = [];
+          if (geometry.isBufferGeometry) {
+            var positionAttr = geometry.getAttribute("position");
+            var vertex = new THREE.Vector3();
+            var uvArray = new Float32Array(positionAttr.count * 2);
+            for (var i = 0; i < positionAttr.count; i++) {
+              vertex.fromBufferAttribute(positionAttr, i);
+              vertex.applyMatrix4(invTransform);
+              positionAttr.setXYZ(i, vertex.x, vertex.y, vertex.z);
+              var uv = vertexToUv(vertex);
+              uvArray[i * 2] = uv.x;
+              uvArray[i * 2 + 1] = uv.y;
+            }
+            positionAttr.needsUpdate = true;
+            geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvArray, 2));
+            geometry.computeVertexNormals();
+          } else if (geometry.vertices && geometry.faces) {
+            geometry.vertices.forEach(function (v) {
+              v.applyMatrix4(invTransform);
+            });
 
-          geometry.faces.forEach(function (face) {
-            var vertA = geometry.vertices[face.a];
-            var vertB = geometry.vertices[face.b];
-            var vertC = geometry.vertices[face.c];
-            geometry.faceVertexUvs[0].push([
-              vertexToUv(vertA),
-              vertexToUv(vertB),
-              vertexToUv(vertC),
-            ]);
-          });
+            geometry.faceVertexUvs[0] = [];
+            geometry.faces.forEach(function (face) {
+              var vertA = geometry.vertices[face.a];
+              var vertB = geometry.vertices[face.b];
+              var vertC = geometry.vertices[face.c];
+              geometry.faceVertexUvs[0].push([
+                vertexToUv(vertA),
+                vertexToUv(vertB),
+                vertexToUv(vertC),
+              ]);
+            });
 
-          geometry.faceVertexUvs[1] = geometry.faceVertexUvs[0];
-          geometry.computeFaceNormals();
-          geometry.computeVertexNormals();
+            geometry.faceVertexUvs[1] = geometry.faceVertexUvs[0];
+            geometry.computeFaceNormals();
+            geometry.computeVertexNormals();
+          }
 
           function vertexToUv(vertex) {
             var x =
               MathUtilities.distance(
                 new THREE.Vector2(v1.x, v1.z),
                 new THREE.Vector2(vertex.x, vertex.z)
-              ) / totalDistance;
+              ) / safeDistance;
             var y = vertex.y / height;
             return new THREE.Vector2(x, y);
           }
