@@ -196,6 +196,18 @@
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal">&times;</button>
 					<h4 class="modal-title">Insert Items</h4>
+					<div style="margin-top: 10px;">
+						<input type="text" id="catalog-search" class="form-control" placeholder="Search items by name..." style="margin-bottom: 10px;">
+						<div class="btn-group" role="group" style="width: 100%;">
+							<button type="button" class="btn btn-default catalog-filter-btn active" data-type="all">All</button>
+							<button type="button" class="btn btn-default catalog-filter-btn" data-type="1">Floor</button>
+							<button type="button" class="btn btn-default catalog-filter-btn" data-type="2">Wall</button>
+							<button type="button" class="btn btn-default catalog-filter-btn" data-type="3">In-Wall</button>
+						</div>
+						<div id="catalog-no-results" style="display: none; margin-top: 10px; padding: 20px; text-align: center; color: #999;">
+							No items found matching your search.
+						</div>
+					</div>
 				</div>
 				<div class="modal-body">
 					<div id="add-items" class="panel-group">
