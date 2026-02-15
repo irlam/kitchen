@@ -108,6 +108,7 @@ Rules:
 - If you cannot run something, explicitly state why and provide a fallback verification method.
 """
 
+
 ## Copilot implementation prompt: execute fixes from QA report
 
 Use this in Copilot Chat after your QA report is done:
@@ -186,3 +187,4 @@ Definition of Done (for GO recommendation):
 ## Optional one-shot Copilot command for immediate first pass
 
 "Please execute Phase 1 only: patch security dependencies, fix 3D dimension visibility defaults, add minimum tests for dimension logic, run build/tests, and return evidence in the required 6-section format."
+
