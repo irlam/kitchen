@@ -1,2 +1,30 @@
+# Dependencies
 node_modules/
+
+# Build artifacts - keep dist/ for deployment verification
+# but exclude database files
 dist/*.db
+dist/data/*.db
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*~
+.DS_Store
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# OS files
+Thumbs.db
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Environment files
+.env
+.env.local
