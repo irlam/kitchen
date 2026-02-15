@@ -17539,12 +17539,9 @@ functions return important math algorithms required to constructs lines/walls in
             this.toVec3(p1, height),
           ];
 
-          var geometry = new THREE.Geometry();
-          points.forEach(function (p) {
-            geometry.vertices.push(p);
-          });
-          geometry.faces.push(new THREE.Face3(0, 1, 2));
-          geometry.faces.push(new THREE.Face3(0, 2, 3));
+          var geometry = new THREE.BufferGeometry().setFromPoints(points);
+          geometry.setIndex([0, 1, 2, 0, 2, 3]);
+          geometry.computeVertexNormals();
 
           var fillerMaterial = new THREE.MeshBasicMaterial({
             color: color,
@@ -17942,12 +17939,10 @@ functions return important math algorithms required to constructs lines/walls in
       {
         reference: "makeLineGeometry",
         value: function makeLineGeometry(item) {
-          var geometry = new THREE.Geometry();
-          geometry.vertices.push(
+          return new THREE.BufferGeometry().setFromPoints([
             new THREE.Vector3(0, 0, 0),
-            this.rotateVector(item)
-          );
-          return geometry;
+            this.rotateVector(item),
+          ]);
         },
       },
       {
