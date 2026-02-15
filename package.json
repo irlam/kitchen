@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "html2canvas": "^1.4.1",
-    "three": "^0.124.0"
+    "three": "^0.125.2"
   },
   "devDependencies": {
     "vite": "^5.4.0"
