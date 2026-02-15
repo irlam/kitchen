@@ -1,5 +1,9 @@
 import * as THREE from "three";
+
+import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
+
 
 if (THREE.Quaternion.prototype.invert) {
   // Three r124+ renamed inverse() to invert(); keep legacy calls working.
@@ -10358,7 +10362,7 @@ functions return important math algorithms required to constructs lines/walls in
       {
         reference: "generatePlane",
         value: function generatePlane() {
-          var geometry = new THREE.Geometry();
+          var geometry = new THREE.BufferGeometry();
           var v1 = this.transformCorner(this.interiorStart());
           var v2 = this.transformCorner(this.interiorEnd());
           var v3 = v2.clone();
@@ -10366,10 +10370,28 @@ functions return important math algorithms required to constructs lines/walls in
           v3.y = this.wall.height;
           v4.y = this.wall.height;
 
-          geometry.vertices = [v1, v2, v3, v4];
-          geometry.faces.push(new THREE.Face3(0, 1, 2));
-          geometry.faces.push(new THREE.Face3(0, 2, 3));
-          geometry.computeFaceNormals();
+          geometry.setAttribute(
+            "position",
+            new THREE.Float32BufferAttribute(
+              [
+                v1.x,
+                v1.y,
+                v1.z,
+                v2.x,
+                v2.y,
+                v2.z,
+                v3.x,
+                v3.y,
+                v3.z,
+                v4.x,
+                v4.y,
+                v4.z,
+              ],
+              3
+            )
+          );
+          geometry.setIndex([0, 1, 2, 0, 2, 3]);
+          geometry.computeVertexNormals();
           geometry.computeBoundingBox();
 
           this.plane = new THREE.Mesh(
@@ -12291,7 +12313,9 @@ functions return important math algorithms required to constructs lines/walls in
       this_.add(this_.canvasPlaneWD);
 
 
+
       // 3D dimension labels visible by default for better UX
+
 
       this_.canvasPlaneWH.visible = this_.canvasPlaneWD.visible = true;
 
@@ -12650,10 +12674,14 @@ functions return important math algorithms required to constructs lines/walls in
           this.selected = false;
           this.bhelper.visible = false;
 
+          this.canvasPlaneWH.visible = this.canvasPlaneWD.visible = true;
+
+
           // Keep dimension labels visible even when unselected
           // this.canvasPlaneWH.visible = this.canvasPlaneWD.visible = false;
 
           this.canvasPlaneWH.visible = this.canvasPlaneWD.visible = true;
+
 
           this.updateHighlight();
         },
@@ -14837,21 +14865,31 @@ functions return important math algorithms required to constructs lines/walls in
         local.commitLabelEditor();
       });
 
-      this_.canvasElement.bind("touchstart mousedown", function (event) {
+      var floorplannerCanvasElement = this_.canvasElement[0];
+      floorplannerCanvasElement.addEventListener("touchstart", function (event) {
+        local.mousedown(event);
+      }, { passive: true });
+      floorplannerCanvasElement.addEventListener("mousedown", function (event) {
         local.mousedown(event);
       });
-      this_.canvasElement.bind("touchmove mousemove", function (event) {
+      floorplannerCanvasElement.addEventListener("touchmove", function (event) {
+        local.mousemove(event);
+      }, { passive: true });
+      floorplannerCanvasElement.addEventListener("mousemove", function (event) {
         local.mousemove(event);
       });
-      this_.canvasElement.bind("touchend mouseup", function (event) {
+      floorplannerCanvasElement.addEventListener("touchend", function (event) {
+        local.mouseup(event);
+      }, { passive: true });
+      floorplannerCanvasElement.addEventListener("mouseup", function (event) {
         local.mouseup(event);
       });
-      this_.canvasElement.bind("mouseleave", function (event) {
+      floorplannerCanvasElement.addEventListener("mouseleave", function (event) {
         local.mouseleave(event);
       });
-      this_.canvasElement.bind("wheel", function (event) {
+      floorplannerCanvasElement.addEventListener("wheel", function (event) {
         local.mousewheel(event);
-      });
+      }, { passive: false });
 
       floorplan.addEventListener(EVENT_LOADED, function () {
         local.reset();
@@ -15735,9 +15773,19 @@ functions return important math algorithms required to constructs lines/walls in
       {
         reference: "init",
         value: function init() {
-          this.element.bind("touchstart mousedown", this.mousedownevent);
-          this.element.bind("touchmove mousemove", this.mousemoveevent);
-          this.element.bind("touchend mouseup", this.mouseupevent);
+          var controllerElement = this.element[0];
+          controllerElement.addEventListener("touchstart", this.mousedownevent, {
+            passive: false,
+          });
+          controllerElement.addEventListener("mousedown", this.mousedownevent);
+          controllerElement.addEventListener("touchmove", this.mousemoveevent, {
+            passive: false,
+          });
+          controllerElement.addEventListener("mousemove", this.mousemoveevent);
+          controllerElement.addEventListener("touchend", this.mouseupevent, {
+            passive: true,
+          });
+          controllerElement.addEventListener("mouseup", this.mouseupevent);
 
           this.scene.addEventListener(
             EVENT_ITEM_DELETED,
