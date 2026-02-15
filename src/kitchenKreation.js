@@ -10142,6 +10142,29 @@ functions return important math algorithms required to constructs lines/walls in
 
   var decimals = 10;
 
+  /**
+   * Smart rounding helper to eliminate floating point artifacts.
+   * Rounds to nearest 0.5 for values under 10, and to nearest 1.0 for larger values.
+   * This provides clean dimension displays without precision artifacts.
+   */
+  var smartRound = function(value, maxDecimals) {
+    maxDecimals = maxDecimals || 1;
+    
+    // For very small values, use higher precision
+    if (Math.abs(value) < 0.1) {
+      return Math.round(value * 100) / 100;
+    }
+    
+    // For values under 10, round to nearest 0.5
+    if (Math.abs(value) < 10) {
+      return Math.round(value * 2) / 2;
+    }
+    
+    // For larger values, round to nearest integer or specified decimals
+    var factor = Math.pow(10, maxDecimals);
+    return Math.round(value * factor) / factor;
+  };
+
   var cmPerFoot = 30.48;
   var pixelsPerFoot = 15.0;
   var cmPerPixel = cmPerFoot * (1.0 / pixelsPerFoot);
@@ -10186,16 +10209,16 @@ functions return important math algorithms required to constructs lines/walls in
               var allInFeet = cm / 30.48;
               return allInFeet;
             case dimInch:
-              var inches = Math.round(decimals * (cm / 2.54)) / decimals;
+              var inches = smartRound(cm / 2.54, 1);
               return inches;
             case dimMilliMeter:
-              var mm = Math.round(decimals * (10 * cm)) / decimals;
+              var mm = smartRound(10 * cm, 0);
               return mm;
             case dimCentiMeter:
-              return Math.round(decimals * cm) / decimals;
+              return smartRound(cm, 1);
             case dimMeter:
             default:
-              var m = Math.round(decimals * (0.01 * cm)) / decimals;
+              var m = smartRound(0.01 * cm, 2);
               return m;
           }
         },
@@ -10216,16 +10239,16 @@ functions return important math algorithms required to constructs lines/walls in
               var remainingInches = Math.round(remainingFeet * 12);
               return floorFeet + "'" + remainingInches + '"';
             case dimInch:
-              var inches = Math.round(decimals * (cm / 2.54)) / decimals;
+              var inches = smartRound(cm / 2.54, 1);
               return inches + '"';
             case dimMilliMeter:
-              var mm = Math.round(decimals * (10 * cm)) / decimals;
+              var mm = smartRound(10 * cm, 0);
               return "" + mm + "mm";
             case dimCentiMeter:
-              return "" + Math.round(decimals * cm) / decimals + "cm";
+              return "" + smartRound(cm, 1) + "cm";
             case dimMeter:
             default:
-              var m = Math.round(decimals * (cm * 0.01)) / decimals;
+              var m = smartRound(0.01 * cm, 2);
               return "" + m + "m";
           }
         },
@@ -12267,6 +12290,9 @@ functions return important math algorithms required to constructs lines/walls in
       this_.canvasPlaneWD.position.set(0, this_.getHeight() * 0.5 + 0.3, 0);
       this_.add(this_.canvasPlaneWD);
 
+
+      // 3D dimension labels visible by default for better UX
+
       this_.canvasPlaneWH.visible = this_.canvasPlaneWD.visible = true;
 
       this_.resizeProportionally = true;
@@ -12617,7 +12643,12 @@ functions return important math algorithms required to constructs lines/walls in
         value: function setUnselected() {
           this.selected = false;
           this.bhelper.visible = false;
+
+          // Keep dimension labels visible even when unselected
+          // this.canvasPlaneWH.visible = this.canvasPlaneWD.visible = false;
+
           this.canvasPlaneWH.visible = this.canvasPlaneWD.visible = true;
+
           this.updateHighlight();
         },
 

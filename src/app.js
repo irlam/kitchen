@@ -793,6 +793,41 @@ var ItemProperties = function (gui) {
   this.proportionalsize = false;
   this.changingdimension = "w";
 
+  // Auto-snap settings for Phase 2.2
+  this.autoSnapEnabled = false;
+  this.snapThreshold = 5; // cm - snap if within this distance
+
+  // Standard dimensions for snapping
+  this.standardWidths = [30, 45, 60, 80, 90, 100, 120];
+  this.standardDepths = [30, 60];
+  this.standardHeights = [72, 90, 210];
+
+  /**
+   * Helper function to snap a value to nearest standard dimension
+   * Only snaps if value is within snapThreshold of a standard size
+   */
+  this.snapValue = function(val, snapPoints) {
+    if (!this.autoSnapEnabled || !snapPoints || snapPoints.length === 0) {
+      return val;
+    }
+    
+    var closest = snapPoints[0];
+    var minDist = Math.abs(val - closest);
+    for (var i = 1; i < snapPoints.length; i++) {
+      var dist = Math.abs(val - snapPoints[i]);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = snapPoints[i];
+      }
+    }
+    
+    // Only snap if within threshold
+    if (minDist <= this.snapThreshold) {
+      return closest;
+    }
+    return val;
+  };
+
   this.setGUIControllers = function (guiControls) {
     this.guiControllers = guiControls;
   };
@@ -928,6 +963,13 @@ var ItemProperties = function (gui) {
       var h = KKJS.Dimensioning.cmFromMeasureInt(this.height);
       var w = KKJS.Dimensioning.cmFromMeasureInt(this.width);
       var d = KKJS.Dimensioning.cmFromMeasureInt(this.depth);
+
+      // Apply auto-snap if enabled (Phase 2.2)
+      if (this.autoSnapEnabled) {
+        w = this.snapValue(w, this.standardWidths);
+        h = this.snapValue(h, this.standardHeights);
+        d = this.snapValue(d, this.standardDepths);
+      }
 
       // Only resize if values actually changed more than 1mm
       if (Math.abs(w - item.getWidth()) > 0.1 || 
@@ -1475,12 +1517,20 @@ function getItemPropertiesFolder(gui, anItem) {
   var doorRecommendedControl = f.add(anItem, "doorRecommended").name("Door Standard");
 
   var snapcontrol = f.add(anItem, "snapToNearest").name("✨ Snap to Cabinet Size");
+  var autoSnapControl = f.add(anItem, "autoSnapEnabled").name("🎯 Auto-Snap While Editing");
   var pcontrol = f.add(anItem, "proportionalsize").name("🔗 Maintain Size Ratio");
   var lockcontrol = f.add(anItem, "fixed").name("📌 Locked in place");
   var deleteItemControl = f.add(anItem, "deleteItem").name("🗑️ Delete Item");
 
   function changed() {
     anItem.dimensionsChanged();
+  }
+
+  function autoSnapChanged() {
+    // When auto-snap is toggled, apply it immediately if enabled
+    if (anItem.autoSnapEnabled) {
+      anItem.dimensionsChanged();
+    }
   }
 
   function lockChanged() {
@@ -1494,6 +1544,7 @@ function getItemPropertiesFolder(gui, anItem) {
   wcontrol.onChange(changed);
   hcontrol.onChange(changed);
   dcontrol.onChange(changed);
+  autoSnapControl.onChange(autoSnapChanged);
   pcontrol.onChange(proportionFlagChanged);
   lockcontrol.onChange(lockChanged);
 
@@ -1506,6 +1557,7 @@ function getItemPropertiesFolder(gui, anItem) {
     doorRequiredControl,
     doorRecommendedControl,
     snapcontrol,
+    autoSnapControl,
     pcontrol,
     lockcontrol,
     deleteItemControl,
