@@ -12269,7 +12269,8 @@ functions return important math algorithms required to constructs lines/walls in
       this_.canvasPlaneWD.position.set(0, this_.getHeight() * 0.5 + 0.3, 0);
       this_.add(this_.canvasPlaneWD);
 
-      this_.canvasPlaneWH.visible = this_.canvasPlaneWD.visible = false;
+      // 3D dimension labels visible by default for better UX
+      this_.canvasPlaneWH.visible = this_.canvasPlaneWD.visible = true;
 
       this_.resizeProportionally = true;
 
@@ -12619,7 +12620,8 @@ functions return important math algorithms required to constructs lines/walls in
         value: function setUnselected() {
           this.selected = false;
           this.bhelper.visible = false;
-          this.canvasPlaneWH.visible = this.canvasPlaneWD.visible = false;
+          // Keep dimension labels visible even when unselected
+          // this.canvasPlaneWH.visible = this.canvasPlaneWD.visible = false;
           this.updateHighlight();
         },
 
