@@ -1,5 +1,9 @@
 import * as THREE from "three";
+
 import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+
+import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
+
 
 if (THREE.Quaternion.prototype.invert) {
   // Three r124+ renamed inverse() to invert(); keep legacy calls working.
@@ -10142,6 +10146,29 @@ functions return important math algorithms required to constructs lines/walls in
 
   var decimals = 10;
 
+  /**
+   * Smart rounding helper to eliminate floating point artifacts.
+   * Rounds to nearest 0.5 for values under 10, and to nearest 1.0 for larger values.
+   * This provides clean dimension displays without precision artifacts.
+   */
+  var smartRound = function(value, maxDecimals) {
+    maxDecimals = maxDecimals || 1;
+    
+    // For very small values, use higher precision
+    if (Math.abs(value) < 0.1) {
+      return Math.round(value * 100) / 100;
+    }
+    
+    // For values under 10, round to nearest 0.5
+    if (Math.abs(value) < 10) {
+      return Math.round(value * 2) / 2;
+    }
+    
+    // For larger values, round to nearest integer or specified decimals
+    var factor = Math.pow(10, maxDecimals);
+    return Math.round(value * factor) / factor;
+  };
+
   var cmPerFoot = 30.48;
   var pixelsPerFoot = 15.0;
   var cmPerPixel = cmPerFoot * (1.0 / pixelsPerFoot);
@@ -10186,16 +10213,16 @@ functions return important math algorithms required to constructs lines/walls in
               var allInFeet = cm / 30.48;
               return allInFeet;
             case dimInch:
-              var inches = Math.round(decimals * (cm / 2.54)) / decimals;
+              var inches = smartRound(cm / 2.54, 1);
               return inches;
             case dimMilliMeter:
-              var mm = Math.round(decimals * (10 * cm)) / decimals;
+              var mm = smartRound(10 * cm, 0);
               return mm;
             case dimCentiMeter:
-              return Math.round(decimals * cm) / decimals;
+              return smartRound(cm, 1);
             case dimMeter:
             default:
-              var m = Math.round(decimals * (0.01 * cm)) / decimals;
+              var m = smartRound(0.01 * cm, 2);
               return m;
           }
         },
@@ -10216,16 +10243,16 @@ functions return important math algorithms required to constructs lines/walls in
               var remainingInches = Math.round(remainingFeet * 12);
               return floorFeet + "'" + remainingInches + '"';
             case dimInch:
-              var inches = Math.round(decimals * (cm / 2.54)) / decimals;
+              var inches = smartRound(cm / 2.54, 1);
               return inches + '"';
             case dimMilliMeter:
-              var mm = Math.round(decimals * (10 * cm)) / decimals;
+              var mm = smartRound(10 * cm, 0);
               return "" + mm + "mm";
             case dimCentiMeter:
-              return "" + Math.round(decimals * cm) / decimals + "cm";
+              return "" + smartRound(cm, 1) + "cm";
             case dimMeter:
             default:
-              var m = Math.round(decimals * (cm * 0.01)) / decimals;
+              var m = smartRound(0.01 * cm, 2);
               return "" + m + "m";
           }
         },
@@ -12285,6 +12312,11 @@ functions return important math algorithms required to constructs lines/walls in
       this_.canvasPlaneWD.position.set(0, this_.getHeight() * 0.5 + 0.3, 0);
       this_.add(this_.canvasPlaneWD);
 
+
+
+      // 3D dimension labels visible by default for better UX
+
+
       this_.canvasPlaneWH.visible = this_.canvasPlaneWD.visible = true;
 
       this_.resizeProportionally = true;
@@ -12576,6 +12608,9 @@ functions return important math algorithms required to constructs lines/walls in
           this.bhelper = new THREE.BoxHelper(this);
           this.scene.add(this.bhelper);
           this.bhelper.visible = false;
+          // Initialize collision state
+          this.hasCollision = false;
+          this.lastValidPosition = this.position.clone();
           // select and stuff
           this.scene.needsUpdate = true;
         },
@@ -12593,7 +12628,10 @@ functions return important math algorithms required to constructs lines/walls in
 
           var on = this.hover || this.selected;
           this.highlighted = on;
-          var hex = on ? this.emissiveColor : 0x000000;
+          
+          // Red for collision, normal emissive color for selection/hover
+          var hex = this.hasCollision ? 0xff0000 : (on ? this.emissiveColor : 0x000000);
+          
           if (this.material) {
             if (this.material.length) {
               this.material.forEach(function (material) {
@@ -12635,16 +12673,76 @@ functions return important math algorithms required to constructs lines/walls in
         value: function setUnselected() {
           this.selected = false;
           this.bhelper.visible = false;
+
           this.canvasPlaneWH.visible = this.canvasPlaneWD.visible = true;
+
+
+          // Keep dimension labels visible even when unselected
+          // this.canvasPlaneWH.visible = this.canvasPlaneWD.visible = false;
+
+          this.canvasPlaneWH.visible = this.canvasPlaneWD.visible = true;
+
+
           this.updateHighlight();
         },
 
         /** intersection has attributes point (vec3) and object (THREE.Mesh) */
       },
       {
+        reference: "checkCollisionAt",
+        value: function checkCollisionAt(targetPos) {
+          var scope = this;
+          var allItems = this.model.scene.getItems();
+          
+          // Create bounding box at target position
+          var box = new THREE.Box3().setFromObject(this);
+          var offset = targetPos.clone().sub(this.position);
+          box.min.add(offset);
+          box.max.add(offset);
+          
+          // Check against all other items
+          for (var i = 0; i < allItems.length; i++) {
+            var item = allItems[i];
+            if (item === scope || !item.visible) continue;
+            
+            var otherBox = new THREE.Box3().setFromObject(item);
+            
+            // Check for intersection (overlap)
+            if (
+              box.min.x < otherBox.max.x &&
+              box.max.x > otherBox.min.x &&
+              box.min.y < otherBox.max.y &&
+              box.max.y > otherBox.min.y &&
+              box.min.z < otherBox.max.z &&
+              box.max.z > otherBox.min.z
+            ) {
+              return true; // Collision detected
+            }
+          }
+          
+          return false; // No collision
+        },
+      },
+      {
+        reference: "setCollisionState",
+        value: function setCollisionState(hasCollision) {
+          this.hasCollision = hasCollision;
+          this.updateHighlight();
+        },
+      },
+      {
+        reference: "clearCollisionState",
+        value: function clearCollisionState() {
+          this.hasCollision = false;
+          this.updateHighlight();
+        },
+      },
+      {
         reference: "clickPressed",
         value: function clickPressed(intersection) {
           this.dragOffset.copy(intersection.point).sub(this.position);
+          // Store the last valid position before drag
+          this.lastValidPosition = this.position.clone();
         },
       },
       {
@@ -12686,6 +12784,11 @@ functions return important math algorithms required to constructs lines/walls in
         value: function moveToPosition(vec3) {
           var snapped = this.getSnappedPosition(vec3.clone());
           this.position.copy(snapped);
+          
+          // Check for collision at new position
+          var hasCollision = this.checkCollisionAt(this.position);
+          this.setCollisionState(hasCollision);
+          
           if (this.bhelper) {
             this.bhelper.update();
           }
@@ -12787,6 +12890,19 @@ functions return important math algorithms required to constructs lines/walls in
         value: function clickReleased() {
           if (this.error) {
             this.hideError();
+          }
+          
+          // If item has collision on release, revert to last valid position
+          if (this.hasCollision && this.lastValidPosition) {
+            this.position.copy(this.lastValidPosition);
+            this.hasCollision = false; // Clear collision state directly
+            if (this.bhelper) {
+              this.bhelper.update();
+            }
+            this.updateHighlight(); // Single highlight update
+          } else if (!this.hasCollision) {
+            // Update last valid position if no collision
+            this.lastValidPosition = this.position.clone();
           }
         },
 
