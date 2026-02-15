@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 if (THREE.Quaternion.prototype.invert) {
   // Three r124+ renamed inverse() to invert(); keep legacy calls working.
