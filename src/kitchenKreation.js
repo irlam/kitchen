@@ -4778,6 +4778,64 @@ var KKJS = (function (exports) {
         };
       }
 
+      function checkBufferGeometryIntersection(
+        object,
+        material,
+        raycaster,
+        ray,
+        position,
+        uv,
+        a,
+        b,
+        c
+      ) {
+        vA.fromBufferAttribute(position, a);
+        vB.fromBufferAttribute(position, b);
+        vC.fromBufferAttribute(position, c);
+
+        var intersection = checkIntersection(
+          object,
+          material,
+          raycaster,
+          ray,
+          vA,
+          vB,
+          vC,
+          intersectionPoint
+        );
+
+        if (!intersection) return null;
+
+        if (uv) {
+          uvA.fromBufferAttribute(uv, a);
+          uvB.fromBufferAttribute(uv, b);
+          uvC.fromBufferAttribute(uv, c);
+          intersection.uv = THREE.Triangle.getUV(
+            intersectionPoint,
+            vA,
+            vB,
+            vC,
+            uvA,
+            uvB,
+            uvC,
+            new Vector2()
+          );
+        }
+
+        intersection.face = {
+          a: a,
+          b: b,
+          c: c,
+          normal: new Vector3().crossVectors(
+            vC.clone().sub(vB),
+            vA.clone().sub(vB)
+          ).normalize(),
+          materialIndex: 0,
+        };
+
+        return intersection;
+      }
+
       return function raycast(raycaster, intersects) {
         var geometry = this.geometry;
         var material = this.material;
