@@ -13720,9 +13720,42 @@ functions return important math algorithms required to constructs lines/walls in
               item.placeInRoom();
             }
           };
+          function cloneMeshGeometryWithMaterialGroups(
+            child,
+            materialindices,
+            matrix
+          ) {
+            if (!child.geometry || !child.geometry.isBufferGeometry) {
+              return null;
+            }
+
+            var geometry = child.geometry.clone();
+            geometry.applyMatrix4(matrix);
+
+            var existingGroups = geometry.groups ? geometry.groups.slice() : [];
+            geometry.clearGroups();
+
+            if (materialindices.length > 1 && existingGroups.length > 0) {
+              existingGroups.forEach(function (group) {
+                var mappedMaterialIndex = materialindices[group.materialIndex];
+                if (mappedMaterialIndex === undefined) {
+                  mappedMaterialIndex = materialindices[0] || 0;
+                }
+                geometry.addGroup(group.start, group.count, mappedMaterialIndex);
+              });
+            } else {
+              var count = geometry.index
+                ? geometry.index.count
+                : geometry.getAttribute("position").count;
+              geometry.addGroup(0, count, materialindices[0] || 0);
+            }
+
+            return geometry;
+          }
+
           var gltfCallback = function gltfCallback(gltfModel) {
             var newmaterials = [];
-            var newGeometry = new THREE.Geometry();
+            var geometries = [];
 
             gltfModel.scene.updateMatrixWorld(true);
 
@@ -13739,54 +13772,86 @@ functions return important math algorithms required to constructs lines/walls in
                     materialindices.push(newItems[1]);
                   }
                 } else {
-                  newItems = addToMaterials(newmaterials, child.material); //materials.push(child.material);
-                  newmaterials = newItems[0];
-                  materialindices.push(newItems[1]);
+                  var newItemsSingle = addToMaterials(newmaterials, child.material);
+                  newmaterials = newItemsSingle[0];
+                  materialindices.push(newItemsSingle[1]);
                 }
 
-                if (child.geometry.isBufferGeometry) {
-                  var tGeometry = new THREE.Geometry().fromBufferGeometry(
-                    child.geometry
-                  );
-                  tGeometry.faces.forEach(function (face) {
-                    //							face.materialIndex = face.materialIndex + newmaterials.length;
-                    face.materialIndex = materialindices[face.materialIndex];
-                  });
-                  newGeometry.merge(tGeometry, child.matrixWorld);
-                } else {
-                  child.geometry.faces.forEach(function (face) {
-                    face.materialIndex = materialindices[face.materialIndex];
-                  });
-                  newGeometry.merge(child.geometry, child.matrixWorld);
+                var mergedPart = cloneMeshGeometryWithMaterialGroups(
+                  child,
+                  materialindices,
+                  child.matrixWorld
+                );
+                if (mergedPart) {
+                  geometries.push(mergedPart);
                 }
               }
             });
-            loaderCallback(newGeometry, newmaterials);
+
+            if (!geometries.length) {
+              return;
+            }
+
+            var mergedGeometry = BufferGeometryUtils.mergeBufferGeometries(
+              geometries,
+              true
+            );
+            if (!mergedGeometry) {
+              console.warn(
+                "gltfCallback: mergeBufferGeometries failed, using first mesh geometry fallback"
+              );
+              mergedGeometry = geometries[0];
+            }
+
+            loaderCallback(mergedGeometry, newmaterials);
           };
 
           var objCallback = function objCallback(object) {
             var materials = [];
-            var newGeometry = new THREE.Geometry();
+            var geometries = [];
             object.traverse(function (child) {
-              if (child.type == "Mesh") {
+              if (child.type == "Mesh" || child.isMesh) {
+                var materialindices = [];
                 if (child.material.length) {
-                  materials = materials.concat(child.material);
+                  for (var k = 0; k < child.material.length; k++) {
+                    var newItems = addToMaterials(materials, child.material[k]);
+                    materials = newItems[0];
+                    materialindices.push(newItems[1]);
+                  }
                 } else {
-                  materials.push(child.material);
+                  var newItemsSingle = addToMaterials(materials, child.material);
+                  materials = newItemsSingle[0];
+                  materialindices.push(newItemsSingle[1]);
                 }
-                if (child.geometry.isBufferGeometry) {
-                  var tGeometry = new THREE.Geometry().fromBufferGeometry(
-                    child.geometry
-                  );
-                  child.updateMatrix();
-                  newGeometry.merge(tGeometry, child.matrix);
-                } else {
-                  child.updateMatrix();
-                  newGeometry.mergeMesh(child);
+
+                child.updateMatrix();
+                var mergedPart = cloneMeshGeometryWithMaterialGroups(
+                  child,
+                  materialindices,
+                  child.matrix
+                );
+                if (mergedPart) {
+                  geometries.push(mergedPart);
                 }
               }
             });
-            loaderCallback(newGeometry, materials);
+
+            if (!geometries.length) {
+              return;
+            }
+
+            var mergedGeometry = BufferGeometryUtils.mergeBufferGeometries(
+              geometries,
+              true
+            );
+            if (!mergedGeometry) {
+              console.warn(
+                "objCallback: mergeBufferGeometries failed, using first mesh geometry fallback"
+              );
+              mergedGeometry = geometries[0];
+            }
+
+            loaderCallback(mergedGeometry, materials);
           };
 
           this.dispatchEvent({ type: EVENT_ITEM_LOADING });
