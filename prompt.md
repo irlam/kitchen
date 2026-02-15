@@ -54,3 +54,56 @@ How to proceed:
 - Commit changes in small logical commits. After each milestone, provide a short “How to test” checklist.
 
 Important: Avoid adding dependencies that require server daemons (Redis etc.). MySQL + PHP is fine.
+
+---
+
+## Final product QA prompt (GitHub Copilot)
+
+Use this prompt in Copilot Chat for a full pre-release verification pass:
+
+"""
+Act as a senior QA engineer + tech lead doing a final release-readiness review for this kitchen planner app.
+
+Goal:
+Verify the app is truly production-ready, with complete and correct dimensions in both 2D and 3D views, and that core workflows function end-to-end.
+
+What I need from you:
+1) Build a complete validation checklist first, then execute it.
+2) Check ALL dimension rendering and calculations across the app:
+   - 2D floorplan dimensions (walls, openings, objects, spacing, labels)
+   - 3D view dimensions (if shown directly or via overlays/toggles)
+   - unit consistency (mm/cm/in if supported), rounding, precision, scaling, zoom behavior
+   - dimensions after move/rotate/resize, snap-to-grid, undo/redo, save/load
+   - dimension visibility in normal state, selected state, and after scene refresh
+3) Validate all key functions and user journeys:
+   - create/edit room shape
+   - add/move/rotate/delete items
+   - collisions/snapping rules
+   - catalog filtering/search
+   - save project, reload, share links (if available)
+   - exports (PNG/PDF/JSON if present)
+   - toolbar/panel actions and keyboard shortcuts
+4) Run a full test pass:
+   - run lint/type checks/tests/build (use existing scripts in package.json)
+   - report exact commands run and outcomes
+   - if tests are missing, identify critical gaps and propose minimal high-value tests
+5) Perform targeted code inspection for likely defects:
+   - dimension math utilities
+   - coordinate transforms between 2D and 3D
+   - state sync issues between UI + scene
+   - regressions caused by recent commits
+6) Produce output in this exact structure:
+   A. Release Readiness Score (0–100)
+   B. Critical Issues (must-fix)
+   C. High/Medium/Low issues
+   D. Dimension Coverage Matrix (feature × status)
+   E. Commands Executed + Results
+   F. Recommended Fix Plan (prioritized)
+   G. “Go/No-Go” recommendation
+
+Rules:
+- Be strict and evidence-based.
+- Do not assume functionality works unless verified.
+- For each issue include: severity, reproduction steps, expected vs actual, likely root cause, and suggested fix.
+- If you cannot run something, explicitly state why and provide a fallback verification method.
+"""
