@@ -2,8 +2,8 @@
 ## KitchenLab Pro v0.1.0
 
 **Release Date:** TBD  
-**Document Version:** 1.0  
-**Last Updated:** February 15, 2026
+**Document Version:** 1.1  
+**Last Updated:** February 16, 2026
 
 ---
 
@@ -15,39 +15,35 @@ This document lists non-blocking issues, limitations, and workarounds for Kitche
 
 ## 🔶 MODERATE PRIORITY LIMITATIONS
 
-### 1. Build Warnings
+### 1. Build Warnings - Bundle Size ✅ PARTIALLY RESOLVED
 
 **Category:** Build Process  
 **Severity:** MODERATE  
 **Impact:** Code quality concern, no functional impact
 
 **Description:**
-Build process produces warnings about CSS syntax and bundle size.
+Build process produces a warning about bundle size.
 
 **Details:**
 ```
-▲ [WARNING] Unexpected "#3D-Floorplan" [css-syntax-error]
-    css/app.css:54:0:
-      54 │ #3D-Floorplan, #floorplanner-canvas {
-         ╵ ~~~~~~~~~~~~~
-
 (!) Some chunks are larger than 500 kB after minification.
-dist/assets/index-DOvuaGHP.js  1,008.79 kB │ gzip: 257.87 kB
+dist/assets/index-BK5UErxl.js  1,010.84 kB │ gzip: 257.75 kB
 ```
 
 **Root Cause:**
-1. CSS ID selector starting with digit (#3D-Floorplan) - invalid per CSS spec
-2. Large bundle size (987KB) - no code splitting implemented
+Large bundle size (1,010KB) - no code splitting implemented
 
 **Impact:**
 - Warning only - build completes successfully
-- CSS still renders correctly in all browsers
 - Large bundle may cause slower initial load on slow connections
 - Gzipped size (257KB) is acceptable for most use cases
 
 **Workaround:**
 - None needed - warnings don't affect functionality
 - For slow connections, consider enabling browser caching
+
+**Fixed Items:**
+- ✅ CSS syntax error (#3D-Floorplan) - RESOLVED by renaming to #floorplan-3d
 
 **Planned Fix:**
 - v0.2.0: Rename CSS ID to valid identifier (#floorplan-3d or #_3D-Floorplan)
