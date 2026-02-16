@@ -1397,6 +1397,36 @@ function setupAutoSave(KitchenKreation) {
     KKJS.EVENT_ITEM_UNSELECTED,
     scheduleSave
   );
+  
+  // Phase 4: Listen for collision warnings and show UI notification
+  KitchenKreation.model.scene.addEventListener("collision-warning", function(e) {
+    if (e.item && e.item.hasCollision) {
+      // Show temporary warning message
+      showCollisionWarning(e.item);
+    }
+  });
+}
+
+// Phase 4: Show collision warning notification
+function showCollisionWarning(item) {
+  var warningId = "collision-warning-toast";
+  var existingWarning = document.getElementById(warningId);
+  if (existingWarning) {
+    existingWarning.remove();
+  }
+  
+  var warning = document.createElement("div");
+  warning.id = warningId;
+  warning.style.cssText = "position:fixed;top:80px;right:20px;background:#ff4444;color:white;padding:12px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:10000;font-family:Aldrich,sans-serif;font-size:13px;animation:pulse-warning 1s infinite;";
+  warning.innerHTML = "⚠️ <strong>Collision Detected!</strong> Items are overlapping";
+  document.body.appendChild(warning);
+  
+  // Auto-remove after 3 seconds
+  setTimeout(function() {
+    if (warning.parentNode) {
+      warning.remove();
+    }
+  }, 3000);
 }
 
 function pushHistory(snapshot) {
@@ -1530,6 +1560,10 @@ function getItemPropertiesFolder(gui, anItem) {
     // When auto-snap is toggled, apply it immediately if enabled
     if (anItem.autoSnapEnabled) {
       anItem.dimensionsChanged();
+    }
+    // Sync auto-snap setting to the scene for drag operations
+    if (KitchenKreation && KitchenKreation.model && KitchenKreation.model.scene) {
+      KitchenKreation.model.scene.autoSnapEnabled = anItem.autoSnapEnabled;
     }
   }
 

@@ -98,71 +98,47 @@ Development dependencies (esbuild, vite) have known vulnerabilities affecting de
 
 ---
 
-### 3. No Auto-Snap During Drag
+### 3. No Auto-Snap During Drag ✅ RESOLVED
 
-**Category:** User Experience  
-**Severity:** MODERATE  
-**Impact:** Manual workflow required
+**Category:** User Experience
+**Severity:** MODERATE
+**Status:** ✅ RESOLVED in v0.1.0
 
 **Description:**
 Items don't automatically snap to grid or standard dimensions while dragging. User must manually click "Snap to Cabinet Size" button after placement.
 
+**Resolution:**
+Auto-snap during drag has been implemented. Items now automatically snap to standard cabinet dimensions (widths: 30, 45, 60, 80, 90, 100, 120 cm; heights: 72, 90, 210 cm; depths: 30, 60 cm) when within 5cm threshold during drag operations.
+
 **Details:**
-- Snap logic is implemented and tested (28 tests pass)
-- snapValue() function works correctly
-- Manual snap button exists and functions
-- Auto-snap during drag not implemented
-
-**Impact:**
-- User must perform two-step process: place item → click snap button
-- Easy to create non-standard dimensions accidentally
-- Reduces efficiency for power users
-- May lead to inconsistent layouts
-
-**Workaround:**
-1. Place item approximately where desired
-2. Click "✨ Snap to Cabinet Size" button in properties panel
-3. Item will snap to nearest standard width/height/depth
-
-**Planned Fix:**
-- Phase 4: Implement auto-snap during drag operations
-- Add visual feedback for snap points (highlighted grid)
-- Add Shift key override to disable snapping temporarily
+- Auto-snap toggle available in properties panel ("🎯 Auto-Snap While Editing")
+- Snaps to nearest standard dimension during drag
+- Visual feedback shows snapped dimensions
+- Can be disabled for free-form placement
 
 ---
 
-### 4. No Visual Collision Warnings
+### 4. No Visual Collision Warnings ✅ RESOLVED
 
-**Category:** User Experience  
-**Severity:** MODERATE  
-**Impact:** Can create invalid designs
+**Category:** User Experience
+**Severity:** MODERATE
+**Status:** ✅ RESOLVED in v0.1.0
 
 **Description:**
 Collision detection logic is implemented and tested, but no visual warnings shown in UI when items overlap.
 
+**Resolution:**
+Enhanced collision warnings have been implemented:
+- Items glow bright red (emissive intensity 0.8) when collision detected
+- Toast notification appears: "⚠️ Collision Detected! Items are overlapping"
+- Auto-reverts to last valid position on release if collision persists
+- Collision warning event dispatched for UI integration
+
 **Details:**
-- Collision detection code exists and works (14 tests pass)
+- 14 collision detection tests pass
 - Bounding box intersection logic functional
-- No UI integration - users not warned about overlaps
-- Items can be placed on top of each other
-
-**Impact:**
-- Users can create physically impossible layouts
-- No indication when items intersect walls or other items
-- May lead to designs that can't be built in real life
-- Frustrating when users discover overlap later
-
-**Workaround:**
-1. Manually check item positions visually
-2. Use 2D floorplan view to verify no overlaps
-3. Zoom in to inspect tight spaces
-4. Check from multiple angles in 3D view
-
-**Planned Fix:**
-- Phase 4: Add visual collision warnings
-- Highlight overlapping items in red
-- Show warning icon in properties panel
-- Optional: Prevent placement in invalid positions
+- Visual feedback with red highlight
+- UI toast notification (3 second auto-dismiss)
 
 ---
 

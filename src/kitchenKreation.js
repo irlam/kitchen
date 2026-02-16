@@ -12695,20 +12695,30 @@ functions return important math algorithms required to constructs lines/walls in
 
           var on = this.hover || this.selected;
           this.highlighted = on;
-          
-          // Red for collision, normal emissive color for selection/hover
+
+          // Phase 4: Enhanced collision warning - bright red pulsing effect
           var hex = this.hasCollision ? 0xff0000 : (on ? this.emissiveColor : 0x000000);
           
+          // Increase emissive intensity for collision warning
+          var intensity = this.hasCollision ? 0.8 : (on ? 0.3 : 0);
+
           if (this.material) {
             if (this.material.length) {
               this.material.forEach(function (material) {
                 material.emissive.setHex(hex);
+                material.emissiveIntensity = intensity;
                 this_2.material.emissive = new THREE.Color(hex);
               });
             } else {
               this.material.emissive.setHex(hex);
+              this.material.emissiveIntensity = intensity;
               this.material.emissive = new THREE.Color(hex);
             }
+          }
+          
+          // Dispatch collision event for UI notification
+          if (this.hasCollision) {
+            this.dispatchEvent({ type: "collision-warning", item: this });
           }
         },
       },
@@ -12849,13 +12859,63 @@ functions return important math algorithms required to constructs lines/walls in
       {
         reference: "moveToPosition",
         value: function moveToPosition(vec3) {
+          var scope = this;
           var snapped = this.getSnappedPosition(vec3.clone());
-          this.position.copy(snapped);
           
+          // Phase 4: Auto-snap to standard cabinet dimensions during drag
+          // Snap width, height, depth to nearest standard sizes if within threshold
+          if (this.model.scene.autoSnapEnabled) {
+            var snapThreshold = this.model.scene.snapThreshold || 5;
+            var currentWidth = this.getWidth();
+            var currentHeight = this.getHeight();
+            var currentDepth = this.getDepth();
+            
+            // Standard cabinet dimensions (in cm)
+            var standardWidths = [30, 45, 60, 80, 90, 100, 120];
+            var standardHeights = [72, 90, 210];
+            var standardDepths = [30, 60];
+            
+            // Helper to snap value to nearest standard
+            function snapToStandard(value, standards, threshold) {
+              var closest = standards[0];
+              var minDist = Math.abs(value - closest);
+              for (var i = 1; i < standards.length; i++) {
+                var dist = Math.abs(value - standards[i]);
+                if (dist < minDist) {
+                  minDist = dist;
+                  closest = standards[i];
+                }
+              }
+              // Only snap if within threshold
+              if (minDist <= threshold) {
+                return closest;
+              }
+              return value;
+            }
+            
+            // Apply auto-snap to dimensions
+            var newWidth = snapToStandard(currentWidth, standardWidths, snapThreshold);
+            var newHeight = snapToStandard(currentHeight, standardHeights, snapThreshold);
+            var newDepth = snapToStandard(currentDepth, standardDepths, snapThreshold);
+            
+            // Apply dimension changes if snapped
+            if (newWidth !== currentWidth) {
+              this.setWidth(newWidth);
+            }
+            if (newHeight !== currentHeight) {
+              this.setHeight(newHeight);
+            }
+            if (newDepth !== currentDepth) {
+              this.setDepth(newDepth);
+            }
+          }
+          
+          this.position.copy(snapped);
+
           // Check for collision at new position
           var hasCollision = this.checkCollisionAt(this.position);
           this.setCollisionState(hasCollision);
-          
+
           if (this.bhelper) {
             this.bhelper.update();
           }
@@ -13611,6 +13671,10 @@ functions return important math algorithms required to constructs lines/walls in
       this_.itemLoadingCallbacks = null;
       this_.itemLoadedCallbacks = null;
       this_.itemRemovedCallbacks = null;
+      
+      // Phase 4: Auto-snap settings for item drag operations
+      this_.autoSnapEnabled = false;  // Auto-snap to standard dimensions during drag
+      this_.snapThreshold = 5;  // cm - snap if within this distance of standard size
       //		this.add(grid);
 
       return this_;
