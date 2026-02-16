@@ -197,12 +197,50 @@ export class MeasurementTools {
     if (!floorplan) return;
 
     const rooms = floorplan.getRooms();
-    if (rooms.length === 0) return;
+    if (rooms.length === 0) {
+      // Try to get dimensions from floorplan corners directly
+      const corners = floorplan.getCorners();
+      if (corners && corners.length > 0) {
+        // Calculate bounds from corners
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        corners.forEach(corner => {
+          if (corner.x < minX) minX = corner.x;
+          if (corner.x > maxX) maxX = corner.x;
+          if (corner.y < minY) minY = corner.y;
+          if (corner.y > maxY) maxY = corner.y;
+        });
+        
+        const widthCm = Math.abs(maxX - minX);
+        const depthCm = Math.abs(maxY - minY);
+        
+        const widthEl = this.panel?.querySelector('#room-width');
+        const depthEl = this.panel?.querySelector('#room-depth');
+        
+        if (widthEl) {
+          widthEl.textContent = `${(widthCm / 100).toFixed(2)} m / ${(widthCm / 30.48).toFixed(1)}'`;
+        }
+        if (depthEl) {
+          depthEl.textContent = `${(depthCm / 100).toFixed(2)} m / ${(depthCm / 30.48).toFixed(1)}'`;
+        }
+      }
+      return;
+    }
 
     const room = rooms[0];
-    const bounds = room.getBoundingRect();
-    const widthCm = Math.abs(bounds.max.x - bounds.min.x);
-    const depthCm = Math.abs(bounds.max.y - bounds.min.y);
+    // Calculate bounds from room corners
+    const corners = room.corners;
+    if (!corners || corners.length === 0) return;
+    
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    corners.forEach(corner => {
+      if (corner.x < minX) minX = corner.x;
+      if (corner.x > maxX) maxX = corner.x;
+      if (corner.y < minY) minY = corner.y;
+      if (corner.y > maxY) maxY = corner.y;
+    });
+    
+    const widthCm = Math.abs(maxX - minX);
+    const depthCm = Math.abs(maxY - minY);
 
     const widthEl = this.panel?.querySelector('#room-width');
     const depthEl = this.panel?.querySelector('#room-depth');

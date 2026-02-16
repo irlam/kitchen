@@ -2160,26 +2160,48 @@ function datGUI(three, floorplanner) {
     showTemplatesModal(async function(template) {
       // Load the template
       if (KitchenKreation && template.floorplan) {
-        // Clear current project
-        KitchenKreation.model.floorplan.clear();
-        KitchenKreation.model.scene.clearItems();
-        
-        // Load floorplan corners
-        const corners = template.floorplan.corners;
-        if (corners && corners.length > 0) {
-          KitchenKreation.model.floorplan.loadFloorplan({ corners: corners });
+        // Clear items from scene
+        if (KitchenKreation.model.scene && KitchenKreation.model.scene.clearItems) {
+          KitchenKreation.model.scene.clearItems();
         }
         
-        // Load items if any
-        if (template.items && template.items.length > 0) {
-          // Items will be loaded asynchronously
-          for (const itemData of template.items) {
-            // TODO: Implement item loading from template
+        // Load floorplan corners - create proper floorplan structure
+        const corners = template.floorplan.corners;
+        if (corners && corners.length > 0) {
+          // Create corner object with unique IDs
+          const cornerObj = {};
+          const wallCorners = [];
+          
+          corners.forEach((corner, index) => {
+            const id = 'corner-' + Date.now() + '-' + index;
+            cornerObj[id] = { x: corner.x, y: corner.y };
+            wallCorners.push(id);
+          });
+          
+          // Create walls between corners
+          const walls = [];
+          for (let i = 0; i < wallCorners.length; i++) {
+            const next = (i + 1) % wallCorners.length;
+            walls.push({
+              corner1: wallCorners[i],
+              corner2: wallCorners[next],
+              frontTexture: { url: "rooms/textures/walls/wallmap.png", stretch: true, scale: 0 },
+              backTexture: { url: "rooms/textures/walls/wallmap.png", stretch: true, scale: 0 }
+            });
           }
+          
+          // Load the floorplan
+          KitchenKreation.model.floorplan.loadFloorplan({ 
+            corners: cornerObj,
+            walls: walls
+          });
         }
         
         KitchenKreation.model.floorplan.update();
         KitchenKreation.three.needsUpdate = true;
+        
+        // Show success message
+        alert('Template "' + template.name + '" loaded! Add items from the catalog to complete your kitchen.');
       }
     });
   });
