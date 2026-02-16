@@ -15,6 +15,114 @@ if (THREE.Matrix4.prototype.getInverse) {
   };
 }
 
+// Helper variables and functions for Mesh raycast (module scope)
+var _meshRaycast_vA = new THREE.Vector3();
+var _meshRaycast_vB = new THREE.Vector3();
+var _meshRaycast_vC = new THREE.Vector3();
+var _meshRaycast_uvA = new THREE.Vector2();
+var _meshRaycast_uvB = new THREE.Vector2();
+var _meshRaycast_uvC = new THREE.Vector2();
+var _meshRaycast_intersectionPoint = new THREE.Vector3();
+var _meshRaycast_intersectionPointWorld = new THREE.Vector3();
+
+function _meshRaycast_checkIntersection(
+  object,
+  material,
+  raycaster,
+  ray,
+  pA,
+  pB,
+  pC,
+  point
+) {
+  var intersect;
+
+  if (material.side === THREE.BackSide) {
+    intersect = ray.intersectTriangle(pC, pB, pA, true, point);
+  } else {
+    intersect = ray.intersectTriangle(
+      pA,
+      pB,
+      pC,
+      material.side !== THREE.DoubleSide,
+      point
+    );
+  }
+
+  if (intersect === null) return null;
+
+  _meshRaycast_intersectionPointWorld.copy(point);
+  _meshRaycast_intersectionPointWorld.applyMatrix4(object.matrixWorld);
+
+  var distance = raycaster.ray.origin.distanceTo(_meshRaycast_intersectionPointWorld);
+
+  if (distance < raycaster.near || distance > raycaster.far) return null;
+
+  return {
+    distance: distance,
+    point: _meshRaycast_intersectionPointWorld.clone(),
+    object: object,
+  };
+}
+
+function _meshRaycast_checkBufferGeometryIntersection(
+  object,
+  material,
+  raycaster,
+  ray,
+  position,
+  uv,
+  a,
+  b,
+  c
+) {
+  _meshRaycast_vA.fromBufferAttribute(position, a);
+  _meshRaycast_vB.fromBufferAttribute(position, b);
+  _meshRaycast_vC.fromBufferAttribute(position, c);
+
+  var intersection = _meshRaycast_checkIntersection(
+    object,
+    material,
+    raycaster,
+    ray,
+    _meshRaycast_vA,
+    _meshRaycast_vB,
+    _meshRaycast_vC,
+    _meshRaycast_intersectionPoint
+  );
+
+  if (!intersection) return null;
+
+  if (uv) {
+    _meshRaycast_uvA.fromBufferAttribute(uv, a);
+    _meshRaycast_uvB.fromBufferAttribute(uv, b);
+    _meshRaycast_uvC.fromBufferAttribute(uv, c);
+    intersection.uv = THREE.Triangle.getUV(
+      _meshRaycast_intersectionPoint,
+      _meshRaycast_vA,
+      _meshRaycast_vB,
+      _meshRaycast_vC,
+      _meshRaycast_uvA,
+      _meshRaycast_uvB,
+      _meshRaycast_uvC,
+      new THREE.Vector2()
+    );
+  }
+
+  intersection.face = {
+    a: a,
+    b: b,
+    c: c,
+    normal: new THREE.Vector3().crossVectors(
+      _meshRaycast_vC.clone().sub(_meshRaycast_vB),
+      _meshRaycast_vA.clone().sub(_meshRaycast_vB)
+    ).normalize(),
+    materialIndex: 0,
+  };
+
+  return intersection;
+}
+
 var KKJS = (function (exports) {
   "use strict";
   var classCallCheck = function (instance, Constructor) {
@@ -4660,114 +4768,6 @@ var KKJS = (function (exports) {
    * @author mikael emtinger / http://gomo.se/
    * @author jonobr1 / http://jonobr1.com/
    */
-
-  // Helper variables and functions for Mesh raycast
-  var _meshRaycast_vA = new Vector3();
-  var _meshRaycast_vB = new Vector3();
-  var _meshRaycast_vC = new Vector3();
-  var _meshRaycast_uvA = new Vector2();
-  var _meshRaycast_uvB = new Vector2();
-  var _meshRaycast_uvC = new Vector2();
-  var _meshRaycast_intersectionPoint = new Vector3();
-  var _meshRaycast_intersectionPointWorld = new Vector3();
-
-  function _meshRaycast_checkIntersection(
-    object,
-    material,
-    raycaster,
-    ray,
-    pA,
-    pB,
-    pC,
-    point
-  ) {
-    var intersect;
-
-    if (material.side === THREE.BackSide) {
-      intersect = ray.intersectTriangle(pC, pB, pA, true, point);
-    } else {
-      intersect = ray.intersectTriangle(
-        pA,
-        pB,
-        pC,
-        material.side !== THREE.DoubleSide,
-        point
-      );
-    }
-
-    if (intersect === null) return null;
-
-    _meshRaycast_intersectionPointWorld.copy(point);
-    _meshRaycast_intersectionPointWorld.applyMatrix4(object.matrixWorld);
-
-    var distance = raycaster.ray.origin.distanceTo(_meshRaycast_intersectionPointWorld);
-
-    if (distance < raycaster.near || distance > raycaster.far) return null;
-
-    return {
-      distance: distance,
-      point: _meshRaycast_intersectionPointWorld.clone(),
-      object: object,
-    };
-  }
-
-  function _meshRaycast_checkBufferGeometryIntersection(
-    object,
-    material,
-    raycaster,
-    ray,
-    position,
-    uv,
-    a,
-    b,
-    c
-  ) {
-    _meshRaycast_vA.fromBufferAttribute(position, a);
-    _meshRaycast_vB.fromBufferAttribute(position, b);
-    _meshRaycast_vC.fromBufferAttribute(position, c);
-
-    var intersection = _meshRaycast_checkIntersection(
-      object,
-      material,
-      raycaster,
-      ray,
-      _meshRaycast_vA,
-      _meshRaycast_vB,
-      _meshRaycast_vC,
-      _meshRaycast_intersectionPoint
-    );
-
-    if (!intersection) return null;
-
-    if (uv) {
-      _meshRaycast_uvA.fromBufferAttribute(uv, a);
-      _meshRaycast_uvB.fromBufferAttribute(uv, b);
-      _meshRaycast_uvC.fromBufferAttribute(uv, c);
-      intersection.uv = THREE.Triangle.getUV(
-        _meshRaycast_intersectionPoint,
-        _meshRaycast_vA,
-        _meshRaycast_vB,
-        _meshRaycast_vC,
-        _meshRaycast_uvA,
-        _meshRaycast_uvB,
-        _meshRaycast_uvC,
-        new Vector2()
-      );
-    }
-
-    intersection.face = {
-      a: a,
-      b: b,
-      c: c,
-      normal: new Vector3().crossVectors(
-        _meshRaycast_vC.clone().sub(_meshRaycast_vB),
-        _meshRaycast_vA.clone().sub(_meshRaycast_vB)
-      ).normalize(),
-      materialIndex: 0,
-    };
-
-    return intersection;
-  }
 
   function Mesh(geometry, material) {
     Object3D.call(this);
