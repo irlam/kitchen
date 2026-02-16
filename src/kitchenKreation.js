@@ -4661,6 +4661,114 @@ var KKJS = (function (exports) {
    * @author jonobr1 / http://jonobr1.com/
    */
 
+  // Helper variables and functions for Mesh raycast
+  var _meshRaycast_vA = new Vector3();
+  var _meshRaycast_vB = new Vector3();
+  var _meshRaycast_vC = new Vector3();
+  var _meshRaycast_uvA = new Vector2();
+  var _meshRaycast_uvB = new Vector2();
+  var _meshRaycast_uvC = new Vector2();
+  var _meshRaycast_intersectionPoint = new Vector3();
+  var _meshRaycast_intersectionPointWorld = new Vector3();
+
+  function _meshRaycast_checkIntersection(
+    object,
+    material,
+    raycaster,
+    ray,
+    pA,
+    pB,
+    pC,
+    point
+  ) {
+    var intersect;
+
+    if (material.side === THREE.BackSide) {
+      intersect = ray.intersectTriangle(pC, pB, pA, true, point);
+    } else {
+      intersect = ray.intersectTriangle(
+        pA,
+        pB,
+        pC,
+        material.side !== THREE.DoubleSide,
+        point
+      );
+    }
+
+    if (intersect === null) return null;
+
+    _meshRaycast_intersectionPointWorld.copy(point);
+    _meshRaycast_intersectionPointWorld.applyMatrix4(object.matrixWorld);
+
+    var distance = raycaster.ray.origin.distanceTo(_meshRaycast_intersectionPointWorld);
+
+    if (distance < raycaster.near || distance > raycaster.far) return null;
+
+    return {
+      distance: distance,
+      point: _meshRaycast_intersectionPointWorld.clone(),
+      object: object,
+    };
+  }
+
+  function _meshRaycast_checkBufferGeometryIntersection(
+    object,
+    material,
+    raycaster,
+    ray,
+    position,
+    uv,
+    a,
+    b,
+    c
+  ) {
+    _meshRaycast_vA.fromBufferAttribute(position, a);
+    _meshRaycast_vB.fromBufferAttribute(position, b);
+    _meshRaycast_vC.fromBufferAttribute(position, c);
+
+    var intersection = _meshRaycast_checkIntersection(
+      object,
+      material,
+      raycaster,
+      ray,
+      _meshRaycast_vA,
+      _meshRaycast_vB,
+      _meshRaycast_vC,
+      _meshRaycast_intersectionPoint
+    );
+
+    if (!intersection) return null;
+
+    if (uv) {
+      _meshRaycast_uvA.fromBufferAttribute(uv, a);
+      _meshRaycast_uvB.fromBufferAttribute(uv, b);
+      _meshRaycast_uvC.fromBufferAttribute(uv, c);
+      intersection.uv = THREE.Triangle.getUV(
+        _meshRaycast_intersectionPoint,
+        _meshRaycast_vA,
+        _meshRaycast_vB,
+        _meshRaycast_vC,
+        _meshRaycast_uvA,
+        _meshRaycast_uvB,
+        _meshRaycast_uvC,
+        new Vector2()
+      );
+    }
+
+    intersection.face = {
+      a: a,
+      b: b,
+      c: c,
+      normal: new Vector3().crossVectors(
+        _meshRaycast_vC.clone().sub(_meshRaycast_vB),
+        _meshRaycast_vA.clone().sub(_meshRaycast_vB)
+      ).normalize(),
+      materialIndex: 0,
+    };
+
+    return intersection;
+  }
+
   function Mesh(geometry, material) {
     Object3D.call(this);
 
@@ -4727,114 +4835,17 @@ var KKJS = (function (exports) {
       var ray = new Ray();
       var sphere = new Sphere();
 
+      // Local variables for raycast (used by Geometry path)
       var vA = new Vector3();
       var vB = new Vector3();
       var vC = new Vector3();
-
       var uvA = new Vector2();
       var uvB = new Vector2();
       var uvC = new Vector2();
-
       var intersectionPoint = new Vector3();
-      var intersectionPointWorld = new Vector3();
-
-      function checkIntersection(
-        object,
-        material,
-        raycaster,
-        ray,
-        pA,
-        pB,
-        pC,
-        point
-      ) {
-        var intersect;
-
-        if (material.side === THREE.BackSide) {
-          intersect = ray.intersectTriangle(pC, pB, pA, true, point);
-        } else {
-          intersect = ray.intersectTriangle(
-            pA,
-            pB,
-            pC,
-            material.side !== THREE.DoubleSide,
-            point
-          );
-        }
-
-        if (intersect === null) return null;
-
-        intersectionPointWorld.copy(point);
-        intersectionPointWorld.applyMatrix4(object.matrixWorld);
-
-        var distance = raycaster.ray.origin.distanceTo(intersectionPointWorld);
-
-        if (distance < raycaster.near || distance > raycaster.far) return null;
-
-        return {
-          distance: distance,
-          point: intersectionPointWorld.clone(),
-          object: object,
-        };
-      }
-
-      function checkBufferGeometryIntersection(
-        object,
-        material,
-        raycaster,
-        ray,
-        position,
-        uv,
-        a,
-        b,
-        c
-      ) {
-        vA.fromBufferAttribute(position, a);
-        vB.fromBufferAttribute(position, b);
-        vC.fromBufferAttribute(position, c);
-
-        var intersection = checkIntersection(
-          object,
-          material,
-          raycaster,
-          ray,
-          vA,
-          vB,
-          vC,
-          intersectionPoint
-        );
-
-        if (!intersection) return null;
-
-        if (uv) {
-          uvA.fromBufferAttribute(uv, a);
-          uvB.fromBufferAttribute(uv, b);
-          uvC.fromBufferAttribute(uv, c);
-          intersection.uv = THREE.Triangle.getUV(
-            intersectionPoint,
-            vA,
-            vB,
-            vC,
-            uvA,
-            uvB,
-            uvC,
-            new Vector2()
-          );
-        }
-
-        intersection.face = {
-          a: a,
-          b: b,
-          c: c,
-          normal: new Vector3().crossVectors(
-            vC.clone().sub(vB),
-            vA.clone().sub(vB)
-          ).normalize(),
-          materialIndex: 0,
-        };
-
-        return intersection;
-      }
+      var tempA = new Vector3();
+      var tempB = new Vector3();
+      var tempC = new Vector3();
 
       return function raycast(raycaster, intersects) {
         var geometry = this.geometry;
@@ -4895,7 +4906,7 @@ var KKJS = (function (exports) {
                   b = index.getX(j + 1);
                   c = index.getX(j + 2);
 
-                  intersection = checkBufferGeometryIntersection(
+                  intersection = _meshRaycast_checkBufferGeometryIntersection(
                     this,
                     groupMaterial,
                     raycaster,
@@ -4922,7 +4933,7 @@ var KKJS = (function (exports) {
                 b = index.getX(i + 1);
                 c = index.getX(i + 2);
 
-                intersection = checkBufferGeometryIntersection(
+                intersection = _meshRaycast_checkBufferGeometryIntersection(
                   this,
                   material,
                   raycaster,
@@ -4959,7 +4970,7 @@ var KKJS = (function (exports) {
                   b = j + 1;
                   c = j + 2;
 
-                  intersection = checkBufferGeometryIntersection(
+                  intersection = _meshRaycast_checkBufferGeometryIntersection(
                     this,
                     groupMaterial,
                     raycaster,
@@ -4986,7 +4997,7 @@ var KKJS = (function (exports) {
                 b = i + 1;
                 c = i + 2;
 
-                intersection = checkBufferGeometryIntersection(
+                intersection = _meshRaycast_checkBufferGeometryIntersection(
                   this,
                   material,
                   raycaster,
@@ -5066,7 +5077,7 @@ var KKJS = (function (exports) {
               fvC = vC;
             }
 
-            intersection = checkIntersection(
+            intersection = _meshRaycast_checkIntersection(
               this,
               faceMaterial,
               raycaster,
