@@ -2,22 +2,45 @@
   "env": {
     "browser": true,
     "es6": true,
-    "node": true
+    "node": true,
+    "jquery": true
   },
   "extends": "eslint:recommended",
   "parserOptions": {
-    "ecmaVersion": 2018,
+    "ecmaVersion": 2020,
     "sourceType": "module"
   },
   "rules": {
-    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-unused-vars": "off",
     "no-console": "off",
-    "semi": ["error", "always"],
-    "quotes": ["warn", "double", { "avoidEscape": true }]
+    "semi": ["warn", "always"],
+    "quotes": ["warn", "double", { "avoidEscape": true }],
+    "no-useless-escape": "warn",
+    "no-redeclare": "warn",
+    "no-empty": "warn",
+    "no-undef": "warn"
   },
   "globals": {
     "THREE": "readonly",
     "$": "readonly",
-    "KKJS": "readonly"
-  }
+    "KKJS": "readonly",
+    "KitchenKreation": "writable",
+    "anItem": "writable",
+    "aGlobal": "writable",
+    "aWall": "writable",
+    "aFloor": "writable",
+    "gui": "writable",
+    "viewerFloorplanner": "writable",
+    "dat": "readonly",
+    "show2D": "readonly",
+    "show3D": "readonly"
+  },
+  "ignorePatterns": [
+    "dist/",
+    "node_modules/",
+    "js/three.js",
+    "src/kitchenKreation.js",
+    "src/items.js",
+    "tests/"
+  ]
 }

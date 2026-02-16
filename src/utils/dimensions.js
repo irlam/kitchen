@@ -13,7 +13,7 @@ export function formatFeetAndInchesFromCm(cm) {
   const totalInches = cmToInches(cm);
   const feet = Math.floor(totalInches / INCHES_PER_FOOT);
   const inches = Math.round((totalInches - feet * INCHES_PER_FOOT) * 10) / 10;
-  return `${feet}' ${inches}\"`;
+  return `${feet}' ${inches}"`;
 }
 
 export function convertLength(value, fromUnit, toUnit) {

@@ -1713,7 +1713,7 @@ function datGUI(three, floorplanner) {
       '<div class="gui-header">' +
         '<div class="dot"></div>' +
         '<div class="title">Design Controls</div>' +
-      '</div>' +
+      "</div>" +
       '<div id="gui-content"></div>';
     guiContainer.classList.add("collapsed");
     document.body.appendChild(guiContainer);
@@ -1821,15 +1821,16 @@ function datGUI(three, floorplanner) {
       // Ctrl/Cmd + S: Save project
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
-        document.querySelector(".save-btn")?.click();
+        var saveBtn = document.querySelector(".save-btn");
+        if (saveBtn) saveBtn.click();
       }
-      
+
       // Ctrl/Cmd + 2: Toggle 2D view
       if ((e.ctrlKey || e.metaKey) && e.key === "2") {
         e.preventDefault();
         show2D();
       }
-      
+
       // Ctrl/Cmd + 3: Toggle 3D view
       if ((e.ctrlKey || e.metaKey) && e.key === "3") {
         e.preventDefault();
