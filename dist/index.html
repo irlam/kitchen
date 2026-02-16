@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-	<title>KitchenLab Pro</title>
+	<title>KitchenLab Pro - 2D/3D Kitchen Designer</title>
+	<meta name="description" content="Professional kitchen design tool with 2D floor planning and 3D visualization">
 	<link rel="icon" href="data:,">
 	<link href="https://fonts.googleapis.com/css?family=Aldrich" rel="stylesheet">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -14,22 +15,30 @@
 	<script src="https://cdn.jsdelivr.net/npm/jquery-flip@1.1.2/dist/jquery.flip.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.3/dat.gui.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 
+	<!-- Skip link for accessibility -->
+	<style>
+		.skip-link { position: absolute; left: -9999px; top: 2px; z-index: 9999; padding: 8px 16px; background: #00d2d2; color: #000; text-decoration: none; font-weight: bold; border-radius: 4px; }
+		.skip-link:focus { left: 2px; }
+	</style>
 	<script type="importmap">
 		{
 			"imports": {
 				"three": "https://unpkg.com/three@0.137.0/build/three.module.js",
 				"three/": "https://unpkg.com/three@0.137.0/",
-				"html2canvas": "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.esm.js"
+				"html2canvas": "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.esm.js",
+				"jspdf": "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/+esm"
 			}
 		}
 	</script>
-  <script type="module" crossorigin src="./assets/index-C9KjmaH5.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-DWb0zRVe.css">
+  <script type="module" crossorigin src="./assets/index-D1JGn1Wp.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CiXB84K7.css">
 </head>
 
 <body>
+	<a href="#main-panel" class="skip-link">Skip to main content</a>
 	<h1> KitchenLab Pro </h1>
 	<div id="app-shell">
 		<aside id="side-panel">
@@ -53,36 +62,41 @@
 					</div>
 				</div>
 				<div class="project-actions">
-					<div id="autosaveStatus">Auto-save: ready</div>
+					<div id="autosaveStatus" role="status" aria-live="polite">Auto-save: ready</div>
+					<!-- Loading spinner -->
+					<div id="loadingSpinner" class="loading-spinner" aria-hidden="true" style="display:none;">
+						<span class="spinner"></span>
+						<span class="loading-text">Saving...</span>
+					</div>
 					<div class="project-select">
 						<label for="projectList">Project List</label>
-						<select id="projectList">
+						<select id="projectList" aria-label="Select project to load">
 							<option value="">Current (unsaved)</option>
 						</select>
 					</div>
 					<div class="project-buttons">
-						<button id="saveProject" class="btn btn-default btn-sm" title="Save Project">
+						<button id="saveProject" class="btn btn-default btn-sm save-btn" title="Save Project" aria-label="Save project">
 							<span class="glyphicon glyphicon-floppy-disk"></span> Save Project
 						</button>
-						<button id="saveProjectAs" class="btn btn-default btn-sm" title="Save Project As">
+						<button id="saveProjectAs" class="btn btn-default btn-sm" title="Save Project As" aria-label="Save project as">
 							<span class="glyphicon glyphicon-floppy-saved"></span> Save As
 						</button>
-						<button id="deleteProject" class="btn btn-default btn-sm" title="Delete Project">
+						<button id="deleteProject" class="btn btn-default btn-sm" title="Delete Project" aria-label="Delete project">
 							<span class="glyphicon glyphicon-trash"></span> Delete
 						</button>
-						<button id="clearProject" class="btn btn-default btn-sm" title="Clear Project">
+						<button id="clearProject" class="btn btn-default btn-sm" title="Clear Project" aria-label="Clear project">
 							<span class="glyphicon glyphicon-erase"></span> Clear
 						</button>
-						<button id="undoAction" class="btn btn-default btn-sm" title="Undo">
+						<button id="undoAction" class="btn btn-default btn-sm" title="Undo (Ctrl+Z)" aria-label="Undo last action">
 							<span class="glyphicon glyphicon-chevron-left"></span> Undo
 						</button>
-						<button id="redoAction" class="btn btn-default btn-sm" title="Redo">
+						<button id="redoAction" class="btn btn-default btn-sm" title="Redo (Ctrl+Y)" aria-label="Redo last action">
 							Redo <span class="glyphicon glyphicon-chevron-right"></span>
 						</button>
-						<button id="savePdf" class="btn btn-default btn-sm" title="Save as PDF">
-							<span class="glyphicon glyphicon-floppy-disk"></span> Save PDF
+						<button id="savePdf" class="btn btn-default btn-sm" title="Export as PDF" aria-label="Export project as PDF">
+							<span class="glyphicon glyphicon-file"></span> Export PDF
 						</button>
-						<button id="printPlan" class="btn btn-default btn-sm" title="Print Plan">
+						<button id="printPlan" class="btn btn-default btn-sm" title="Print Plan" aria-label="Print floor plan">
 							<span class="glyphicon glyphicon-print"></span> Print
 						</button>
 					</div>
@@ -96,23 +110,23 @@
 			<details class="rail-section" open>
 				<summary class="rail-title">2D Tools</summary>
 				<div id="floorplanner-controls" class="tool-panel">
-					<a href="#" class="btn btn-default btn-lg" id="new2d" title="New Layout">
+					<a href="#" class="btn btn-default btn-lg" id="new2d" title="New Layout" aria-label="Create new 2D floor plan">
 						<span class="glyphicon glyphicon-asterisk"></span>
 						<span class="tool-text">New Layout</span>
 					</a>
-					<button id="move" class="btn btn-lg btn-default" title="Move Walls">
+					<button id="move" class="btn btn-lg btn-default" title="Move Walls" aria-label="Move walls mode">
 						<span class="glyphicon glyphicon-move"></span>
 						<span class="tool-text">Move</span>
 					</button>
-					<button id="draw" class="btn btn-lg btn-default" title="Draw New Walls">
+					<button id="draw" class="btn btn-lg btn-default" title="Draw New Walls" aria-label="Draw walls mode">
 						<span class="glyphicon glyphicon-pencil"></span>
 						<span class="tool-text">Draw</span>
 					</button>
-					<button id="delete" class="btn btn-lg btn-default" title="Delete Walls">
+					<button id="delete" class="btn btn-lg btn-default" title="Delete Walls" aria-label="Delete walls mode">
 						<span class="glyphicon glyphicon-trash"></span>
 						<span class="tool-text">Delete</span>
 					</button>
-					<button id="screenshot-2D" class="btn btn-lg btn-default" title="Screenshot">
+					<button id="screenshot-2D" class="btn btn-lg btn-default" title="Screenshot" aria-label="Capture 2D floor plan image">
 						<span class="glyphicon glyphicon-camera"></span>
 						<span class="tool-text">Capture</span>
 					</button>
@@ -121,11 +135,11 @@
 			<details class="rail-section" open>
 				<summary class="rail-title">3D Tools</summary>
 				<div id="main-controls" class="tool-panel">
-					<a href="#" class="btn btn-default btn-lg" id="new3d" title="New Layout">
+					<a href="#" class="btn btn-default btn-lg" id="new3d" title="New Layout" aria-label="Create new 3D layout">
 						<span class="glyphicon glyphicon-asterisk"></span>
 						<span class="tool-text">New Layout</span>
 					</a>
-					<button id="screenshot-3D" class="btn btn-lg btn-default" title="Screenshot">
+					<button id="screenshot-3D" class="btn btn-lg btn-default" title="Screenshot" aria-label="Capture 3D render image">
 						<span class="glyphicon glyphicon-camera"></span>
 						<span class="tool-text">Capture</span>
 					</button>
@@ -134,19 +148,27 @@
 			<details class="rail-section" open>
 				<summary class="rail-title">Workspace</summary>
 				<div id='switch-viewer' class="tool-panel">
-					<button id="showFloorPlan" class="btn btn-lg btn-default active" title="Edit 2D floorplan">
-						<span class="glyphicon glyphicon-move"></span>
+					<button id="showFloorPlan" class="btn btn-lg btn-default active" title="Edit 2D floorplan (Ctrl+2)" aria-label="Switch to 2D floor plan view">
+						<span class="glyphicon glyphicon-th"></span>
 						<span class="tool-text">2D Floorplan</span>
 					</button>
-					<button id="showDesign" class="btn btn-lg btn-default" title="Edit 3D floorplan">
-						<span class="glyphicon glyphicon-move"></span>
+					<button id="showDesign" class="btn btn-lg btn-default" title="Edit 3D floorplan (Ctrl+3)" aria-label="Switch to 3D render view">
+						<span class="glyphicon glyphicon-cube"></span>
 						<span class="tool-text">3D Render</span>
 					</button>
-					<button id="showAddItems" class="btn btn-lg btn-default" title="Add Items">
+					<button id="showAddItems" class="btn btn-lg btn-default" title="Add Items from Catalog" aria-label="Add items from catalog">
 						<span class="glyphicon glyphicon-plus"></span>
 						<span class="tool-text">Add Items</span>
 					</button>
-					<button id="showTips" class="btn btn-lg btn-default" title="Show Tips">
+					<button id="showTemplates" class="btn btn-lg btn-default" title="Load Room Template" aria-label="Load room template">
+						<span class="glyphicon glyphicon-folder-open"></span>
+						<span class="tool-text">Templates</span>
+					</button>
+					<button id="showMeasure" class="btn btn-lg btn-default" title="Measurement Tools" aria-label="Open measurement tools">
+						<span class="glyphicon glyphicon-resize-horizontal"></span>
+						<span class="tool-text">Measure</span>
+					</button>
+					<button id="showTips" class="btn btn-lg btn-default" title="Show Tips" aria-label="Show tips and help">
 						<span class="glyphicon glyphicon-info-sign"></span>
 						<span class="tool-text">Tips</span>
 					</button>

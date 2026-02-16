@@ -1,5 +1,15 @@
 import html2canvas from "html2canvas";
 import * as THREE from "three";
+import { 
+  showLoadingSpinner, 
+  hideLoadingSpinner, 
+  exportToPDF,
+  MeasurementTools,
+  showTemplatesModal,
+  ROOM_TEMPLATES,
+  showTutorial,
+  shouldShowTutorial
+} from "./enhanced-features.js";
 
 var aGlobal = null;
 var anItem = null;
@@ -1894,6 +1904,13 @@ function datGUI(three, floorplanner) {
   setupAutoSave(KitchenKreation);
   datGUI(KitchenKreation.three, KitchenKreation.floorplanner);
 
+  // Show first-time tutorial if needed
+  if (shouldShowTutorial()) {
+    setTimeout(function() {
+      showTutorial();
+    }, 1000);
+  }
+
   $("#showAddItems").show();
   if (typeof $.fn.flip === "function") {
     $(".card").flip({
@@ -2127,8 +2144,57 @@ function datGUI(three, floorplanner) {
     hideTips();
   });
 
-  $("#savePdf").click(function () {
-    exportPrintablePlan(KitchenKreation, { autoPrint: true });
+  // PDF Export with loading indicator
+  $("#savePdf").click(async function () {
+    showLoadingSpinner('Generating PDF...');
+    try {
+      const projectName = (getProjectMeta().projectName || 'Kitchen_Plan').trim();
+      await exportToPDF(projectName);
+    } finally {
+      hideLoadingSpinner();
+    }
+  });
+
+  // Room Templates button
+  $("#showTemplates").click(function () {
+    showTemplatesModal(async function(template) {
+      // Load the template
+      if (KitchenKreation && template.floorplan) {
+        // Clear current project
+        KitchenKreation.model.floorplan.clear();
+        KitchenKreation.model.scene.clearItems();
+        
+        // Load floorplan corners
+        const corners = template.floorplan.corners;
+        if (corners && corners.length > 0) {
+          KitchenKreation.model.floorplan.loadFloorplan({ corners: corners });
+        }
+        
+        // Load items if any
+        if (template.items && template.items.length > 0) {
+          // Items will be loaded asynchronously
+          for (const itemData of template.items) {
+            // TODO: Implement item loading from template
+          }
+        }
+        
+        KitchenKreation.model.floorplan.update();
+        KitchenKreation.three.needsUpdate = true;
+      }
+    });
+  });
+
+  // Measurement Tools button
+  let measurementTools = null;
+  $("#showMeasure").click(function () {
+    if (!measurementTools) {
+      measurementTools = new MeasurementTools(KitchenKreation);
+    }
+    if (measurementTools.panel) {
+      measurementTools.hidePanel();
+    } else {
+      measurementTools.showPanel();
+    }
   });
 
   $("#undoAction").click(function () {
@@ -2140,24 +2206,36 @@ function datGUI(three, floorplanner) {
   });
 
   $("#saveProject").click(function () {
-    saveProjectToList(KitchenKreation);
+    showLoadingSpinner('Saving project...');
+    saveProjectToList(KitchenKreation).then(() => {
+      hideLoadingSpinner();
+    }).catch(() => {
+      hideLoadingSpinner();
+    });
   });
 
   $("#saveProjectAs").click(function () {
+    showLoadingSpinner('Saving project...');
     var current = (getProjectMeta().projectName || "").trim();
     var name = prompt("Save project as:", current || "");
     if (!name) {
+      hideLoadingSpinner();
       return;
     }
     name = name.trim();
     if (!name) {
+      hideLoadingSpinner();
       return;
     }
     var meta = getProjectMeta();
     meta.projectName = name;
     setProjectMeta(meta);
     saveProjectMeta();
-    saveProjectToListSilent(KitchenKreation, name, true);
+    saveProjectToListSilent(KitchenKreation, name, true).then(() => {
+      hideLoadingSpinner();
+    }).catch(() => {
+      hideLoadingSpinner();
+    });
   });
 
   $("#deleteProject").click(function () {
