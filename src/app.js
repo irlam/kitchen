@@ -1779,7 +1779,9 @@ function datGUI(three, floorplanner) {
       
       // Escape: Deselect current item
       if (e.key === "Escape") {
-        KitchenKreation.selectedItem = null;
+        if (KitchenKreation && KitchenKreation.resetSelectedItem) {
+          KitchenKreation.resetSelectedItem();
+        }
       }
       
       // Ctrl/Cmd + S: Save project

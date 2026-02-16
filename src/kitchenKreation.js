@@ -10219,6 +10219,8 @@ functions return important math algorithms required to constructs lines/walls in
    * Rounds values cleanly to avoid displaying 59.9999999 instead of 60.
    * This provides clean dimension displays without precision artifacts.
    */
+  var WHOLE_NUMBER_THRESHOLD = 0.01;
+  
   var smartRound = function(value, maxDecimals) {
     maxDecimals = maxDecimals || 1;
     
@@ -10227,7 +10229,7 @@ functions return important math algorithms required to constructs lines/walls in
     var rounded = Math.round(value * factor) / factor;
     
     // If the rounded value is very close to a whole number, use the whole number
-    if (Math.abs(rounded - Math.round(rounded)) < 0.01) {
+    if (Math.abs(rounded - Math.round(rounded)) < WHOLE_NUMBER_THRESHOLD) {
       return Math.round(rounded);
     }
     

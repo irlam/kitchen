@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 
 // CORS Configuration - Restrict in production
-// For production, replace '*' with specific domain(s)
+// For production, set environment variable ALLOW_CORS_ALL=false and add specific domain(s)
 $allowedOrigins = [
     'http://localhost:5173',  // Vite dev server
     'http://localhost:3000',  // Alternative dev port
@@ -12,11 +12,18 @@ $allowedOrigins = [
 ];
 
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$isDevelopment = getenv('ALLOW_CORS_ALL') !== 'false';
+
 if (in_array($origin, $allowedOrigins)) {
     header("Access-Control-Allow-Origin: $origin");
-} else {
-    // Fallback for development - remove in production
+} elseif ($isDevelopment) {
+    // Development fallback - DISABLE IN PRODUCTION by setting ALLOW_CORS_ALL=false
     header('Access-Control-Allow-Origin: *');
+} else {
+    // Production: Reject unauthorized origins
+    http_response_code(403);
+    echo json_encode(['error' => 'CORS policy: Origin not allowed']);
+    exit;
 }
 
 header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
