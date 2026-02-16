@@ -51,7 +51,7 @@ h1 {
   touch-action: none; /* Prevent default browser touch actions for the whole app shell */
 }
 
-#3D-Floorplan, #floorplanner-canvas {
+#floorplan-3d, #floorplanner-canvas {
   touch-action: none; /* Specifically disable for canvas elements */
 }
 

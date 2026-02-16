@@ -76,7 +76,7 @@ var ViewerFloorplanner = function (KitchenKreation) {
     });
 
     $(screenshot3D).click(function () {
-      captureElement("3D-Floorplan").then(function (dataUrl) {
+      captureElement("floorplan-3d").then(function (dataUrl) {
         var a = document.createElement("a");
         a.href = dataUrl;
         a.download = "3D-Render.png";
@@ -576,7 +576,7 @@ function openPrintWindow(payload) {
 function captureElement(elementId) {
   var el = document.getElementById(elementId);
   // Bypass html2canvas for 3D view to avoid upside-down orientation caused by CSS flip transforms
-  if (elementId === "3D-Floorplan") {
+  if (elementId === "floorplan-3d") {
     var canvas = el.querySelector("canvas");
     if (canvas) {
       return Promise.resolve(canvas.toDataURL("image/png"));
@@ -692,7 +692,7 @@ function exportPrintablePlan(KitchenKreation, options) {
     })
     .then(function (floorplanImage) {
       return show3D().then(function () {
-        return captureElement("3D-Floorplan").then(function (renderImage) {
+        return captureElement("floorplan-3d").then(function (renderImage) {
           return { floorplanImage: floorplanImage, renderImage: renderImage };
         });
       });
@@ -1763,15 +1763,47 @@ function datGUI(three, floorplanner) {
     gui = new dat.GUI({ autoPlace: false, width: 400 });
     document.getElementById("gui-content").appendChild(gui.domElement);
 
-    // Add keyboard shortcuts for deletion
+    // Add keyboard shortcuts
     window.addEventListener("keydown", function(e) {
+      // Only trigger if not typing in an input field
+      if (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
+        return;
+      }
+
+      // Delete/Backspace: Delete selected item
       if ((e.key === "Delete" || e.key === "Backspace") && !e.repeat) {
-        // Only trigger if not typing in an input field
-        if (!["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
-          if (anItem && anItem.currentItem) {
-            anItem.deleteItem();
-          }
+        if (anItem && anItem.currentItem) {
+          anItem.deleteItem();
         }
+      }
+      
+      // Escape: Deselect current item
+      if (e.key === "Escape") {
+        KitchenKreation.selectedItem = null;
+      }
+      
+      // Ctrl/Cmd + S: Save project
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        document.querySelector(".save-btn")?.click();
+      }
+      
+      // Ctrl/Cmd + 2: Toggle 2D view
+      if ((e.ctrlKey || e.metaKey) && e.key === "2") {
+        e.preventDefault();
+        show2D();
+      }
+      
+      // Ctrl/Cmd + 3: Toggle 3D view
+      if ((e.ctrlKey || e.metaKey) && e.key === "3") {
+        e.preventDefault();
+        show3D();
+      }
+      
+      // R: Rotate selected item (if any)
+      if (e.key === "r" && anItem && anItem.currentItem && !e.repeat) {
+        var currentRotation = anItem.currentItem.rotation;
+        anItem.currentItem.rotation = (currentRotation + 90) % 360;
       }
     });
 
@@ -1801,7 +1833,7 @@ function datGUI(three, floorplanner) {
   // main setup
   var opts = {
     floorplannerElement: "floorplanner-canvas",
-    threeElement: "#3D-Floorplan",
+    threeElement: "#floorplan-3d",
     threeCanvasElement: "three-canvas",
     textureDir: "models/textures/",
     widget: false,

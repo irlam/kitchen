@@ -10216,25 +10216,22 @@ functions return important math algorithms required to constructs lines/walls in
 
   /**
    * Smart rounding helper to eliminate floating point artifacts.
-   * Rounds to nearest 0.5 for values under 10, and to nearest 1.0 for larger values.
+   * Rounds values cleanly to avoid displaying 59.9999999 instead of 60.
    * This provides clean dimension displays without precision artifacts.
    */
   var smartRound = function(value, maxDecimals) {
     maxDecimals = maxDecimals || 1;
     
-    // For very small values, use higher precision
-    if (Math.abs(value) < 0.1) {
-      return Math.round(value * 100) / 100;
-    }
-    
-    // For values under 10, round to nearest 0.5
-    if (Math.abs(value) < 10) {
-      return Math.round(value * 2) / 2;
-    }
-    
-    // For larger values, round to nearest integer or specified decimals
+    // First, round to eliminate floating point errors
     var factor = Math.pow(10, maxDecimals);
-    return Math.round(value * factor) / factor;
+    var rounded = Math.round(value * factor) / factor;
+    
+    // If the rounded value is very close to a whole number, use the whole number
+    if (Math.abs(rounded - Math.round(rounded)) < 0.01) {
+      return Math.round(rounded);
+    }
+    
+    return rounded;
   };
 
   var cmPerFoot = 30.48;
