@@ -76,9 +76,10 @@ function _meshRaycast_checkBufferGeometryIntersection(
   b,
   c
 ) {
-  _meshRaycast_vA.fromBufferAttribute(position, a);
-  _meshRaycast_vB.fromBufferAttribute(position, b);
-  _meshRaycast_vC.fromBufferAttribute(position, c);
+  // Use manual component extraction instead of fromBufferAttribute for compatibility
+  _meshRaycast_vA.set(position.getX(a), position.getY(a), position.getZ(a));
+  _meshRaycast_vB.set(position.getX(b), position.getY(b), position.getZ(b));
+  _meshRaycast_vC.set(position.getX(c), position.getY(c), position.getZ(c));
 
   var intersection = _meshRaycast_checkIntersection(
     object,
@@ -94,9 +95,9 @@ function _meshRaycast_checkBufferGeometryIntersection(
   if (!intersection) return null;
 
   if (uv) {
-    _meshRaycast_uvA.fromBufferAttribute(uv, a);
-    _meshRaycast_uvB.fromBufferAttribute(uv, b);
-    _meshRaycast_uvC.fromBufferAttribute(uv, c);
+    _meshRaycast_uvA.set(uv.getX(a), uv.getY(a));
+    _meshRaycast_uvB.set(uv.getX(b), uv.getY(b));
+    _meshRaycast_uvC.set(uv.getX(c), uv.getY(c));
     intersection.uv = THREE.Triangle.getUV(
       _meshRaycast_intersectionPoint,
       _meshRaycast_vA,
