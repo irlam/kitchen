@@ -147,17 +147,88 @@ export class MeasurementTools {
 
   activateDistanceTool() {
     this.activeTool = 'distance';
+    this.measurementPoints = [];
+    
     // Highlight that tool is active
     const btn = this.panel.querySelector('#measure-distance');
     btn.classList.add('active');
-    btn.textContent = '✓ Click two points to measure';
+    btn.textContent = '🎯 Click point 1';
     
-    // TODO: Implement click-to-measure functionality
-    setTimeout(() => {
-      btn.classList.remove('active');
-      btn.textContent = '📏 Distance Tool';
-      this.activeTool = null;
-    }, 3000);
+    // Add click handler to floorplan canvas
+    const canvas = document.getElementById('floorplanner-canvas');
+    if (!canvas) {
+      alert('Switch to 2D Floorplan view first!');
+      this.deactivateDistanceTool();
+      return;
+    }
+    
+    // Store reference to remove listener later
+    this.canvasClickHandler = (e) => this.handleDistanceClick(e, canvas);
+    canvas.addEventListener('click', this.canvasClickHandler);
+    
+    btn.textContent = '✕ Cancel (click again)';
+    btn.onclick = () => this.deactivateDistanceTool();
+  }
+  
+  handleDistanceClick(e, canvas) {
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+    
+    // Convert canvas pixels to cm (assuming scale from floorplanner)
+    const floorplanner = this.kk?.floorplanner;
+    if (!floorplanner) return;
+    
+    // Convert to model coordinates (cm)
+    const modelX = floorplanner.viewmodel.convertXInverse(clickX);
+    const modelY = floorplanner.viewmodel.convertYInverse(clickY);
+    
+    this.measurementPoints.push({ x: modelX, y: modelY });
+    
+    const btn = this.panel.querySelector('#measure-distance');
+    
+    if (this.measurementPoints.length === 1) {
+      btn.textContent = '🎯 Click point 2';
+    } else if (this.measurementPoints.length === 2) {
+      // Calculate distance
+      const p1 = this.measurementPoints[0];
+      const p2 = this.measurementPoints[1];
+      const distanceCm = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+      const distanceM = (distanceCm / 100).toFixed(2);
+      const distanceFt = (distanceCm / 30.48).toFixed(1);
+      
+      // Display result
+      const widthEl = this.panel?.querySelector('#room-width');
+      if (widthEl) {
+        widthEl.textContent = `📏 ${distanceM} m / ${distanceFt}'`;
+      }
+      
+      btn.textContent = '✓ Distance measured!';
+      this.deactivateDistanceTool();
+      
+      // Reset label after 3 seconds
+      setTimeout(() => {
+        const resetBtn = this.panel?.querySelector('#measure-distance');
+        if (resetBtn) resetBtn.textContent = '📏 Distance Tool';
+      }, 3000);
+    }
+  }
+  
+  deactivateDistanceTool() {
+    this.activeTool = null;
+    this.measurementPoints = [];
+    
+    // Remove click handler
+    const canvas = document.getElementById('floorplanner-canvas');
+    if (canvas && this.canvasClickHandler) {
+      canvas.removeEventListener('click', this.canvasClickHandler);
+    }
+    
+    // Reset button
+    const btn = this.panel.querySelector('#measure-distance');
+    btn.classList.remove('active');
+    btn.textContent = '📏 Distance Tool';
+    btn.onclick = () => this.activateDistanceTool();
   }
 
   calculateArea() {
