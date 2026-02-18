@@ -177,11 +177,15 @@ export class MeasurementTools {
     
     // Convert canvas pixels to cm (assuming scale from floorplanner)
     const floorplanner = this.kk?.floorplanner;
-    if (!floorplanner) return;
+    if (!floorplanner || !floorplanner.viewmodel) return;
     
-    // Convert to model coordinates (cm)
-    const modelX = floorplanner.viewmodel.convertXInverse(clickX);
-    const modelY = floorplanner.viewmodel.convertYInverse(clickY);
+    const viewmodel = floorplanner.viewmodel;
+    
+    // Convert to model coordinates (cm) - inverse of convertX/convertY
+    // convertX: (x - originX * cmPerPixel) * pixelsPerCm
+    // inverse: (pixelX / pixelsPerCm) + originX * cmPerPixel
+    const modelX = (clickX / viewmodel.pixelsPerCm) + viewmodel.originX * viewmodel.cmPerPixel;
+    const modelY = (clickY / viewmodel.pixelsPerCm) + viewmodel.originY * viewmodel.cmPerPixel;
     
     this.measurementPoints.push({ x: modelX, y: modelY });
     
@@ -197,10 +201,24 @@ export class MeasurementTools {
       const distanceM = (distanceCm / 100).toFixed(2);
       const distanceFt = (distanceCm / 30.48).toFixed(1);
       
-      // Display result
-      const widthEl = this.panel?.querySelector('#room-width');
-      if (widthEl) {
-        widthEl.textContent = `📏 ${distanceM} m / ${distanceFt}'`;
+      // Display result - create a dedicated measurement result display
+      let resultEl = this.panel?.querySelector('#distance-result');
+      if (!resultEl) {
+        // Create result element if it doesn't exist
+        resultEl = document.createElement('div');
+        resultEl.id = 'distance-result';
+        resultEl.style.cssText = 'margin-top: 10px; padding: 10px; background: rgba(0, 210, 210, 0.2); border-radius: 8px; border: 1px solid rgba(0, 210, 210, 0.4);';
+        resultEl.innerHTML = '<strong>📏 Distance:</strong> <span id="distance-value">--</span>';
+        
+        const clearBtn = this.panel.querySelector('#clear-measurements');
+        if (clearBtn) {
+          clearBtn.parentNode.insertBefore(resultEl, clearBtn);
+        }
+      }
+      
+      const valueEl = resultEl.querySelector('#distance-value');
+      if (valueEl) {
+        valueEl.textContent = `${distanceM} m / ${distanceFt}'`;
       }
       
       btn.textContent = '✓ Distance measured!';
