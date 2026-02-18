@@ -309,15 +309,22 @@ export class MeasurementTools {
   }
   
   showDistanceResult(distanceM, distanceFt) {
+    console.log('showDistanceResult called with:', distanceM, distanceFt);
+    console.log('this.panel:', this.panel);
+    
     const resultEl = this.panel?.querySelector('#distance-result');
     const valueEl = this.panel?.querySelector('#distance-value');
+    
+    console.log('resultEl:', resultEl);
+    console.log('valueEl:', valueEl);
 
     if (resultEl && valueEl) {
       resultEl.style.display = 'block';
       valueEl.textContent = `${distanceM} m / ${distanceFt}'`;
-      console.log('Result displayed:', valueEl.textContent);
+      console.log('✓ Result displayed:', valueEl.textContent);
+      console.log('resultEl style:', resultEl.style.display);
     } else {
-      console.warn('Result elements not found!');
+      console.error('✗ Result elements not found!', { resultEl, valueEl, panel: this.panel });
     }
 
     const btn = this.panel.querySelector('#measure-distance');
