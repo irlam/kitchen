@@ -185,25 +185,30 @@ export class MeasurementTools {
     const rect = canvas.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
-    
+
     // Convert canvas pixels to cm (assuming scale from floorplanner)
     const floorplanner = this.kk?.floorplanner;
-    if (!floorplanner || !floorplanner.viewmodel) return;
-    
+    if (!floorplanner || !floorplanner.viewmodel) {
+      console.warn('Measurement: floorplanner or viewmodel not available');
+      return;
+    }
+
     const viewmodel = floorplanner.viewmodel;
-    
+
     // Convert to model coordinates (cm) - inverse of convertX/convertY
     // convertX: (x - originX * cmPerPixel) * pixelsPerCm
     // inverse: (pixelX / pixelsPerCm) + originX * cmPerPixel
     const modelX = (clickX / viewmodel.pixelsPerCm) + viewmodel.originX * viewmodel.cmPerPixel;
     const modelY = (clickY / viewmodel.pixelsPerCm) + viewmodel.originY * viewmodel.cmPerPixel;
-    
+
     this.measurementPoints.push({ x: modelX, y: modelY });
-    
+    console.log('Point', this.measurementPoints.length, ':', modelX.toFixed(1), modelY.toFixed(1));
+
     const btn = this.panel.querySelector('#measure-distance');
-    
+
     if (this.measurementPoints.length === 1) {
       btn.textContent = '🎯 Click point 2';
+      console.log('Waiting for point 2...');
     } else if (this.measurementPoints.length === 2) {
       // Calculate distance
       const p1 = this.measurementPoints[0];
@@ -212,18 +217,27 @@ export class MeasurementTools {
       const distanceM = (distanceCm / 100).toFixed(2);
       const distanceFt = (distanceCm / 30.48).toFixed(1);
       
+      console.log('Distance:', distanceM, 'm /', distanceFt, 'ft');
+
       // Display result - show the distance result box
       const resultEl = this.panel?.querySelector('#distance-result');
       const valueEl = this.panel?.querySelector('#distance-value');
-      
+
       if (resultEl && valueEl) {
         resultEl.style.display = 'block';
         valueEl.textContent = `${distanceM} m / ${distanceFt}'`;
+        console.log('Result displayed:', valueEl.textContent);
+      } else {
+        console.warn('Result elements not found!');
       }
-      
+
       btn.textContent = '✓ Distance measured!';
-      this.deactivateDistanceTool();
       
+      // Deactivate after a short delay so user sees the message
+      setTimeout(() => {
+        this.deactivateDistanceTool();
+      }, 1500);
+
       // Reset label after 3 seconds
       setTimeout(() => {
         const resetBtn = this.panel?.querySelector('#measure-distance');
