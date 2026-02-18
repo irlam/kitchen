@@ -104,14 +104,20 @@ export class MeasurementTools {
     this.panel.className = 'measurement-panel';
     this.panel.innerHTML = `
       <h3 style="color: #5fffea; margin: 0 0 12px 0; font-size: 14px; text-transform: uppercase;">Measurement Tools</h3>
-      
+
       <button class="measure-tool-btn" id="measure-distance">
         📏 Distance Tool
       </button>
       <button class="measure-tool-btn" id="measure-area">
         📐 Area Calculator
       </button>
-      
+
+      <!-- Distance result display -->
+      <div id="distance-result" style="margin: 10px 0; padding: 12px; background: rgba(0, 210, 210, 0.15); border-radius: 8px; border: 1px solid rgba(0, 210, 210, 0.4); display: none;">
+        <div style="color: #5fffea; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">📏 Distance:</div>
+        <div id="distance-value" style="color: #fff; font-size: 18px; font-weight: bold; font-family: 'Aldrich', sans-serif;">--</div>
+      </div>
+
       <div class="measurement-row">
         <span class="measurement-label">Total Floor Area:</span>
         <span class="measurement-value" id="total-area">--</span>
@@ -124,7 +130,7 @@ export class MeasurementTools {
         <span class="measurement-label">Room Depth:</span>
         <span class="measurement-value" id="room-depth">--</span>
       </div>
-      
+
       <button class="measure-tool-btn" id="clear-measurements" style="margin-top: 12px; background: rgba(255, 68, 68, 0.2); border-color: rgba(255, 68, 68, 0.4);">
         🗑️ Clear Measurements
       </button>
@@ -201,23 +207,12 @@ export class MeasurementTools {
       const distanceM = (distanceCm / 100).toFixed(2);
       const distanceFt = (distanceCm / 30.48).toFixed(1);
       
-      // Display result - create a dedicated measurement result display
-      let resultEl = this.panel?.querySelector('#distance-result');
-      if (!resultEl) {
-        // Create result element if it doesn't exist
-        resultEl = document.createElement('div');
-        resultEl.id = 'distance-result';
-        resultEl.style.cssText = 'margin-top: 10px; padding: 10px; background: rgba(0, 210, 210, 0.2); border-radius: 8px; border: 1px solid rgba(0, 210, 210, 0.4);';
-        resultEl.innerHTML = '<strong>📏 Distance:</strong> <span id="distance-value">--</span>';
-        
-        const clearBtn = this.panel.querySelector('#clear-measurements');
-        if (clearBtn) {
-          clearBtn.parentNode.insertBefore(resultEl, clearBtn);
-        }
-      }
+      // Display result - show the distance result box
+      const resultEl = this.panel?.querySelector('#distance-result');
+      const valueEl = this.panel?.querySelector('#distance-value');
       
-      const valueEl = resultEl.querySelector('#distance-value');
-      if (valueEl) {
+      if (resultEl && valueEl) {
+        resultEl.style.display = 'block';
         valueEl.textContent = `${distanceM} m / ${distanceFt}'`;
       }
       
