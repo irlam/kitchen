@@ -187,10 +187,6 @@ export class MeasurementTools {
     const clickY = e.clientY - rect.top;
 
     // Convert canvas pixels to cm (assuming scale from floorplanner)
-    console.log('MeasurementTools.kk:', this.kk);
-    console.log('kk.floorplanner:', this.kk?.floorplanner);
-    console.log('kk.floorplanner.viewmodel:', this.kk?.floorplanner?.viewmodel);
-    
     const floorplanner = this.kk?.floorplanner;
     if (!floorplanner) {
       console.error('Measurement: floorplanner is null/undefined');
@@ -198,10 +194,17 @@ export class MeasurementTools {
       return;
     }
     
-    const viewmodel = floorplanner.viewmodel;
-    if (!viewmodel) {
-      console.error('Measurement: viewmodel is null/undefined');
-      alert('Viewmodel not available. Please switch to 2D view and try again.');
+    // Floorplanner has these properties directly (not on viewmodel)
+    const pixelsPerCm = floorplanner.pixelsPerCm;
+    const cmPerPixel = floorplanner.cmPerPixel;
+    const originX = floorplanner.originX;
+    const originY = floorplanner.originY;
+    
+    console.log('Floorplanner props:', { pixelsPerCm, cmPerPixel, originX, originY });
+    
+    if (!pixelsPerCm || !cmPerPixel) {
+      console.error('Measurement: pixelsPerCm or cmPerPixel is undefined');
+      alert('Floorplanner scale not available. Please switch to 2D view and try again.');
       this.deactivateDistanceTool();
       return;
     }
@@ -209,8 +212,8 @@ export class MeasurementTools {
     // Convert to model coordinates (cm) - inverse of convertX/convertY
     // convertX: (x - originX * cmPerPixel) * pixelsPerCm
     // inverse: (pixelX / pixelsPerCm) + originX * cmPerPixel
-    const modelX = (clickX / viewmodel.pixelsPerCm) + viewmodel.originX * viewmodel.cmPerPixel;
-    const modelY = (clickY / viewmodel.pixelsPerCm) + viewmodel.originY * viewmodel.cmPerPixel;
+    const modelX = (clickX / pixelsPerCm) + originX * cmPerPixel;
+    const modelY = (clickY / pixelsPerCm) + originY * cmPerPixel;
 
     this.measurementPoints.push({ x: modelX, y: modelY });
     console.log('Point', this.measurementPoints.length, ':', modelX.toFixed(1), modelY.toFixed(1));
