@@ -155,23 +155,33 @@ export class MeasurementTools {
   activateDistanceTool() {
     this.activeTool = 'distance';
     this.measurementPoints = [];
-    
+
     const btn = this.panel.querySelector('#measure-distance');
     btn.classList.add('active');
     btn.textContent = '✕ Cancel';
+
+    // Check if we're in 2D or 3D view
+    const floorplanCanvas = document.getElementById('floorplanner-canvas');
+    const threeCanvas = document.getElementById('three-canvas');
     
-    // Add click handler to floorplan canvas
-    const canvas = document.getElementById('floorplanner-canvas');
-    if (!canvas) {
-      alert('Switch to 2D Floorplan view first!');
+    // 2D View - use floorplanner
+    if (floorplanCanvas && floorplanCanvas.offsetParent !== null) {
+      console.log('Distance tool: Using 2D floorplan mode');
+      this.canvasClickHandler = (e) => this.handleDistanceClick2D(e, floorplanCanvas);
+      floorplanCanvas.addEventListener('click', this.canvasClickHandler);
+    }
+    // 3D View - use Three.js raycasting
+    else if (threeCanvas && threeCanvas.offsetParent !== null) {
+      console.log('Distance tool: Using 3D raycast mode');
+      this.canvasClickHandler = (e) => this.handleDistanceClick3D(e, threeCanvas);
+      threeCanvas.addEventListener('click', this.canvasClickHandler);
+    }
+    else {
+      alert('Please switch to either 2D Floorplan or 3D Render view.');
       this.deactivateDistanceTool();
       return;
     }
-    
-    // Add canvas click handler
-    this.canvasClickHandler = (e) => this.handleDistanceClick(e, canvas);
-    canvas.addEventListener('click', this.canvasClickHandler);
-    
+
     // Add one-time cancel handler
     const cancelHandler = (e) => {
       e.preventDefault();
@@ -181,7 +191,7 @@ export class MeasurementTools {
     btn.addEventListener('click', cancelHandler, { once: true });
   }
   
-  handleDistanceClick(e, canvas) {
+  handleDistanceClick2D(e, canvas) {
     const rect = canvas.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
@@ -193,15 +203,13 @@ export class MeasurementTools {
       alert('Floorplanner not available. Please refresh the page.');
       return;
     }
-    
+
     // Floorplanner has these properties directly (not on viewmodel)
     const pixelsPerCm = floorplanner.pixelsPerCm;
     const cmPerPixel = floorplanner.cmPerPixel;
     const originX = floorplanner.originX;
     const originY = floorplanner.originY;
-    
-    console.log('Floorplanner props:', { pixelsPerCm, cmPerPixel, originX, originY });
-    
+
     if (!pixelsPerCm || !cmPerPixel) {
       console.error('Measurement: pixelsPerCm or cmPerPixel is undefined');
       alert('Floorplanner scale not available. Please switch to 2D view and try again.');
@@ -210,8 +218,6 @@ export class MeasurementTools {
     }
 
     // Convert to model coordinates (cm) - inverse of convertX/convertY
-    // convertX: (x - originX * cmPerPixel) * pixelsPerCm
-    // inverse: (pixelX / pixelsPerCm) + originX * cmPerPixel
     const modelX = (clickX / pixelsPerCm) + originX * cmPerPixel;
     const modelY = (clickY / pixelsPerCm) + originY * cmPerPixel;
 
@@ -222,7 +228,6 @@ export class MeasurementTools {
 
     if (this.measurementPoints.length === 1) {
       btn.textContent = '🎯 Click point 2';
-      console.log('Waiting for point 2...');
     } else if (this.measurementPoints.length === 2) {
       // Calculate distance
       const p1 = this.measurementPoints[0];
@@ -230,39 +235,93 @@ export class MeasurementTools {
       const distanceCm = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
       const distanceM = (distanceCm / 100).toFixed(2);
       const distanceFt = (distanceCm / 30.48).toFixed(1);
-      
-      console.log('Distance:', distanceM, 'm /', distanceFt, 'ft');
 
-      // Display result - show the distance result box
-      const resultEl = this.panel?.querySelector('#distance-result');
-      const valueEl = this.panel?.querySelector('#distance-value');
-
-      if (resultEl && valueEl) {
-        resultEl.style.display = 'block';
-        valueEl.textContent = `${distanceM} m / ${distanceFt}'`;
-        console.log('Result displayed:', valueEl.textContent);
-      } else {
-        console.warn('Result elements not found!');
-      }
-
-      btn.textContent = '✓ Distance measured!';
-      
-      // Keep the result visible - don't auto-deactivate
-      // User can click Cancel or measure again to clear
-      setTimeout(() => {
-        const resetBtn = this.panel?.querySelector('#measure-distance');
-        if (resetBtn) resetBtn.textContent = '📏 Distance Tool';
-      }, 2000);
-      
-      // Remove canvas listener but keep result visible
-      if (canvas && this.canvasClickHandler) {
-        canvas.removeEventListener('click', this.canvasClickHandler);
-        this.canvasClickHandler = null;
-      }
-      
-      this.activeTool = null;
-      this.measurementPoints = [];
+      this.showDistanceResult(distanceM, distanceFt);
     }
+  }
+  
+  handleDistanceClick3D(e, canvas) {
+    // Use Three.js raycasting to get 3D coordinates
+    const three = this.kk?.three;
+    if (!three || !three.perspectivecamera || !three.scene) {
+      console.error('Measurement: Three.js not available');
+      alert('3D view not ready. Please try again.');
+      this.deactivateDistanceTool();
+      return;
+    }
+
+    const rect = canvas.getBoundingClientRect();
+    const mouse = new THREE.Vector2();
+    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+    // Create raycaster
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, three.perspectivecamera);
+
+    // Raycast against floor plane (y = 0)
+    const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const target = new THREE.Vector3();
+    raycaster.ray.intersectPlane(floorPlane, target);
+
+    if (!target) {
+      console.log('Click missed floor plane');
+      return;
+    }
+
+    // Convert Three.js coords to cm (Three.js uses same scale as our model)
+    const modelX = target.x;
+    const modelZ = target.z;
+
+    this.measurementPoints.push({ x: modelX, y: modelZ });
+    console.log('3D Point', this.measurementPoints.length, ':', modelX.toFixed(1), modelZ.toFixed(1));
+
+    const btn = this.panel.querySelector('#measure-distance');
+
+    if (this.measurementPoints.length === 1) {
+      btn.textContent = '🎯 Click point 2';
+    } else if (this.measurementPoints.length === 2) {
+      // Calculate distance
+      const p1 = this.measurementPoints[0];
+      const p2 = this.measurementPoints[1];
+      const distanceCm = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+      const distanceM = (distanceCm / 100).toFixed(2);
+      const distanceFt = (distanceCm / 30.48).toFixed(1);
+
+      this.showDistanceResult(distanceM, distanceFt);
+    }
+  }
+  
+  showDistanceResult(distanceM, distanceFt) {
+    const resultEl = this.panel?.querySelector('#distance-result');
+    const valueEl = this.panel?.querySelector('#distance-value');
+
+    if (resultEl && valueEl) {
+      resultEl.style.display = 'block';
+      valueEl.textContent = `${distanceM} m / ${distanceFt}'`;
+      console.log('Result displayed:', valueEl.textContent);
+    } else {
+      console.warn('Result elements not found!');
+    }
+
+    const btn = this.panel.querySelector('#measure-distance');
+    btn.textContent = '✓ Distance measured!';
+
+    // Remove canvas listener but keep result visible
+    const canvas = document.getElementById('floorplanner-canvas') || document.getElementById('three-canvas');
+    if (canvas && this.canvasClickHandler) {
+      canvas.removeEventListener('click', this.canvasClickHandler);
+      this.canvasClickHandler = null;
+    }
+
+    this.activeTool = null;
+    this.measurementPoints = [];
+
+    // Reset button text after 2 seconds
+    setTimeout(() => {
+      const resetBtn = this.panel?.querySelector('#measure-distance');
+      if (resetBtn) resetBtn.textContent = '📏 Distance Tool';
+    }, 2000);
   }
   
   deactivateDistanceTool() {
