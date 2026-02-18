@@ -182,34 +182,35 @@ export class MeasurementTools {
     btn.classList.add('active');
     btn.textContent = '✕ Cancel';
 
-    // Check which view is currently visible by checking the card flip state
-    const floorplanCard = document.querySelector('#floorplanner');
-    const threeCard = document.querySelector('#three-canvas')?.parentElement?.parentElement;
+    // Check which view is currently visible
+    // The card with class 'front' is visible, 'back' is hidden
+    const floorplannerCard = document.querySelector('#floorplanner');
+    const threeCanvas = document.getElementById('three-canvas');
+    const threeContainer = threeCanvas?.closest('#viewer, .back');
     
-    // Check if we're in 2D view (floorplanner card is front/visible)
-    const is2DView = floorplanCard && 
-                     (floorplanCard.classList.contains('front') || 
-                      floorplanCard.offsetParent !== null ||
-                      window.getComputedStyle(floorplanCard).display !== 'none');
+    console.log('View detection debug:', {
+      floorplannerCard,
+      floorplannerCardClass: floorplannerCard?.className,
+      threeCanvas,
+      threeContainer,
+      threeContainerClass: threeContainer?.className
+    });
     
-    // Check if we're in 3D view (3D canvas is visible)
-    const is3DView = threeCard &&
-                     (threeCard.classList.contains('back') ||
-                      threeCard.offsetParent !== null ||
-                      window.getComputedStyle(threeCard).display !== 'none');
-
-    console.log('View detection:', { is2DView, is3DView, floorplanCard, threeCard });
+    // Determine which view is active
+    const isFloorplanVisible = floorplannerCard?.classList.contains('front');
+    const is3DVisible = threeContainer && !threeContainer.classList.contains('hidden');
+    
+    console.log('isFloorplanVisible:', isFloorplanVisible, 'is3DVisible:', is3DVisible);
     
     // 2D View - use floorplanner
-    if (is2DView) {
+    if (isFloorplanVisible) {
       const floorplanCanvas = document.getElementById('floorplanner-canvas');
       console.log('Distance tool: Using 2D floorplan mode');
       this.canvasClickHandler = (e) => this.handleDistanceClick2D(e, floorplanCanvas);
       floorplanCanvas.addEventListener('click', this.canvasClickHandler);
     }
     // 3D View - use Three.js raycasting
-    else if (is3DView) {
-      const threeCanvas = document.getElementById('three-canvas');
+    else if (is3DVisible || threeCanvas) {
       console.log('Distance tool: Using 3D raycast mode');
       
       // Store reference to original handler so we can restore it later
