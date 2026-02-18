@@ -160,18 +160,34 @@ export class MeasurementTools {
     btn.classList.add('active');
     btn.textContent = '✕ Cancel';
 
-    // Check if we're in 2D or 3D view
-    const floorplanCanvas = document.getElementById('floorplanner-canvas');
-    const threeCanvas = document.getElementById('three-canvas');
+    // Check which view is currently visible by checking the card flip state
+    const floorplanCard = document.querySelector('#floorplanner');
+    const threeCard = document.querySelector('#three-canvas')?.parentElement?.parentElement;
+    
+    // Check if we're in 2D view (floorplanner card is front/visible)
+    const is2DView = floorplanCard && 
+                     (floorplanCard.classList.contains('front') || 
+                      floorplanCard.offsetParent !== null ||
+                      window.getComputedStyle(floorplanCard).display !== 'none');
+    
+    // Check if we're in 3D view (3D canvas is visible)
+    const is3DView = threeCard &&
+                     (threeCard.classList.contains('back') ||
+                      threeCard.offsetParent !== null ||
+                      window.getComputedStyle(threeCard).display !== 'none');
+
+    console.log('View detection:', { is2DView, is3DView, floorplanCard, threeCard });
     
     // 2D View - use floorplanner
-    if (floorplanCanvas && floorplanCanvas.offsetParent !== null) {
+    if (is2DView) {
+      const floorplanCanvas = document.getElementById('floorplanner-canvas');
       console.log('Distance tool: Using 2D floorplan mode');
       this.canvasClickHandler = (e) => this.handleDistanceClick2D(e, floorplanCanvas);
       floorplanCanvas.addEventListener('click', this.canvasClickHandler);
     }
     // 3D View - use Three.js raycasting
-    else if (threeCanvas && threeCanvas.offsetParent !== null) {
+    else if (is3DView) {
+      const threeCanvas = document.getElementById('three-canvas');
       console.log('Distance tool: Using 3D raycast mode');
       this.canvasClickHandler = (e) => this.handleDistanceClick3D(e, threeCanvas);
       threeCanvas.addEventListener('click', this.canvasClickHandler);
