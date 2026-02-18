@@ -115,7 +115,7 @@ export class MeasurementTools {
       </button>
 
       <!-- Distance result display -->
-      <div id="distance-result" style="margin: 10px 0; padding: 12px; background: rgba(0, 210, 210, 0.15); border-radius: 8px; border: 1px solid rgba(0, 210, 210, 0.4); display: none !important;">
+      <div id="distance-result" style="margin: 10px 0; padding: 12px; background: rgba(0, 210, 210, 0.15); border-radius: 8px; border: 1px solid rgba(0, 210, 210, 0.4); display: none;">
         <div style="color: #5fffea; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">📏 Distance:</div>
         <div id="distance-value" style="color: #fff; font-size: 18px; font-weight: bold; font-family: 'Aldrich', sans-serif;">--</div>
       </div>
@@ -341,10 +341,11 @@ export class MeasurementTools {
     console.log('valueEl:', valueEl);
 
     if (resultEl && valueEl) {
-      resultEl.style.display = 'block';
+      resultEl.style.setProperty('display', 'block');
       valueEl.textContent = `${distanceM} m / ${distanceFt}'`;
       console.log('✓ Result displayed:', valueEl.textContent);
-      console.log('resultEl style:', resultEl.style.display);
+      console.log('resultEl style.display:', resultEl.style.display);
+      console.log('resultEl computed display:', window.getComputedStyle(resultEl).display);
     } else {
       console.error('✗ Result elements not found!', { resultEl, valueEl, panel: this.panel });
     }
