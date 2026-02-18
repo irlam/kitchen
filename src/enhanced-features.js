@@ -185,33 +185,41 @@ export class MeasurementTools {
     // Check which view is currently visible
     // The card with class 'front' is visible, 'back' is hidden
     const floorplannerCard = document.querySelector('#floorplanner');
-    const threeCanvas = document.getElementById('three-canvas');
-    const threeContainer = threeCanvas?.closest('#viewer, .back');
+    const viewer3D = document.querySelector('#viewer, #floorplan-3d');
+    const threeCanvas = document.getElementById('three-canvas') || viewer3D?.querySelector('canvas');
     
     console.log('View detection debug:', {
       floorplannerCard,
       floorplannerCardClass: floorplannerCard?.className,
+      viewer3D,
+      viewer3DClass: viewer3D?.className,
       threeCanvas,
-      threeContainer,
-      threeContainerClass: threeContainer?.className
+      threeCanvasId: threeCanvas?.id
     });
     
-    // Determine which view is active
-    const isFloorplanVisible = floorplannerCard?.classList.contains('front');
-    const is3DVisible = threeContainer && !threeContainer.classList.contains('hidden');
+    // Determine which view is active by checking which card has 'front' class
+    const isFloorplanFront = floorplannerCard?.classList.contains('front');
+    const isViewerBack = viewer3D?.classList.contains('back');
     
-    console.log('isFloorplanVisible:', isFloorplanVisible, 'is3DVisible:', is3DVisible);
+    console.log('isFloorplanFront:', isFloorplanFront, 'isViewerBack:', isViewerBack);
     
-    // 2D View - use floorplanner
-    if (isFloorplanVisible) {
+    // 2D View - floorplanner has 'front' class
+    if (isFloorplanFront) {
       const floorplanCanvas = document.getElementById('floorplanner-canvas');
       console.log('Distance tool: Using 2D floorplan mode');
       this.canvasClickHandler = (e) => this.handleDistanceClick2D(e, floorplanCanvas);
       floorplanCanvas.addEventListener('click', this.canvasClickHandler);
     }
-    // 3D View - use Three.js raycasting
-    else if (is3DVisible || threeCanvas) {
+    // 3D View - viewer has 'back' class (meaning it's visible after flip)
+    else if (isViewerBack || threeCanvas) {
       console.log('Distance tool: Using 3D raycast mode');
+      
+      if (!threeCanvas) {
+        console.error('3D canvas not found!');
+        alert('3D view canvas not found. Please switch to 3D view and try again.');
+        this.deactivateDistanceTool();
+        return;
+      }
       
       // Store reference to original handler so we can restore it later
       this.original3DClickHandler = threeCanvas.onclick;
