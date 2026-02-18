@@ -172,8 +172,13 @@ export class MeasurementTools {
     this.canvasClickHandler = (e) => this.handleDistanceClick(e, canvas);
     canvas.addEventListener('click', this.canvasClickHandler);
     
-    btn.textContent = '✕ Cancel (click again)';
-    btn.onclick = () => this.deactivateDistanceTool();
+    btn.textContent = '✕ Cancel';
+    // Store original click handler to restore later
+    this.originalDistanceClick = btn.onclick;
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      this.deactivateDistanceTool();
+    };
   }
   
   handleDistanceClick(e, canvas) {
@@ -231,17 +236,27 @@ export class MeasurementTools {
     this.activeTool = null;
     this.measurementPoints = [];
     
-    // Remove click handler
+    // Remove click handler from canvas
     const canvas = document.getElementById('floorplanner-canvas');
     if (canvas && this.canvasClickHandler) {
       canvas.removeEventListener('click', this.canvasClickHandler);
+      this.canvasClickHandler = null;
     }
     
     // Reset button
     const btn = this.panel.querySelector('#measure-distance');
-    btn.classList.remove('active');
-    btn.textContent = '📏 Distance Tool';
-    btn.onclick = () => this.activateDistanceTool();
+    if (btn) {
+      btn.classList.remove('active');
+      btn.textContent = '📏 Distance Tool';
+      // Restore original click handler
+      btn.onclick = () => this.activateDistanceTool();
+    }
+    
+    // Hide distance result box
+    const resultEl = this.panel?.querySelector('#distance-result');
+    if (resultEl) {
+      resultEl.style.display = 'none';
+    }
   }
 
   calculateArea() {
