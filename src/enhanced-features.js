@@ -94,6 +94,8 @@ export class MeasurementTools {
   }
 
   showPanel() {
+    console.log('MeasurementTools.showPanel() called');
+    
     // Remove existing panel if any
     if (this.panel) {
       this.panel.remove();
@@ -113,7 +115,7 @@ export class MeasurementTools {
       </button>
 
       <!-- Distance result display -->
-      <div id="distance-result" style="margin: 10px 0; padding: 12px; background: rgba(0, 210, 210, 0.15); border-radius: 8px; border: 1px solid rgba(0, 210, 210, 0.4); display: none;">
+      <div id="distance-result" style="margin: 10px 0; padding: 12px; background: rgba(0, 210, 210, 0.15); border-radius: 8px; border: 1px solid rgba(0, 210, 210, 0.4); display: none !important;">
         <div style="color: #5fffea; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">📏 Distance:</div>
         <div id="distance-value" style="color: #fff; font-size: 18px; font-weight: bold; font-family: 'Aldrich', sans-serif;">--</div>
       </div>
@@ -136,17 +138,37 @@ export class MeasurementTools {
       </button>
     `;
 
+    console.log('Panel created:', this.panel);
+    console.log('Panel innerHTML:', this.panel.innerHTML.substring(0, 200));
+
     // Insert panel into side panel
     const toolRail = document.getElementById('tool-rail');
+    console.log('toolRail:', toolRail);
     if (toolRail) {
       toolRail.parentNode.insertBefore(this.panel, toolRail.nextSibling);
+      console.log('Panel inserted into DOM');
+    } else {
+      console.error('toolRail not found!');
     }
+
+    // Verify panel is in DOM
+    setTimeout(() => {
+      console.log('Panel in DOM?', document.body.contains(this.panel));
+      console.log('Panel offsetParent:', this.panel.offsetParent);
+      console.log('Panel display:', window.getComputedStyle(this.panel).display);
+      
+      const distanceResult = document.getElementById('distance-result');
+      console.log('distance-result element:', distanceResult);
+      console.log('distance-result display:', distanceResult ? window.getComputedStyle(distanceResult).display : 'not found');
+    }, 100);
 
     // Add event listeners - store reference to distance button handler
     this.distanceBtnHandler = () => this.activateDistanceTool();
     this.panel.querySelector('#measure-distance').addEventListener('click', this.distanceBtnHandler);
     this.panel.querySelector('#measure-area').addEventListener('click', () => this.calculateArea());
     this.panel.querySelector('#clear-measurements').addEventListener('click', () => this.clearMeasurements());
+
+    console.log('Event listeners added');
 
     // Update room dimensions
     this.updateRoomDimensions();
