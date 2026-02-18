@@ -284,8 +284,14 @@ export class MeasurementTools {
   }
   
   handleDistanceClick3D(e, canvas) {
+    console.log('handleDistanceClick3D called!', e);
+    e.preventDefault();
+    e.stopPropagation();
+    
     // Use Three.js raycasting to get 3D coordinates
     const three = this.kk?.three;
+    console.log('Three.js available:', !!three, !!three?.perspectivecamera, !!three?.scene);
+    
     if (!three || !three.perspectivecamera || !three.scene) {
       console.error('Measurement: Three.js not available');
       alert('3D view not ready. Please try again.');
@@ -294,20 +300,28 @@ export class MeasurementTools {
     }
 
     const rect = canvas.getBoundingClientRect();
+    console.log('Canvas rect:', rect);
+    
     const mouse = new THREE.Vector2();
     mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    
+    console.log('Mouse coords:', mouse);
 
     // Create raycaster
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(mouse, three.perspectivecamera);
+    
+    console.log('Raycaster created');
 
     // Raycast against floor plane (y = 0)
     const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
     const target = new THREE.Vector3();
-    raycaster.ray.intersectPlane(floorPlane, target);
+    const hit = raycaster.ray.intersectPlane(floorPlane, target);
+    
+    console.log('Raycast hit floor:', hit, target);
 
-    if (!target) {
+    if (!hit || !target) {
       console.log('Click missed floor plane');
       return;
     }
@@ -317,12 +331,14 @@ export class MeasurementTools {
     const modelZ = target.z;
 
     this.measurementPoints.push({ x: modelX, y: modelZ });
-    console.log('3D Point', this.measurementPoints.length, ':', modelX.toFixed(1), modelZ.toFixed(1));
+    console.log('Point', this.measurementPoints.length, ':', modelX.toFixed(1), modelZ.toFixed(1));
 
     const btn = this.panel.querySelector('#measure-distance');
+    console.log('Button:', btn);
 
     if (this.measurementPoints.length === 1) {
       btn.textContent = '🎯 Click point 2';
+      console.log('Waiting for point 2...');
     } else if (this.measurementPoints.length === 2) {
       // Calculate distance
       const p1 = this.measurementPoints[0];
@@ -330,6 +346,8 @@ export class MeasurementTools {
       const distanceCm = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
       const distanceM = (distanceCm / 100).toFixed(2);
       const distanceFt = (distanceCm / 30.48).toFixed(1);
+      
+      console.log('Distance calculated:', distanceM, 'm /', distanceFt, 'ft');
 
       this.showDistanceResult(distanceM, distanceFt);
     }
