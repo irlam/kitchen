@@ -182,44 +182,42 @@ export class MeasurementTools {
     btn.classList.add('active');
     btn.textContent = '✕ Cancel';
 
-    // Check which view is currently visible
-    // The card with class 'front' is visible, 'back' is hidden
+    // Check which view is ACTUALLY visible by checking CSS
     const floorplannerCard = document.querySelector('#floorplanner');
-    const viewer3D = document.querySelector('#viewer, #floorplan-3d');
-    const threeCanvas = document.getElementById('three-canvas') || viewer3D?.querySelector('canvas');
+    const viewer3D = document.querySelector('#viewer') || document.querySelector('#floorplan-3d');
+    const threeCanvas = viewer3D?.querySelector('canvas');
+    
+    // Check actual visibility using CSS
+    const floorplannerVisible = floorplannerCard && 
+                                 window.getComputedStyle(floorplannerCard).display !== 'none' &&
+                                 window.getComputedStyle(floorplannerCard).visibility !== 'hidden';
+    
+    const viewerVisible = viewer3D && 
+                          window.getComputedStyle(viewer3D).display !== 'none' &&
+                          window.getComputedStyle(viewer3D).visibility !== 'hidden';
     
     console.log('View detection debug:', {
       floorplannerCard,
-      floorplannerCardClass: floorplannerCard?.className,
+      floorplannerVisible,
+      floorplannerDisplay: floorplannerCard ? window.getComputedStyle(floorplannerCard).display : 'not found',
       viewer3D,
-      viewer3DClass: viewer3D?.className,
+      viewerVisible,
+      viewerDisplay: viewer3D ? window.getComputedStyle(viewer3D).display : 'not found',
       threeCanvas,
-      threeCanvasId: threeCanvas?.id
+      threeCanvasDisplay: threeCanvas ? window.getComputedStyle(threeCanvas).display : 'not found'
     });
     
-    // Determine which view is active by checking which card has 'front' class
-    const isFloorplanFront = floorplannerCard?.classList.contains('front');
-    const isViewerBack = viewer3D?.classList.contains('back');
-    
-    console.log('isFloorplanFront:', isFloorplanFront, 'isViewerBack:', isViewerBack);
-    
-    // 2D View - floorplanner has 'front' class
-    if (isFloorplanFront) {
+    // Use actual visibility, not class names
+    if (floorplannerVisible && !viewerVisible) {
+      // 2D View is visible
       const floorplanCanvas = document.getElementById('floorplanner-canvas');
-      console.log('Distance tool: Using 2D floorplan mode');
+      console.log('Distance tool: Using 2D floorplan mode (floorplanner visible)');
       this.canvasClickHandler = (e) => this.handleDistanceClick2D(e, floorplanCanvas);
       floorplanCanvas.addEventListener('click', this.canvasClickHandler);
     }
-    // 3D View - viewer has 'back' class (meaning it's visible after flip)
-    else if (isViewerBack || threeCanvas) {
-      console.log('Distance tool: Using 3D raycast mode');
-      
-      if (!threeCanvas) {
-        console.error('3D canvas not found!');
-        alert('3D view canvas not found. Please switch to 3D view and try again.');
-        this.deactivateDistanceTool();
-        return;
-      }
+    else if (viewerVisible && threeCanvas) {
+      // 3D View is visible
+      console.log('Distance tool: Using 3D raycast mode (viewer visible)');
       
       // Store reference to original handler so we can restore it later
       this.original3DClickHandler = threeCanvas.onclick;
@@ -229,6 +227,7 @@ export class MeasurementTools {
       this.canvasClickHandler = threeCanvas.onclick;
     }
     else {
+      console.error('Neither view detected as visible!', { floorplannerVisible, viewerVisible });
       alert('Please switch to either 2D Floorplan or 3D Render view.');
       this.deactivateDistanceTool();
       return;
