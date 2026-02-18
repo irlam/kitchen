@@ -211,8 +211,13 @@ export class MeasurementTools {
     else if (is3DView) {
       const threeCanvas = document.getElementById('three-canvas');
       console.log('Distance tool: Using 3D raycast mode');
-      this.canvasClickHandler = (e) => this.handleDistanceClick3D(e, threeCanvas);
-      threeCanvas.addEventListener('click', this.canvasClickHandler);
+      
+      // Store reference to original handler so we can restore it later
+      this.original3DClickHandler = threeCanvas.onclick;
+      
+      // Override the canvas click handler to intercept clicks for measurement
+      threeCanvas.onclick = (e) => this.handleDistanceClick3D(e, threeCanvas);
+      this.canvasClickHandler = threeCanvas.onclick;
     }
     else {
       alert('Please switch to either 2D Floorplan or 3D Render view.');
@@ -373,14 +378,22 @@ export class MeasurementTools {
   deactivateDistanceTool() {
     this.activeTool = null;
     this.measurementPoints = [];
-    
+
     // Remove click handler from canvas
     const canvas = document.getElementById('floorplanner-canvas');
     if (canvas && this.canvasClickHandler) {
       canvas.removeEventListener('click', this.canvasClickHandler);
       this.canvasClickHandler = null;
     }
-    
+
+    // For 3D view, restore original click handler
+    const threeCanvas = document.getElementById('three-canvas');
+    if (threeCanvas && this.original3DClickHandler) {
+      threeCanvas.onclick = this.original3DClickHandler;
+      this.original3DClickHandler = null;
+      console.log('3D click handler restored');
+    }
+
     // Reset button - remove cancel handler, re-add activate handler
     const btn = this.panel.querySelector('#measure-distance');
     if (btn) {
@@ -391,7 +404,7 @@ export class MeasurementTools {
       btn.parentNode.replaceChild(newBtn, btn);
       newBtn.addEventListener('click', this.distanceBtnHandler);
     }
-    
+
     // Hide distance result box and reset value ONLY when explicitly canceling
     const resultEl = this.panel?.querySelector('#distance-result');
     if (resultEl) {
