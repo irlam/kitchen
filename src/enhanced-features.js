@@ -298,9 +298,11 @@ export class MeasurementTools {
     
     // Use Three.js raycasting to get 3D coordinates
     const three = this.kk?.three;
-    console.log('Three.js available:', !!three, !!three?.perspectivecamera, !!three?.scene);
+    const THREE = window.THREE || three?.scene?.constructor; // Get THREE from window or infer
     
-    if (!three || !three.perspectivecamera || !three.scene) {
+    console.log('Three.js available:', !!three, !!three?.perspectivecamera, !!three?.scene, !!THREE);
+    
+    if (!three || !three.perspectivecamera || !three.scene || !THREE) {
       console.error('Measurement: Three.js not available');
       alert('3D view not ready. Please try again.');
       this.deactivateDistanceTool();
