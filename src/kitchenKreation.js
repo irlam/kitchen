@@ -18243,25 +18243,32 @@ functions return important math algorithms required to constructs lines/walls in
       {
         reference: "init",
         value: function init() {
-          var light = new THREE.HemisphereLight(0xffffff, 0x888888, 1.1);
-          light.position.set(0, this.height, 0);
-          this.scene.add(light);
+          // Ambient light for base illumination
+          var ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+          this.scene.add(ambientLight);
+          
+          // Hemisphere light for natural sky/ground lighting
+          var hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x3d5c5c, 0.6);
+          hemiLight.position.set(0, this.height, 0);
+          this.scene.add(hemiLight);
 
-          this.dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
-          this.dirLight.color.setHSL(1, 1, 0.1);
-
+          // Main directional light (sun-like)
+          this.dirLight = new THREE.DirectionalLight(0xfff5e6, 0.8);
+          this.dirLight.position.set(500, 800, 500);
           this.dirLight.castShadow = true;
 
-          this.dirLight.shadow.mapSize.width = 1024;
-          this.dirLight.shadow.mapSize.height = 1024;
-
+          // High-quality shadows
+          this.dirLight.shadow.mapSize.width = 2048;
+          this.dirLight.shadow.mapSize.height = 2048;
+          this.dirLight.shadow.camera.near = 0.5;
           this.dirLight.shadow.camera.far = this.height + this.tol;
-          this.dirLight.shadow.bias = -0.0001;
-          // Removed deprecated shadow* properties for newer Three.js.
+          this.dirLight.shadow.bias = -0.0005;
+          this.dirLight.shadow.normalBias = 0.02;
           this.dirLight.visible = true;
 
           this.scene.add(this.dirLight);
-          this.scene.add(this.dirLight.target);
+          this.scene.add(this.dirLightTarget || (this.dirLightTarget = new THREE.Object3D()));
+          this.dirLight.target = this.dirLightTarget;
 
           this.floorplan.addEventListener(
             EVENT_UPDATED,
@@ -18750,12 +18757,23 @@ functions return important math algorithms required to constructs lines/walls in
             antialias: true,
             alpha: true,
             preserveDrawingBuffer: true,
+            powerPreference: "high-performance",
           });
 
+          // Enhanced shadow quality
           renderer.shadowMap.enabled = true;
-          renderer.shadowMapSoft = true;
           renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-          renderer.setClearColor(0xffffff, 1);
+          renderer.shadowMap.autoUpdate = true;
+          
+          // Modern rendering settings
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Cap at 2x for performance
+          renderer.outputEncoding = THREE.sRGBEncoding;
+          renderer.toneMapping = THREE.ACESFilmicToneMapping;
+          renderer.toneMappingExposure = 1.2;
+          
+          // Set background gradient
+          renderer.setClearColor(0x0a0f14, 1);
+          
           renderer.clippingPlanes = this.clippingEmpty;
           renderer.localClippingEnabled = false;
           return renderer;

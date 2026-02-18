@@ -55,6 +55,35 @@ h1 {
   touch-action: none; /* Specifically disable for canvas elements */
 }
 
+/* Enhanced 3D Viewer Styling */
+#floorplan-3d {
+  background: linear-gradient(135deg, #0a0f14 0%, #1a1f2e 50%, #0f141f 100%);
+  box-shadow: 
+    inset 0 0 100px rgba(0, 210, 210, 0.1),
+    0 0 60px rgba(0, 210, 210, 0.15);
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+}
+
+#floorplan-3d::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(0, 210, 210, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(95, 255, 234, 0.06) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+#floorplan-3d canvas {
+  box-shadow: 0 0 40px rgba(0, 210, 210, 0.2);
+}
+
 #side-panel {
   display: flex;
   flex-direction: column;
