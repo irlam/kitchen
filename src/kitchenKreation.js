@@ -18243,17 +18243,17 @@ functions return important math algorithms required to constructs lines/walls in
       {
         reference: "init",
         value: function init() {
-          // Ambient light for base illumination
-          var ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+          // Ambient light for base illumination - reduced to prevent washout
+          var ambientLight = new THREE.AmbientLight(0xffffff, 0.25);
           this.scene.add(ambientLight);
           
-          // Hemisphere light for natural sky/ground lighting
-          var hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x3d5c5c, 0.6);
+          // Hemisphere light for natural sky/ground lighting - adjusted
+          var hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x3d5c5c, 0.4);
           hemiLight.position.set(0, this.height, 0);
           this.scene.add(hemiLight);
 
-          // Main directional light (sun-like)
-          this.dirLight = new THREE.DirectionalLight(0xfff5e6, 0.8);
+          // Main directional light (sun-like) - warmer and less intense
+          this.dirLight = new THREE.DirectionalLight(0xfff5e6, 0.5);
           this.dirLight.position.set(500, 800, 500);
           this.dirLight.castShadow = true;
 
@@ -18765,11 +18765,11 @@ functions return important math algorithms required to constructs lines/walls in
           renderer.shadowMap.type = THREE.PCFSoftShadowMap;
           renderer.shadowMap.autoUpdate = true;
           
-          // Modern rendering settings
-          renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Cap at 2x for performance
+          // Modern rendering settings - adjusted to prevent washout
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
           renderer.outputEncoding = THREE.sRGBEncoding;
           renderer.toneMapping = THREE.ACESFilmicToneMapping;
-          renderer.toneMappingExposure = 1.2;
+          renderer.toneMappingExposure = 0.9; // Reduced from 1.2 to prevent washout
           
           // Set background gradient
           renderer.setClearColor(0x0a0f14, 1);
