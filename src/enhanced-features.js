@@ -187,13 +187,24 @@ export class MeasurementTools {
     const clickY = e.clientY - rect.top;
 
     // Convert canvas pixels to cm (assuming scale from floorplanner)
+    console.log('MeasurementTools.kk:', this.kk);
+    console.log('kk.floorplanner:', this.kk?.floorplanner);
+    console.log('kk.floorplanner.viewmodel:', this.kk?.floorplanner?.viewmodel);
+    
     const floorplanner = this.kk?.floorplanner;
-    if (!floorplanner || !floorplanner.viewmodel) {
-      console.warn('Measurement: floorplanner or viewmodel not available');
+    if (!floorplanner) {
+      console.error('Measurement: floorplanner is null/undefined');
+      alert('Floorplanner not available. Please refresh the page.');
       return;
     }
-
+    
     const viewmodel = floorplanner.viewmodel;
+    if (!viewmodel) {
+      console.error('Measurement: viewmodel is null/undefined');
+      alert('Viewmodel not available. Please switch to 2D view and try again.');
+      this.deactivateDistanceTool();
+      return;
+    }
 
     // Convert to model coordinates (cm) - inverse of convertX/convertY
     // convertX: (x - originX * cmPerPixel) * pixelsPerCm
