@@ -247,16 +247,21 @@ export class MeasurementTools {
 
       btn.textContent = '✓ Distance measured!';
       
-      // Deactivate after a short delay so user sees the message
-      setTimeout(() => {
-        this.deactivateDistanceTool();
-      }, 1500);
-
-      // Reset label after 3 seconds
+      // Keep the result visible - don't auto-deactivate
+      // User can click Cancel or measure again to clear
       setTimeout(() => {
         const resetBtn = this.panel?.querySelector('#measure-distance');
         if (resetBtn) resetBtn.textContent = '📏 Distance Tool';
-      }, 3000);
+      }, 2000);
+      
+      // Remove canvas listener but keep result visible
+      if (canvas && this.canvasClickHandler) {
+        canvas.removeEventListener('click', this.canvasClickHandler);
+        this.canvasClickHandler = null;
+      }
+      
+      this.activeTool = null;
+      this.measurementPoints = [];
     }
   }
   
@@ -282,7 +287,7 @@ export class MeasurementTools {
       newBtn.addEventListener('click', this.distanceBtnHandler);
     }
     
-    // Hide distance result box and reset value
+    // Hide distance result box and reset value ONLY when explicitly canceling
     const resultEl = this.panel?.querySelector('#distance-result');
     if (resultEl) {
       resultEl.style.display = 'none';
