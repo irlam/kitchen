@@ -142,8 +142,9 @@ export class MeasurementTools {
       toolRail.parentNode.insertBefore(this.panel, toolRail.nextSibling);
     }
 
-    // Add event listeners
-    this.panel.querySelector('#measure-distance').addEventListener('click', () => this.activateDistanceTool());
+    // Add event listeners - store reference to distance button handler
+    this.distanceBtnHandler = () => this.activateDistanceTool();
+    this.panel.querySelector('#measure-distance').addEventListener('click', this.distanceBtnHandler);
     this.panel.querySelector('#measure-area').addEventListener('click', () => this.calculateArea());
     this.panel.querySelector('#clear-measurements').addEventListener('click', () => this.clearMeasurements());
 
@@ -155,10 +156,9 @@ export class MeasurementTools {
     this.activeTool = 'distance';
     this.measurementPoints = [];
     
-    // Highlight that tool is active
     const btn = this.panel.querySelector('#measure-distance');
     btn.classList.add('active');
-    btn.textContent = '🎯 Click point 1';
+    btn.textContent = '✕ Cancel';
     
     // Add click handler to floorplan canvas
     const canvas = document.getElementById('floorplanner-canvas');
@@ -168,17 +168,17 @@ export class MeasurementTools {
       return;
     }
     
-    // Store reference to remove listener later
+    // Add canvas click handler
     this.canvasClickHandler = (e) => this.handleDistanceClick(e, canvas);
     canvas.addEventListener('click', this.canvasClickHandler);
     
-    btn.textContent = '✕ Cancel';
-    // Store original click handler to restore later
-    this.originalDistanceClick = btn.onclick;
-    btn.onclick = (e) => {
+    // Add one-time cancel handler
+    const cancelHandler = (e) => {
+      e.preventDefault();
       e.stopPropagation();
       this.deactivateDistanceTool();
     };
+    btn.addEventListener('click', cancelHandler, { once: true });
   }
   
   handleDistanceClick(e, canvas) {
@@ -243,19 +243,23 @@ export class MeasurementTools {
       this.canvasClickHandler = null;
     }
     
-    // Reset button
+    // Reset button - remove cancel handler, re-add activate handler
     const btn = this.panel.querySelector('#measure-distance');
     if (btn) {
       btn.classList.remove('active');
       btn.textContent = '📏 Distance Tool';
-      // Restore original click handler
-      btn.onclick = () => this.activateDistanceTool();
+      // Remove any existing handlers and re-add the activate handler
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      newBtn.addEventListener('click', this.distanceBtnHandler);
     }
     
-    // Hide distance result box
+    // Hide distance result box and reset value
     const resultEl = this.panel?.querySelector('#distance-result');
     if (resultEl) {
       resultEl.style.display = 'none';
+      const valueEl = resultEl.querySelector('#distance-value');
+      if (valueEl) valueEl.textContent = '--';
     }
   }
 
