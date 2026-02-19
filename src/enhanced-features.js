@@ -407,13 +407,20 @@ export class MeasurementTools {
     const btn = this.panel.querySelector('#measure-distance');
     btn.textContent = '✓ Distance measured!';
 
-    // Remove canvas listener but keep result visible
-    const canvas = document.getElementById('floorplanner-canvas') || document.getElementById('three-canvas');
-    if (canvas && this.canvasClickHandler) {
-      canvas.removeEventListener('click', this.canvasClickHandler);
-      this.canvasClickHandler = null;
+    // Remove active listeners from canvas
+    if (this.activeCanvasRef) {
+      if (this.canvasClickHandler) {
+        this.activeCanvasRef.removeEventListener('click', this.canvasClickHandler, true);
+        this.activeCanvasRef.removeEventListener('mousedown', this.canvasClickHandler, true);
+      }
+      if (this.clickBlocker) {
+        this.activeCanvasRef.removeEventListener('click', this.clickBlocker, true);
+      }
+      this.activeCanvasRef = null;
     }
 
+    this.canvasClickHandler = null;
+    this.clickBlocker = null;
     this.activeTool = null;
     this.measurementPoints = [];
 
