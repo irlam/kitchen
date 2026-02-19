@@ -13,7 +13,7 @@
 // LOADING SPINNER
 // ============================================
 
-import * as THREE from "three";
+import { Vector2, Raycaster, Plane, Vector3 } from "three";
 
 export function showLoadingSpinner(message = 'Saving...') {
   const spinner = document.getElementById('loadingSpinner');
@@ -214,19 +214,39 @@ export class MeasurementTools {
       // 2D View is visible
       const floorplanCanvas = document.getElementById('floorplanner-canvas');
       console.log('Distance tool: Using 2D floorplan mode (floorplanner visible)');
-      this.canvasClickHandler = (e) => this.handleDistanceClick2D(e, floorplanCanvas);
-      floorplanCanvas.addEventListener('click', this.canvasClickHandler);
+      
+      this.activeCanvasRef = floorplanCanvas;
+      this.canvasClickHandler = (e) => {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        this.handleDistanceClick2D(e, floorplanCanvas);
+        return false;
+      };
+      
+      this.activeCanvasRef.addEventListener('click', this.canvasClickHandler, true);
     }
     else if (viewerVisible && threeCanvas) {
       // 3D View is visible
       console.log('Distance tool: Using 3D raycast mode (viewer visible)');
       
-      // Store reference to original handler so we can restore it later
-      this.original3DClickHandler = threeCanvas.onclick;
+      this.activeCanvasRef = threeCanvas;
       
-      // Override the canvas click handler to intercept clicks for measurement
-      threeCanvas.onclick = (e) => this.handleDistanceClick3D(e, threeCanvas);
-      this.canvasClickHandler = threeCanvas.onclick;
+      this.canvasClickHandler = (e) => {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        this.handleDistanceClick3D(e, threeCanvas);
+        return false;
+      };
+
+      // Use mousedown with capture: true to block design controls in kitchenKreation.js
+      this.activeCanvasRef.addEventListener('mousedown', this.canvasClickHandler, true);
+      
+      // Also block click to prevent any secondary actions
+      this.clickBlocker = (e) => {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+      };
+      this.activeCanvasRef.addEventListener('click', this.clickBlocker, true);
     }
     else {
       console.error('Neither view detected as visible!', { floorplannerVisible, viewerVisible });
@@ -301,7 +321,7 @@ export class MeasurementTools {
     // Use Three.js raycasting to get 3D coordinates
     const three = this.kk?.three;
     
-    console.log('Three.js available:', !!three, !!three?.perspectivecamera, !!three?.scene, !!THREE);
+    console.log('Three.js available:', !!three, !!three?.perspectivecamera, !!three?.scene);
     
     if (!three || !three.perspectivecamera || !three.scene) {
       console.error('Measurement: Three.js not available');
@@ -313,21 +333,21 @@ export class MeasurementTools {
     const rect = canvas.getBoundingClientRect();
     console.log('Canvas rect:', rect);
     
-    const mouse = new THREE.Vector2();
+    const mouse = new Vector2();
     mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     
     console.log('Mouse coords:', mouse);
 
     // Create raycaster
-    const raycaster = new THREE.Raycaster();
+    const raycaster = new Raycaster();
     raycaster.setFromCamera(mouse, three.perspectivecamera);
     
     console.log('Raycaster created');
 
     // Raycast against floor plane (y = 0)
-    const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-    const target = new THREE.Vector3();
+    const floorPlane = new Plane(new Vector3(0, 1, 0), 0);
+    const target = new Vector3();
     const hit = raycaster.ray.intersectPlane(floorPlane, target);
     
     console.log('Raycast hit floor:', hit, target);
@@ -408,20 +428,22 @@ export class MeasurementTools {
     this.activeTool = null;
     this.measurementPoints = [];
 
-    // Remove click handler from canvas
-    const canvas = document.getElementById('floorplanner-canvas');
-    if (canvas && this.canvasClickHandler) {
-      canvas.removeEventListener('click', this.canvasClickHandler);
-      this.canvasClickHandler = null;
+    // Remove handlers from whichever canvas was active
+    if (this.activeCanvasRef) {
+      if (this.canvasClickHandler) {
+        // Remove from both potential events and use capture=true to match addition
+        this.activeCanvasRef.removeEventListener('click', this.canvasClickHandler, true);
+        this.activeCanvasRef.removeEventListener('mousedown', this.canvasClickHandler, true);
+      }
+      if (this.clickBlocker) {
+        this.activeCanvasRef.removeEventListener('click', this.clickBlocker, true);
+      }
+      this.activeCanvasRef = null;
+      console.log('Measurement listeners removed');
     }
 
-    // For 3D view, restore original click handler
-    const threeCanvas = document.getElementById('three-canvas');
-    if (threeCanvas && this.original3DClickHandler) {
-      threeCanvas.onclick = this.original3DClickHandler;
-      this.original3DClickHandler = null;
-      console.log('3D click handler restored');
-    }
+    this.canvasClickHandler = null;
+    this.clickBlocker = null;
 
     // Reset button - remove cancel handler, re-add activate handler
     const btn = this.panel.querySelector('#measure-distance');
