@@ -13,6 +13,8 @@
 // LOADING SPINNER
 // ============================================
 
+import * as THREE from "three";
+
 export function showLoadingSpinner(message = 'Saving...') {
   const spinner = document.getElementById('loadingSpinner');
   if (spinner) {
@@ -298,11 +300,10 @@ export class MeasurementTools {
     
     // Use Three.js raycasting to get 3D coordinates
     const three = this.kk?.three;
-    const THREE = window.THREE || three?.scene?.constructor; // Get THREE from window or infer
     
     console.log('Three.js available:', !!three, !!three?.perspectivecamera, !!three?.scene, !!THREE);
     
-    if (!three || !three.perspectivecamera || !three.scene || !THREE) {
+    if (!three || !three.perspectivecamera || !three.scene) {
       console.error('Measurement: Three.js not available');
       alert('3D view not ready. Please try again.');
       this.deactivateDistanceTool();

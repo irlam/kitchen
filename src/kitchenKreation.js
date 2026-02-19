@@ -13507,7 +13507,12 @@ functions return important math algorithms required to constructs lines/walls in
 
           // find angle between wall normals
           var normal2 = new THREE.Vector2();
-          var normal3 = wallEdge.plane.geometry.faces[0].normal;
+          var normalAttribute = wallEdge.plane.geometry.getAttribute("normal");
+          var normal3 = new THREE.Vector3(
+            normalAttribute.getX(0),
+            normalAttribute.getY(0),
+            normalAttribute.getZ(0)
+          );
           normal2.x = normal3.x;
           normal2.y = normal3.z;
 
